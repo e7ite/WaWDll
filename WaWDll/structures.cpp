@@ -443,3 +443,32 @@ WeaponDef* BG_GetWeaponDef(int weapon)
 {
 	return bg_weaponVariantDefs[weapon];
 }
+
+void BG_GetSpreadForWeapon(playerState_s *ps, WeaponDef *weap, float *minSpread,
+	float *maxSpread)
+{
+	DWORD addr = BG_GetSpreadForWeapon_a;
+	__asm
+	{
+		mov			esi, ps
+		mov			edx, minSpread
+		mov			ecx, maxSpread
+		push		weap
+		call		addr
+		add			esp, 4
+	}
+}
+
+void AngleVectors(const float *angles, float *forward, float *right, float *up)
+{
+	DWORD addr = AngleVectors_a;
+	__asm
+	{
+		mov			edx, angles
+		mov			edi, right
+		mov			esi, forward
+		push		up
+		call		addr
+		add			esp, 4
+	}
+}

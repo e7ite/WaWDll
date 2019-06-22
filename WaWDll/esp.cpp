@@ -48,9 +48,6 @@ void RenderESP()
 				WorldPosToScreenPos(0, head, headScreen);
 				WorldPosToScreenPos(0, foot, feetScreen);
 
-				CG_DrawRotatedPicPhysical(scrPlace, headScreen[0], headScreen[1],
-					20, 20, 0, Colors::white, Material_RegisterHandle("white", 0));
-
 				if (AimTarget_IsTargetVisible(
 					&cg_entitiesArray[i],
 					SL_FindString("j_head")))

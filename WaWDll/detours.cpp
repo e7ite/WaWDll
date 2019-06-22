@@ -243,7 +243,6 @@ LABEL_1:
 	}
 }
 
-
 bool Cbuf_AddTextDetour(const char *text, int localClientNum)
 {
 	if (GameData::dvarGlob["cl_ingame"]->current.enabled
@@ -261,7 +260,8 @@ void CG_PredictPlayerState_InternalDetour(int localClientNum)
 	memcpy(ocmd, ccmd, sizeof usercmd_s);
 	ocmd->serverTime--;
 
-	SetAngles(Aimbot::targetAngles);
+	if (Aimbot::gotTarget)
+		SetAngles(Aimbot::targetAngles);
 
 	//ocmd->viewangles[0] += ANGLE2SHORT(
 	//	Aimbot::targetAngles[0] 

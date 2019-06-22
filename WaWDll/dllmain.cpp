@@ -18,7 +18,7 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
 		Variables::noRecoil = true;
 
 		std::cout << std::hex << CL_GetUserCmd(0) << std::endl;
-		std::cout << offsetof(cpose_t, origin) << std::endl;
+		std::cout << offsetof(playerState_s, weapon) + 0x0AAC98 << std::endl;
 
 		BuildMenu();
 

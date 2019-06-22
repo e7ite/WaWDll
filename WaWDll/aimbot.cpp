@@ -21,6 +21,8 @@ bool ExecuteAimbot()
 			return true;
 		}
 	}
+
+	RemoveSpread();
 	
 	return false;
 }
@@ -96,6 +98,23 @@ void SetAngles(const vec3_t& angles)
 	clientActive->viewangles[0] = angles.pitch;
 	clientActive->viewangles[1] = angles.yaw;
 	clientActive->viewangles[2] = angles.roll;
+}
+
+void CG_BulletEndPos()
+{
+
+}
+
+void RemoveSpread(playerState_s *ps, clientActive_t *cl)
+{
+	float minSpread, maxSpread;
+	float calcSpread = cgameGlob->predictedPlayerState.aimSpreadScale;
+	WeaponDef *weap = BG_GetWeaponDef(ps->weapon);
+
+	BG_GetSpreadForWeapon(ps, weap, &minSpread, &maxSpread);
+	if (ps->fWeaponPosFrac == 1.0f)
+		calcSpread = (maxSpread - weap->fAdsSpread) * 
+
 }
 
 void FixMovement(usercmd_s *cmd, float currentAngle, float oldAngle, 

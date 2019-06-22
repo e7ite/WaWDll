@@ -21,3 +21,4 @@ float DegreesToRadians(float deg);
 float pi();
 int AngleToShort(float x);
 float ShortToAngle(int x);
+void RemoveSpread();

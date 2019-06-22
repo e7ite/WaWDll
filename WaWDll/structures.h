@@ -224,6 +224,9 @@ struct cg_s
 	refdef_s refdef;						//0x0AD080
 	char pad05[0x9382C];					//0x0B1364
 	clientInfo_t clients[0x12];				//0x144B90
+	char pad06[0x10548];					//0x14AFF8
+	float aimSpreadScale;					//0x15B540
+	char pad07[0x1];						//0x15B544
 }; //Size = 0x15DAB8
 
 struct cgs_t
@@ -291,7 +294,12 @@ struct trace_t
 
 struct WeaponDef
 {
-	const char *szOverlayName;
+	const char *szInternalName;				//0x000
+	const char *szOverlayName;				//0x004
+	char pad00[0x2F8];						//0x008
+	struct Material *reticleSlide;			//0x2A0
+	char pad01[0x58C];						//0x2A4
+	float fAdsSpread;						//0x830
 };
 
 union DvarValue
@@ -331,7 +339,7 @@ extern clientActive_t *clientActive;
 extern WORD *clientObjMap;
 extern BYTE *objBuf;
 
-enum Addresses : DWORD
+enum FuncAddresses : DWORD
 {
 	R_RegisterFont_a					= 0x6E8D84,
 	Material_RegisterHandle_a			= 0x6E9C00,
@@ -369,6 +377,8 @@ enum Addresses : DWORD
 	AimTarget_IsTargetVisible_a			= 0x403CA0,
 	Cbuf_AddText_a						= 0x594200,
 	CL_SendCmd_a						= 0x478D20,
+	BG_GetSpreadForWeapon_a				= 0x41DB20,
+	AngleVectors_a						= 0x5E3150,
 };
 
 extern void*(__cdecl *R_RegisterFont)(const char *font, __int32 imageTrac);
@@ -417,3 +427,6 @@ int R_TextWidth(const char *text, int maxChars, Font_s *font);
 int Sys_Milliseconds();
 void InsertDvar(const char *dvarName);
 WeaponDef* BG_GetWeaponDef(int weapon);
+void BG_GetSpreadForWeapon(playerState_s *ps, WeaponDef *weap, float *minSpread,
+	float *maxSpread);
+void AngleVectors(const float *angles, float *forward, float *right, float *up);
