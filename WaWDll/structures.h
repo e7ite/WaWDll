@@ -368,7 +368,7 @@ enum Addresses : DWORD
 	CG_Draw2DInternal_a					= 0x4388A0,
 	AimTarget_IsTargetVisible_a			= 0x403CA0,
 	Cbuf_AddText_a						= 0x594200,
-	CL_SendCmd_a						= 0x478D20
+	CL_SendCmd_a						= 0x478D20,
 };
 
 extern void*(__cdecl *R_RegisterFont)(const char *font, __int32 imageTrac);
