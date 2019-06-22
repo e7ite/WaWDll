@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.572
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WaWDll", "WaWDll\WaWDll.vcxproj", "{89E88E0D-335C-4FA5-BBF5-68EFC8EA499D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{89E88E0D-335C-4FA5-BBF5-68EFC8EA499D}.Debug|x64.ActiveCfg = Debug|x64
+		{89E88E0D-335C-4FA5-BBF5-68EFC8EA499D}.Debug|x64.Build.0 = Debug|x64
+		{89E88E0D-335C-4FA5-BBF5-68EFC8EA499D}.Debug|x86.ActiveCfg = Debug|Win32
+		{89E88E0D-335C-4FA5-BBF5-68EFC8EA499D}.Debug|x86.Build.0 = Debug|Win32
+		{89E88E0D-335C-4FA5-BBF5-68EFC8EA499D}.Release|x64.ActiveCfg = Release|x64
+		{89E88E0D-335C-4FA5-BBF5-68EFC8EA499D}.Release|x64.Build.0 = Release|x64
+		{89E88E0D-335C-4FA5-BBF5-68EFC8EA499D}.Release|x86.ActiveCfg = Release|Win32
+		{89E88E0D-335C-4FA5-BBF5-68EFC8EA499D}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E7379179-E7F1-430F-B5CA-DE9F2F346DAE}
+	EndGlobalSection
+EndGlobal
