@@ -2,7 +2,7 @@
 
 __usercall Menu_PaintAll = (__usercall)Menu_PaintAll_a;
 void(__cdecl *R_EndFrame)() = (void(*)())R_EndFrame_a;
-void(*CL_SendCmd)() = (void(*)())0x478D20;
+void(*CL_SendCmd)() = (void(*)())CL_SendCmd_a;
 LONG(__stdcall *TopLevelExceptionFilter)(
 	struct _EXCEPTION_POINTERS *ExceptionInfo)
 	= (LONG(__stdcall*)(_EXCEPTION_POINTERS*))TopLevelExceptionFilter_a;
@@ -22,6 +22,7 @@ sysEvent_t*(__cdecl *Win_GetEvent)(sysEvent_t *result, __int32 unk)
 __usercall Cbuf_AddText = (__usercall)Cbuf_AddText_a;
 void(__cdecl *CG_PredictPlayerState_Internal)(int localClientNum)
 	= (void(__cdecl*)(int))CG_PredictPlayerStateInternal_a;
+__usercall CL_CreateCmd = (__usercall)CL_CreateCmd_a;
 
 void DetourFunction(DWORD targetFunction, DWORD detourFunction)
 {
@@ -133,9 +134,6 @@ void TopLevelExceptionFilterDetour(struct _EXCEPTION_POINTERS *ExceptionInfo)
 	}
 }
 
-#define ANGLE2SHORT(x)			((int)((x)*65536 / 360) & 65535)
-#define SHORT2ANGLE(x)			((x)*(360.0 / 65536))
-
 void CL_WritePacketDetour()
 {
 
@@ -205,7 +203,7 @@ void CL_KeyEventDetour(int localClientNum, int key, int down, int time)
 	return CL_KeyEvent(localClientNum, key, down, time);
 }
 
-DWORD Cbuf_AddTextRet = 0x594208;
+DWORD Cbuf_AddTextRet = Cbuf_AddTextRet_a;
 void __declspec(naked) Cbuf_AddTextStub(const char *text, int localClientNum)
 {
 	__asm
@@ -242,27 +240,50 @@ bool Cbuf_AddTextDetour(const char *text, int localClientNum)
 
 void CG_PredictPlayerState_InternalDetour(int localClientNum)
 {
-	bool setAim = false;
-	usercmd_s *ccmd = &clientActive->cmds[clientActive->cmdNumber & 0x7F],
+	CG_PredictPlayerState_Internal(localClientNum);
+
+	usercmd_s *ncmd = &clientActive->cmds[clientActive->cmdNumber + 1 & 0x7F],
+		*ccmd = &clientActive->cmds[clientActive->cmdNumber & 0x7F],
 		*ocmd = &clientActive->cmds[clientActive->cmdNumber - 1 & 0x7F];
 
+	memcpy((int*)ocmd + 1, (int*)ccmd + 1, sizeof usercmd_s - 4);
+
 	if (Variables::enableAimbot)
-		if (Key_IsDown("+attack"))
+		if (Key_IsDown("+speed_throw"))
 			if (ExecuteAimbot())
 			{
-				SetAngles(Aimbot::targetAngles),
-				RemoveSpread(&cgameGlob->predictedPlayerState, clientActive);
-				setAim = true;
+				//SetAngles(Aimbot::targetAngles),
+				ocmd->angles[0] = AngleToShort(Aimbot::targetAngles[0]);
+				ocmd->angles[1] = AngleToShort(Aimbot::targetAngles[1]);
+				//RemoveSpread(&cgameGlob->predictedPlayerState, ncmd);
 			}
 
-	memcpy(ocmd, ccmd, sizeof usercmd_s);
-	ocmd->serverTime--;
 
 	if (Key_IsDown("+attack"))
 	{
 		ocmd->button_bits &= ~1;
-		ocmd->button_bits |= 1;
+		ocmd->button_bits |= 1; 
 	}
 
-	return CG_PredictPlayerState_Internal(localClientNum);
+	return ;
+}
+
+void __declspec(naked) CL_CreateCmdStub(int localClientNum, usercmd_s *cmd)
+{
+	__asm
+	{
+		mov			eax, edi
+		push		eax
+		push		localClientNum
+		call		CL_CreateCmdDetour
+		pop			edi
+		pop			edi
+		add			esp, 10h
+		ret
+	}
+}
+
+void CL_CreateCmdDetour(int localClientNum, usercmd_s *cmd)
+{
+
 }

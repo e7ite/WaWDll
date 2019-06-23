@@ -356,8 +356,7 @@ void DrawHuds()
 		/ scrPlace->scaleVirtualToFull[1];
 
 	tmp << "Health: "
-		<< cgameGlob->predictedPlayerState.health
-		<< " / "
+		<< cgameGlob->predictedPlayerState.health << " / "
 		<< cgameGlob->predictedPlayerState.maxHealth;
 	color[0] = (255.f - (cgameGlob->predictedPlayerState.health 
 		* (255.f / cgameGlob->predictedPlayerState.maxHealth))) / 255.f;

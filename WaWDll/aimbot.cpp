@@ -130,7 +130,7 @@ void CG_BulletEndPos(int commandTime, float spread, float *start, float *end,
 	}
 }
 
-void RemoveSpread(playerState_s *ps, clientActive_t *cl)
+void RemoveSpread(playerState_s *ps, usercmd_s *cmd)
 {
 	float minSpread, maxSpread, finalSpread, range;
 	vec3_t viewOrg, viewAxis[3], spreadEnd, spreadDir, spreadFix;
@@ -166,8 +166,8 @@ void RemoveSpread(playerState_s *ps, clientActive_t *cl)
 
 	vectoangles(spreadDir, spreadFix);
 
-	cl->viewangles[0] += cgameGlob->gunPitch - spreadFix[0];
-	cl->viewangles[1] += cgameGlob->gunYaw - spreadFix[1];
+	cmd->angles[0] += AngleToShort(cgameGlob->gunPitch - spreadFix[0]);
+	cmd->angles[1] += AngleToShort(cgameGlob->gunYaw - spreadFix[1]);
 }
 
 void FixMovement(usercmd_s *cmd, float currentAngle, float oldAngle, 

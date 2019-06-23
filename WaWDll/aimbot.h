@@ -21,7 +21,7 @@ float DegreesToRadians(float deg);
 float pi();
 int AngleToShort(float x);
 float ShortToAngle(int x);
-void RemoveSpread(playerState_s *ps, clientActive_t *cl);
+void RemoveSpread(playerState_s *ps, usercmd_s *cmd);
 void CG_BulletEndPos(int commandTime, float spread, float *start, float *end,
 	float *dir, const float *forwardDir, const float *rightDir, const float *upDir,
 	float maxRange);
