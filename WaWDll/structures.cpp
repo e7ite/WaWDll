@@ -37,6 +37,8 @@ void(__cdecl *CG_GameMessage)(int localClientNum, const char *msg, int length)
 	= (void(__cdecl*)(int, const char*, int))CG_GameMessage_a;
 int(__cdecl *CG_GetPlayerWeapon)(playerState_s *ps, int localClientNum)
 	= (int(__cdecl*)(playerState_s*, int))CG_GetPlayerWeapon_a;
+void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y)
+	= (void(__cdecl*)(int, float*, float*))RandomBulletDir_a;
 
 vec3_t vec3_t::operator+(const vec3_t &vec) const
 {
@@ -470,5 +472,59 @@ void AngleVectors(const float *angles, float *forward, float *right, float *up)
 		push		up
 		call		addr
 		add			esp, 4
+	}
+}
+
+void DrawSketchPicGun(ScreenPlacement *scrPlace, rectDef_s *rect,
+	const float *color, Material *material, int ratio)
+{
+	DWORD addr = DrawSketchPicGun_a;
+	__asm
+	{
+		mov			eax, rect
+		push		ratio
+		push		material
+		push		color
+		push		scrPlace
+		call		addr
+		add			esp, 10h
+	}
+}
+
+void CG_GetPlayerViewOrigin(int localClientNum, playerState_s *ps, float out[3])
+{
+	DWORD addr = CG_GetPlayerViewOrigin_a;
+	__asm
+	{
+		mov			eax, localClientNum
+		push		out
+		push		ps
+		call		addr
+		add			esp, 8
+	}
+}
+
+float __libm_sse2_tan(float x)
+{
+	DWORD addr = __libm_sse2_tan_a;
+	float funcRet;
+
+	__asm
+	{
+		movss		xmm0, x
+		call		addr
+		movss		funcRet, xmm0
+	}
+
+	return funcRet;
+}
+
+void Vec3Normalize(float *x)
+{
+	DWORD addr = Vec3Normalize_a;
+	__asm
+	{
+		mov			esi, x
+		call		addr
 	}
 }

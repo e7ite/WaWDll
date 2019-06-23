@@ -42,9 +42,10 @@ namespace Colors
 	{
 		float r, g, b, a;
 		
+		Color() : r(0.0F), g(0.0f), b(0.0f), a(1.0f) {}
 		Color(float r, float g, float b, float a)
 			: r(r / 255), g(g / 255), b(b / 255), a(a / 255) {}
-		
+
 		operator float*() { return reinterpret_cast<float*>(this); }
 	};
 
@@ -114,6 +115,7 @@ void BuildMenu();
 void HandleControls();
 void CloseSub();
 void ExecuteMenu();
+void RunMenu();
 void DrawHuds();
 void VariableToggle(__int32 *var);
 void VariableModify(bool *increment, __int32 *var,

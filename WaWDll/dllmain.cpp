@@ -17,9 +17,6 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
 		Variables::autoShoot = true;
 		Variables::noRecoil = true;
 
-		std::cout << std::hex << CL_GetUserCmd(0) << std::endl;
-		std::cout << offsetof(playerState_s, weapon) + 0x0AAC98 << std::endl;
-
 		BuildMenu();
 
 		InsertDetour((QWORD)&Menu_PaintAll, (QWORD)Menu_PaintAllStub);

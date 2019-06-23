@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <functional>
 #include <string>
+#include <sstream>
 #include <map>
 #include <vector>
 
@@ -222,11 +223,16 @@ struct cg_s
 	playerState_s predictedPlayerState;		//0x0AAC98
 	char pad04[0x33C];						//0x0ACD44
 	refdef_s refdef;						//0x0AD080
-	char pad05[0x9382C];					//0x0B1364
+	char pad05[0x6F68];						//0x0B1364
+	int weaponSelect;						//0x0B82CC
+	char pad06[0xD4];						//0x0B82D0
+	float gunPitch;							//0x0B83A4
+	float gunYaw;							//0x0B83A8
+	char pad07[0x8C7E4];					//0x0B83AC
 	clientInfo_t clients[0x12];				//0x144B90
-	char pad06[0x10548];					//0x14AFF8
+	char pad08[0x10548];					//0x14AFF8
 	float aimSpreadScale;					//0x15B540
-	char pad07[0x1];						//0x15B544
+	char pad09[0x1];						//0x15B544
 }; //Size = 0x15DAB8
 
 struct cgs_t
@@ -292,14 +298,42 @@ struct trace_t
 	
 };
 
+struct rectDef_s
+{
+	float x;								//0x00
+	float y;								//0x04
+	float w;								//0x08
+	float h;								//0x0C
+	int horzAlign;							//0x10
+	int vertAlign;							//0x14
+}; //Size = 0x18
+
 struct WeaponDef
 {
 	const char *szInternalName;				//0x000
 	const char *szOverlayName;				//0x004
-	char pad00[0x2F8];						//0x008
+	char pad00[0x13C];						//0x008
+	int weapType;							//0x144
+	int weapClass;							//0x148
+	int penetrateType;						//0x14C
+	int impactType;							//0x150
+	int inventoryType;						//0x154
+	int fireType;							//0x158
+	int clipType;							//0x15C
+	int itemIndex;							//0x160
+	char pad01[0x13C];						//0x164
 	struct Material *reticleSlide;			//0x2A0
-	char pad01[0x58C];						//0x2A4
+	char pad02[0x134];						//0x2A4
+	struct Material *hudIcon;				//0x3D8
+	int hudIconRatio;						//0x3DC
+	struct Material *ammoCounterIcon;		//0x3E0
+	int	ammoCounterIconRatio;				//0x3E4
+	char pad03[0x24];						//0x3E8
+	int shotCount;							//0x40C
+	char pad04[0x420];						//0x410
 	float fAdsSpread;						//0x830
+	char pad05[0xEC];						//0x834
+	float fMinDamageRange;					//0x920
 };
 
 union DvarValue
@@ -379,6 +413,11 @@ enum FuncAddresses : DWORD
 	CL_SendCmd_a						= 0x478D20,
 	BG_GetSpreadForWeapon_a				= 0x41DB20,
 	AngleVectors_a						= 0x5E3150,
+	DrawSketchPicGun_a					= 0x42CC30,
+	CG_GetPlayerViewOrigin_a			= 0x468A00,
+	__libm_sse2_tan_a					= 0x7E0892,
+	RandomBulletDir_a					= 0x4E54C0,
+	Vec3Normalize_a						= 0x4037C0,
 };
 
 extern void*(__cdecl *R_RegisterFont)(const char *font, __int32 imageTrac);
@@ -396,6 +435,7 @@ extern __int32(__cdecl *UI_TextWidthInternal)(const char *text, __int32 maxChars
 	void *font, float scale);
 extern void(__cdecl *CG_GameMessage)(int localClientNum, const char *msg, int length);
 extern int(__cdecl *CG_GetPlayerWeapon)(playerState_s *ps, int localClientNum);
+extern void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y);
 
 void CG_DrawRotatedPicPhysical(ScreenPlacement *scrPlace, float x, float y,
 	float width, float height, float angle, const float *color, void *material);
@@ -430,3 +470,8 @@ WeaponDef* BG_GetWeaponDef(int weapon);
 void BG_GetSpreadForWeapon(playerState_s *ps, WeaponDef *weap, float *minSpread,
 	float *maxSpread);
 void AngleVectors(const float *angles, float *forward, float *right, float *up);
+void DrawSketchPicGun(ScreenPlacement *scrPlace, rectDef_s *rect,
+	const float *color, struct Material *material, int ratio);
+void CG_GetPlayerViewOrigin(int localClientNum, playerState_s *ps, float out[3]);
+float __libm_sse2_tan(float x);
+void Vec3Normalize(float *x);

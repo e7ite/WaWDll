@@ -21,8 +21,6 @@ bool ExecuteAimbot()
 			return true;
 		}
 	}
-
-	RemoveSpread();
 	
 	return false;
 }
@@ -100,21 +98,76 @@ void SetAngles(const vec3_t& angles)
 	clientActive->viewangles[2] = angles.roll;
 }
 
-void CG_BulletEndPos()
+void CG_BulletEndPos(int commandTime, float spread, float *start, float *end, 
+	float *dir, const float *forwardDir, const float *rightDir, const float *upDir, 
+	float maxRange)
 {
+	float right, up;
+	float aimOffset = __libm_sse2_tan(DegreesToRadians(spread)) * maxRange;
 
+	RandomBulletDir(commandTime, &right, &up);
+	right *= aimOffset;
+	up *= aimOffset;
+
+	end[0] = maxRange * forwardDir[0] + start[0];
+	end[1] = maxRange * forwardDir[1] + start[1];
+	end[2] = maxRange * forwardDir[2] + start[2];
+
+	end[0] = right * rightDir[0] + end[0];
+	end[1] = right * rightDir[1] + end[1];
+	end[2] = right * rightDir[2] + end[2];
+
+	end[0] = up * upDir[0] + end[0];
+	end[1] = up * upDir[1] + end[1];
+	end[2] = up * upDir[2] + end[2];
+
+	if (dir)
+	{
+		dir[0] = end[0] - start[0];
+		dir[1] = end[1] - start[1];
+		dir[2] = end[2] - start[2];
+		Vec3Normalize(dir);
+	}
 }
 
 void RemoveSpread(playerState_s *ps, clientActive_t *cl)
 {
-	float minSpread, maxSpread;
-	float calcSpread = cgameGlob->predictedPlayerState.aimSpreadScale;
+	float minSpread, maxSpread, finalSpread, range;
+	vec3_t viewOrg, viewAxis[3], spreadEnd, spreadDir, spreadFix;
+	float cgSpread = cgameGlob->aimSpreadScale / 255.0f;
 	WeaponDef *weap = BG_GetWeaponDef(ps->weapon);
 
 	BG_GetSpreadForWeapon(ps, weap, &minSpread, &maxSpread);
-	if (ps->fWeaponPosFrac == 1.0f)
-		calcSpread = (maxSpread - weap->fAdsSpread) * 
+	finalSpread = ps->fWeaponPosFrac == 1.0f 
+		? weap->fAdsSpread : minSpread;
+	finalSpread = (maxSpread - finalSpread) * cgSpread + finalSpread;
 
+	if (cgameGlob->renderingThirdPerson)
+	{
+		AngleVectors(cgameGlob->clients[cgameGlob->clientNum].playerAngles,
+			viewAxis[0], viewAxis[1], viewAxis[2]);
+	}
+	else
+	{
+		float tmp[3];
+		tmp[0] = cgameGlob->gunPitch;
+		tmp[1] = cgameGlob->gunYaw;
+		tmp[2] = 0;
+
+		AngleVectors(tmp, viewAxis[0], viewAxis[1], viewAxis[2]);
+	}
+
+	range = weap->weapType == 3 ? weap->fMinDamageRange : 8192.0f;
+
+	CG_GetPlayerViewOrigin(0, ps, viewOrg);
+
+	CG_BulletEndPos(ps->commandTime, finalSpread, viewOrg, spreadEnd, spreadDir,
+		viewAxis[0], viewAxis[1], viewAxis[2], range);
+
+	vectoangles(spreadDir, spreadFix);
+
+	cl->viewangles[0] += cgameGlob->gunPitch - spreadFix[0];
+	cl->viewangles[1] += cgameGlob->gunYaw - spreadFix[1];
 }
 
 void FixMovement(usercmd_s *cmd, float currentAngle, float oldAngle, 

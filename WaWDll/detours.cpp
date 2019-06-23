@@ -96,20 +96,8 @@ void Menu_PaintAllDetour(UiContext *dc)
 
 void R_EndFrameDetour()
 {
-	bool setAim = false;
-
 	WriteBytes(0x46A87E, Variables::noRecoil ? "\xEB" : "\x74", 1);
 	GameData::dvarGlob["cg_fov"]->current.value = (float)Variables::fov;
-
-	if (Variables::enableAimbot)
-		if (Key_IsDown("+speed_throw") || !Variables::aimRequired)
-			if (ExecuteAimbot())
-				setAim = true;
-
-	Aimbot::gotTarget = setAim;
-
-	/*if (Aimbot::gotTarget)
-		SetAngles(Aimbot::targetAngles);*/
 
 	R_EndFrame();
 }
@@ -254,21 +242,21 @@ bool Cbuf_AddTextDetour(const char *text, int localClientNum)
 
 void CG_PredictPlayerState_InternalDetour(int localClientNum)
 {
+	bool setAim = false;
 	usercmd_s *ccmd = &clientActive->cmds[clientActive->cmdNumber & 0x7F],
 		*ocmd = &clientActive->cmds[clientActive->cmdNumber - 1 & 0x7F];
 
+	if (Variables::enableAimbot)
+		if (Key_IsDown("+attack"))
+			if (ExecuteAimbot())
+			{
+				SetAngles(Aimbot::targetAngles),
+				RemoveSpread(&cgameGlob->predictedPlayerState, clientActive);
+				setAim = true;
+			}
+
 	memcpy(ocmd, ccmd, sizeof usercmd_s);
 	ocmd->serverTime--;
-
-	if (Aimbot::gotTarget)
-		SetAngles(Aimbot::targetAngles);
-
-	//ocmd->viewangles[0] += ANGLE2SHORT(
-	//	Aimbot::targetAngles[0] 
-	//);
-	//ocmd->viewangles[1] += ANGLE2SHORT(
-	//	Aimbot::targetAngles[1]
-	//);
 
 	if (Key_IsDown("+attack"))
 	{

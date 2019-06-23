@@ -33,13 +33,13 @@ void RenderESP()
 	{
 		vec3_t head, foot;
 		float headScreen[2], feetScreen[2];
-		const float *color = Colors::blue;
 		float closest = static_cast<float>(INT_MAX);
 
 		for (__int32 i = 0; i < 1024; ++i)
 		{
 			if (ValidTarget(&cg_entitiesArray[i]))
 			{
+				const float *color = Colors::blue;
 				AimTarget_GetTagPos(0, 
 					&cg_entitiesArray[i],
 					SL_FindString("j_head"), head);

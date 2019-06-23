@@ -252,6 +252,9 @@ void ExecuteMenu()
 	HandleControls();
 
 	if (Menu::open)
+		RunMenu();
+
+	if (GameData::dvarGlob["cl_ingame"]->current.enabled)
 		DrawHuds();
 }
 
@@ -274,7 +277,7 @@ void VariableModify(bool *increment, __int32 *var,
 		(*var) = max;
 }
 
-void DrawHuds()
+void RunMenu()
 {
 	float y = 0, height = 0;
 	float menuCenterX = dc->screenDimensions[0] / 2
@@ -343,6 +346,34 @@ void DrawHuds()
 	}
 }
 
+void DrawHuds()
+{
+	std::stringstream tmp;
+	Colors::Color color;
+	float menuCenterX = dc->screenDimensions[0] / 2
+		/ scrPlace->scaleVirtualToFull[0];
+	float menuCenterY = dc->screenDimensions[1] / 2
+		/ scrPlace->scaleVirtualToFull[1];
+
+	tmp << "Health: "
+		<< cgameGlob->predictedPlayerState.health
+		<< " / "
+		<< cgameGlob->predictedPlayerState.maxHealth;
+	color[0] = (255.f - (cgameGlob->predictedPlayerState.health 
+		* (255.f / cgameGlob->predictedPlayerState.maxHealth))) / 255.f;
+	color[1] = (cgameGlob->predictedPlayerState.health 
+		* (255.f / cgameGlob->predictedPlayerState.maxHealth)) / 255.f;
+
+	DrawFillRect(menuCenterX - 75.f, menuCenterY + 200.f, 
+		cgameGlob->predictedPlayerState.health 
+			* (150.f / cgameGlob->predictedPlayerState.maxHealth),
+		15.f, color, 0);
+	DrawEmptyRect(menuCenterX - 75, menuCenterY + 200.f, 150.f, 15.f,
+		2, Colors::black, 0);
+	RenderText(tmp.str().data(), menuCenterX, menuCenterY + 202, 0.2f,
+		ALIGN_CENTER, Colors::white, normalFont, 0);
+}
+
 void LoadSub(MenuName menu)
 {
 	Menu::currentSub = menu;
@@ -367,7 +398,7 @@ float RenderText(const char *text, float x, float y, float scale,
 	float *wOut, float *hOut)
 {
 	Font_s *font     = UI_GetFontHandle(scrPlace, fontName);
-	float textWidth  = UI_TextWidth(text, INT_MAX, font, scale) + 12;
+	float textWidth  = UI_TextWidth(text, INT_MAX, font, scale);
 	float textHeight = UI_TextHeight(font, scale) + 2;
 	float xAligned;
 
