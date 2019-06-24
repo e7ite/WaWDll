@@ -160,7 +160,7 @@ void HandleControls()
 			MenuWait(200);
 		}
 		if (Menu::open)
-			if (GameData::dvarGlob["cl_ingame"]->current.enabled)
+			if (InGame())
 			{
 				if (GetAsyncKeyState(VK_NEXT) & 0x10000)
 				{
@@ -254,7 +254,7 @@ void ExecuteMenu()
 	if (Menu::open)
 		RunMenu();
 
-	if (GameData::dvarGlob["cl_ingame"]->current.enabled)
+	if (InGame())
 		DrawHuds();
 }
 
@@ -501,4 +501,9 @@ void InsertDvar(const char *dvarName)
 	GameData::dvarGlob.insert(
 		std::pair<const char*, dvar_s*>(dvarName, Dvar_FindVar(dvarName))
 	);
+}
+
+bool InGame()
+{
+	return GameData::dvarGlob["cl_ingame"] && *(int*)cl_connectionState >= 9;
 }

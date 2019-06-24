@@ -11,6 +11,7 @@ BYTE *objBuf = (BYTE*)0x1F978C8;
 WeaponDef **bg_weaponVariantDefs = (WeaponDef**)0x8F6770;
 cgs_t *cgs = (cgs_t*)0x3466578;
 actor_s *actors = (actor_s*)0x176C874;
+int cl_connectionState = 0x305842C;
 
 void*(__cdecl *R_RegisterFont)(const char *font, __int32 imageTrac)
 	= (void*(*)(const char*, __int32))R_RegisterFont_a;
@@ -491,9 +492,11 @@ void DrawSketchPicGun(ScreenPlacement *scrPlace, rectDef_s *rect,
 	}
 }
 
-void CG_GetPlayerViewOrigin(int localClientNum, playerState_s *ps, float out[3])
+bool CG_GetPlayerViewOrigin(int localClientNum, playerState_s *ps, float out[3])
 {
 	DWORD addr = CG_GetPlayerViewOrigin_a;
+	bool funcRet;
+
 	__asm
 	{
 		mov			eax, localClientNum
@@ -501,7 +504,10 @@ void CG_GetPlayerViewOrigin(int localClientNum, playerState_s *ps, float out[3])
 		push		ps
 		call		addr
 		add			esp, 8
+		mov			funcRet, al
 	}
+
+	return funcRet;
 }
 
 float __libm_sse2_tan(float x)

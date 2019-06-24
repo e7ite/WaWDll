@@ -23,6 +23,8 @@ __usercall Cbuf_AddText = (__usercall)Cbuf_AddText_a;
 void(__cdecl *CG_PredictPlayerState_Internal)(int localClientNum)
 	= (void(__cdecl*)(int))CG_PredictPlayerStateInternal_a;
 __usercall CL_CreateCmd = (__usercall)CL_CreateCmd_a;
+void(__thiscall *CL_CreateNewCommands)()
+	= (void(__thiscall*)())CL_CreateNewCommands_a;
 
 void DetourFunction(DWORD targetFunction, DWORD detourFunction)
 {
@@ -142,7 +144,7 @@ void CL_WritePacketDetour()
 
 void CL_SendCmdDetour()
 {
-	if (!GameData::dvarGlob["cl_ingame"]->current.enabled)
+	if (!InGame())
 		return CL_SendCmd();
 
 	if (Key_IsDown("+attack"));
@@ -195,7 +197,7 @@ void UI_RefreshDetour(int localClientNum)
 
 void CL_KeyEventDetour(int localClientNum, int key, int down, int time)
 {
-	if (GameData::dvarGlob["cl_ingame"]->current.enabled && keys[key].binding 
+	if (InGame() && keys[key].binding 
 		&& !*(int*)0x208E938
 		&& !strcmp(keys[key].binding, "+attack") && Variables::autoShoot)
 		return;
@@ -231,7 +233,7 @@ LABEL_1:
 
 bool Cbuf_AddTextDetour(const char *text, int localClientNum)
 {
-	if (GameData::dvarGlob["cl_ingame"]->current.enabled
+	if (InGame()
 		&& strstr(text, "attack"))
 		return false;
 
@@ -242,48 +244,46 @@ void CG_PredictPlayerState_InternalDetour(int localClientNum)
 {
 	CG_PredictPlayerState_Internal(localClientNum);
 
-	usercmd_s *ncmd = &clientActive->cmds[clientActive->cmdNumber + 1 & 0x7F],
-		*ccmd = &clientActive->cmds[clientActive->cmdNumber & 0x7F],
-		*ocmd = &clientActive->cmds[clientActive->cmdNumber - 1 & 0x7F];
-
-	memcpy((int*)ocmd + 1, (int*)ccmd + 1, sizeof usercmd_s - 4);
-
-	if (Variables::enableAimbot)
-		if (Key_IsDown("+speed_throw"))
-			if (ExecuteAimbot())
-			{
-				//SetAngles(Aimbot::targetAngles),
-				ocmd->angles[0] = AngleToShort(Aimbot::targetAngles[0]);
-				ocmd->angles[1] = AngleToShort(Aimbot::targetAngles[1]);
-				//RemoveSpread(&cgameGlob->predictedPlayerState, ncmd);
-			}
-
-
-	if (Key_IsDown("+attack"))
-	{
-		ocmd->button_bits &= ~1;
-		ocmd->button_bits |= 1; 
-	}
-
 	return ;
 }
 
-void __declspec(naked) CL_CreateCmdStub(int localClientNum, usercmd_s *cmd)
+void __declspec(naked) CL_CreateNewCommandsStub()
 {
 	__asm
 	{
-		mov			eax, edi
-		push		eax
-		push		localClientNum
-		call		CL_CreateCmdDetour
+		pushad
+		call		CL_CreateNewCommandsDetour
+		popad
 		pop			edi
-		pop			edi
-		add			esp, 10h
+		pop			esi
+		pop			ebx
+		add			esp, 78h
 		ret
 	}
 }
 
-void CL_CreateCmdDetour(int localClientNum, usercmd_s *cmd)
+void CL_CreateNewCommandsDetour()
 {
+	usercmd_s *ncmd = &clientActive->cmds[clientActive->cmdNumber + 1 & 0x7F],
+		*ccmd = &clientActive->cmds[clientActive->cmdNumber & 0x7F],
+		*ocmd = &clientActive->cmds[clientActive->cmdNumber - 1 & 0x7F];
 
+	//memcpy(ocmd, ccmd, sizeof usercmd_s);
+	ocmd->serverTime++;
+
+	if (Variables::enableAimbot)
+		if (Key_IsDown("+attack"))
+			if (ExecuteAimbot())
+			{
+				//SetAngles(Aimbot::targetAngles);
+				ccmd->angles[0] = AngleToShort(Aimbot::targetAngles[0]);
+				ccmd->angles[1] = AngleToShort(Aimbot::targetAngles[1]);
+				RemoveSpread(&cgameGlob->predictedPlayerState, ocmd);
+			}
+
+	if (Key_IsDown("+attack"))
+	{
+		ccmd->button_bits &= ~1;
+		ocmd->button_bits |= 1;
+	}
 }

@@ -28,6 +28,7 @@ enum DetourAddresses : DWORD
 	Cbuf_AddTextRet_a					= 0x594208,
 	CL_SendCmd_a						= 0x478D20,
 	CL_CreateCmd_a						= 0x63E936,
+	CL_CreateNewCommands_a				= 0x63E994,
 };
 
 extern __usercall Menu_PaintAll;
@@ -48,6 +49,7 @@ extern struct sysEvent_t*(__cdecl *Win_GetEvent)(sysEvent_t *result, __int32 unk
 extern __usercall Cbuf_AddText;
 extern void(__cdecl *CG_PredictPlayerState_Internal)(int localClientNum);
 extern __usercall CL_CreateCmd;
+extern void(__thiscall *CL_CreateNewCommands)();
 
 void Menu_PaintAllStub(UiContext *dc);
 void Menu_PaintAllDetour(UiContext *dc);
@@ -66,5 +68,5 @@ void CL_KeyEventDetour(int localClientNum, int key, int down, int time);
 void Cbuf_AddTextStub(const char *text, int localClientNum);
 bool Cbuf_AddTextDetour(const char *text, int localClientNum);
 void CG_PredictPlayerState_InternalDetour(int localClientNum);
-void CL_CreateCmdStub(int localClientNum, usercmd_s *cmd);
-void CL_CreateCmdDetour(int localClientNum, usercmd_s *cmd);
+void CL_CreateNewCommandsStub();
+void CL_CreateNewCommandsDetour();

@@ -5,7 +5,7 @@ bool Aimbot::gotTarget;
 
 bool ExecuteAimbot()
 {
-	if (GameData::dvarGlob["cl_ingame"]->current.enabled)
+	if (InGame())
 	{
 		int target = GetAimbotTarget();
 		if (target != -1)
@@ -137,29 +137,24 @@ void RemoveSpread(playerState_s *ps, usercmd_s *cmd)
 	float cgSpread = cgameGlob->aimSpreadScale / 255.0f;
 	WeaponDef *weap = BG_GetWeaponDef(ps->weapon);
 
+	if (!CG_GetPlayerViewOrigin(0, ps, viewOrg))
+		return;
+
+	if (cgameGlob->renderingThirdPerson)
+		AngleVectors(cgameGlob->clients[cgameGlob->clientNum].playerAngles,
+			viewAxis[0], viewAxis[1], viewAxis[2]);
+	else
+	{
+		float tmp[3] = { cgameGlob->gunPitch, cgameGlob->gunYaw, 0.0f };
+		AngleVectors(tmp, viewAxis[0], viewAxis[1], viewAxis[2]);
+	}
+
 	BG_GetSpreadForWeapon(ps, weap, &minSpread, &maxSpread);
 	finalSpread = ps->fWeaponPosFrac == 1.0f 
 		? weap->fAdsSpread : minSpread;
 	finalSpread = (maxSpread - finalSpread) * cgSpread + finalSpread;
 
-	if (cgameGlob->renderingThirdPerson)
-	{
-		AngleVectors(cgameGlob->clients[cgameGlob->clientNum].playerAngles,
-			viewAxis[0], viewAxis[1], viewAxis[2]);
-	}
-	else
-	{
-		float tmp[3];
-		tmp[0] = cgameGlob->gunPitch;
-		tmp[1] = cgameGlob->gunYaw;
-		tmp[2] = 0;
-
-		AngleVectors(tmp, viewAxis[0], viewAxis[1], viewAxis[2]);
-	}
-
 	range = weap->weapType == 3 ? weap->fMinDamageRange : 8192.0f;
-
-	CG_GetPlayerViewOrigin(0, ps, viewOrg);
 
 	CG_BulletEndPos(ps->commandTime, finalSpread, viewOrg, spreadEnd, spreadDir,
 		viewAxis[0], viewAxis[1], viewAxis[2], range);

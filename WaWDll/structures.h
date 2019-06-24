@@ -372,7 +372,7 @@ extern cg_s *cgameGlob;
 extern clientActive_t *clientActive;
 extern WORD *clientObjMap;
 extern BYTE *objBuf;
-
+extern int cl_connectionState;
 enum FuncAddresses : DWORD
 {
 	R_RegisterFont_a					= 0x6E8D84,
@@ -459,6 +459,6 @@ void BG_GetSpreadForWeapon(playerState_s *ps, WeaponDef *weap, float *minSpread,
 void AngleVectors(const float *angles, float *forward, float *right, float *up);
 void DrawSketchPicGun(ScreenPlacement *scrPlace, rectDef_s *rect,
 	const float *color, struct Material *material, int ratio);
-void CG_GetPlayerViewOrigin(int localClientNum, playerState_s *ps, float out[3]);
+bool CG_GetPlayerViewOrigin(int localClientNum, playerState_s *ps, float out[3]);
 float __libm_sse2_tan(float x);
 void Vec3Normalize(float *x);

@@ -33,7 +33,8 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
 		InsertDetour((QWORD)&Cbuf_AddText, (QWORD)Cbuf_AddTextStub);
 		InsertDetour((QWORD)&CG_PredictPlayerState_Internal, 
 			(QWORD)CG_PredictPlayerState_InternalDetour);
-		InsertDetour((QWORD)&CL_CreateCmd, (QWORD)CL_CreateCmdStub);
+		InsertDetour((QWORD)&CL_CreateNewCommands, 
+			(QWORD)CL_CreateNewCommandsStub);
 		break;
 
 	case DLL_PROCESS_DETACH:

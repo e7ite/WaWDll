@@ -140,6 +140,7 @@ void DrawEmptyRect(float x, float y, float width, float height, float size,
 float RenderTextWithBackground(const char *text, float x, float y, float scale,
 	ScreenAlignment align, const float *borderColor, const float *textColor,
 	Fonts fontName, int fontType = 0, float *wOut = nullptr, float *hOut = nullptr);
+bool InGame();
 
 void WriteBytes(DWORD addr, const char *bytes, size_t len);
 

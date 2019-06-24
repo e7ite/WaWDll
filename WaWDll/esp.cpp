@@ -29,7 +29,7 @@ void DrawBorderBox(float head[2], float foot[2], const float *color)
 
 void RenderESP()
 {
-	if (GameData::dvarGlob["cl_ingame"]->current.enabled)
+	if (InGame())
 	{
 		vec3_t head, foot;
 		float headScreen[2], feetScreen[2];
