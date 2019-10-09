@@ -1,17 +1,17 @@
 #include "structures.h"
 
-UiContext *dc = (UiContext*)0x208E920;
-ScreenPlacement *scrPlace = (ScreenPlacement*)0x957360;
-KeyState *keys = (KeyState*)0x951C44;
-centity_s *cg_entitiesArray = (centity_s*)0x35D39F0;
-cg_s *cgameGlob = (cg_s*)0x34732B8;
-clientActive_t *clientActive = (clientActive_t*)0x3058528;
-WORD *clientObjMap = (WORD*)0x1FE58C8;
-BYTE *objBuf = (BYTE*)0x1F978C8;
+UiContext *dc					 = (UiContext*)0x208E920;
+ScreenPlacement *scrPlace		 = (ScreenPlacement*)0x957360;
+KeyState *keys					 = (KeyState*)0x951C44;
+centity_s *cg_entitiesArray		 = (centity_s*)0x35D39F0;
+cg_s *cgameGlob					 = (cg_s*)0x34732B8;
+clientActive_t *clientActive	 = (clientActive_t*)0x3058528;
+WORD *clientObjMap				 = (WORD*)0x1FE58C8;
+BYTE *objBuf					 = (BYTE*)0x1F978C8;
 WeaponDef **bg_weaponVariantDefs = (WeaponDef**)0x8F6770;
-cgs_t *cgs = (cgs_t*)0x3466578;
-actor_s *actors = (actor_s*)0x176C874;
-int cl_connectionState = 0x305842C;
+cgs_t *cgs						 = (cgs_t*)0x3466578;
+actor_s *actors					 = (actor_s*)0x176C874;
+int cl_connectionState			 = 0x305842C;
 
 void*(__cdecl *R_RegisterFont)(const char *font, __int32 imageTrac)
 	= (void*(*)(const char*, __int32))R_RegisterFont_a;
