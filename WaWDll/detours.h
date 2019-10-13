@@ -23,7 +23,7 @@ enum DetourAddresses : DWORD
 	CL_CreateCmd_a						= 0x63E936,
 	CL_CreateNewCommands_a				= 0x63E994,
 };
-
+ 
 using __usercall = void*;
 
 void DetourFunction(DWORD targetFunction, DWORD detourFunction);

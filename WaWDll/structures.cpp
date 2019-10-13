@@ -167,7 +167,7 @@ float UI_TextHeight(Font_s *font, float scale)
 		* R_NormalizedTextScale(font, scale) + 0.5));
 }
 
-float R_TextHeight(Font_s *font)
+float R_TextHeight(Font_s *font) 
 {
 	return static_cast<float>(font->pixelHeight);
 }

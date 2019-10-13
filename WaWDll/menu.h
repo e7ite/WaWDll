@@ -98,4 +98,4 @@ float RenderUITextWithBackground(const char *text, float x, float y,
 	float textW, float textH, const float *borderColor, const float *textColor,
 	Font_s *font, float scale);
 void WriteBytes(DWORD addr, const char *bytes, size_t len);
-void ReadBytes(DWORD addr, char *buf, size_t len);
+void ReadBytes(DWORD addr, char *buf, size_t len); 

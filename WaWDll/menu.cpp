@@ -365,4 +365,4 @@ void ReadBytes(DWORD addr, char *buf, size_t len)
 	ReadProcessMemory(GetCurrentProcess(), (LPCVOID)addr, buf, len, 0);
 
 	VirtualProtect((LPVOID)addr, len, curProtection, 0);
-}
+} 

@@ -502,4 +502,4 @@ void UI_FillRect(ScreenPlacement *scrPlace, float x, float y, float width,
 bool InGame();
 void InsertDvar(const char *dvarName);
 void UI_DrawRect(ScreenPlacement *scrPlace, float x, float y, float width,
-	float height, int horzAlign, int vertAlign, float size, const float *color);
+	float height, int horzAlign, int vertAlign, float size, const float *color); 

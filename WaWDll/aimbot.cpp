@@ -196,7 +196,7 @@ void FixMovement(usercmd_s *cmd, float currentAngle, float oldAngle,
 		+ sinf(DegreesToRadians(deltaView + 90.f)) * oldRightmove
 	);
 }
-
+ 
 float DegreesToRadians(float deg)
 {
 	return deg * (pi() / 180.f);

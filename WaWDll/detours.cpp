@@ -301,4 +301,4 @@ void CL_CreateNewCommandsDetour()
 		ccmd->button_bits &= ~1;
 		ocmd->button_bits |= 1;
 	}
-}
+}  
