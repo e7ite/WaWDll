@@ -24,7 +24,6 @@ Colors::Color Colors::green			   = {   0, 255,   0, 255 };
 Colors::Color Colors::blue			   = {   0,   0, 255, 255 };
 Colors::Color Colors::transparentBlack = {   0,   0,   0, 100 };
 
-
 Font_s*(__cdecl *R_RegisterFont)(const char *font, int imageTrac)
 	= (Font_s*(*)(const char*, int))R_RegisterFont_a;
 void*(__cdecl *Material_RegisterHandle)(const char *materialName, 
