@@ -1,14 +1,13 @@
 #pragma once
 
-#include <Windows.h>
-#include <detours.h>
+#include <windows.h>
+#include <stdio.h>
 #include <iostream>
-#include <cstdio>
+#include <vector>
 #include <functional>
-#include <string>
+#include <detours.h>
 #include <sstream>
 #include <map>
-#include <vector>
 
 struct vec3_t
 {
@@ -373,6 +372,7 @@ extern clientActive_t *clientActive;
 extern WORD *clientObjMap;
 extern BYTE *objBuf;
 extern int cl_connectionState;
+
 enum FuncAddresses : DWORD
 {
 	R_RegisterFont_a					= 0x6E8D84,
@@ -405,20 +405,57 @@ enum FuncAddresses : DWORD
 	__libm_sse2_tan_a					= 0x7E0892,
 	RandomBulletDir_a					= 0x4E54C0,
 	Vec3Normalize_a						= 0x4037C0,
+	UI_DrawRect_a						= 0x5B5BD0,
+	UI_FillRect_a						= 0x5B08E0,
 };
 
-extern void*(__cdecl *R_RegisterFont)(const char *font, __int32 imageTrac);
+namespace Colors
+{
+	struct Color
+	{
+		float r, g, b, a;
+
+		Color() : r(0.0F), g(0.0f), b(0.0f), a(1.0f) {}
+		Color(float r, float g, float b, float a)
+			: r(r / 255), g(g / 255), b(b / 255), a(a / 255) {}
+
+		operator float*() { return reinterpret_cast<float*>(this); }
+	};
+	extern Color white;
+	extern Color black;
+	extern Color red;
+	extern Color green;
+	extern Color blue;
+	extern Color transparentBlack;
+}
+
+using QWORD = unsigned __int64;
+
+namespace GameData
+{
+	struct Font
+	{
+		int index;
+		const char *dir;
+	};
+	extern Font normalFont;
+
+	extern std::vector<QWORD> detours;
+	extern std::map<const char*, dvar_s*> dvars;
+};
+
+extern Font_s*(__cdecl *R_RegisterFont)(const char *font, int imageTrac);
 extern void*(__cdecl *Material_RegisterHandle)(const char *materialName,
-	__int32 imageTrac);
+	int imageTrac);
 extern void(__cdecl *CG_DrawRotatedPic)(ScreenPlacement *scrPlace, float x, float y,
 	float width, float height, float angle, const float *color, void *material);
-extern void(__cdecl *Cmd_ExecuteSingleCommand)(__int32 localClientNum,
-	__int32 controllerIndex, const char *text);
+extern void(__cdecl *Cmd_ExecuteSingleCommand)(int localClientNum,
+	int controllerIndex, const char *text);
 extern dvar_s*(__cdecl *Dvar_FindVar)(const char *dvarName);
 extern void(__cdecl *CL_DrawTextPhysicalInternal)(const char *text, int maxChars,
 	void *font, float x, float y, float xScale, float yScale, float rotation,
 	int style);
-extern __int32(__cdecl *UI_TextWidthInternal)(const char *text, __int32 maxChars,
+extern int(__cdecl *UI_TextWidthInternal)(const char *text, int maxChars,
 	void *font, float scale);
 extern void(__cdecl *CG_GameMessage)(int localClientNum, const char *msg, int length);
 extern int(__cdecl *CG_GetPlayerWeapon)(playerState_s *ps, int localClientNum);
@@ -426,17 +463,16 @@ extern void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y);
 
 void CG_DrawRotatedPicPhysical(ScreenPlacement *scrPlace, float x, float y,
 	float width, float height, float angle, const float *color, void *material);
-__int32 Key_StringToKeynum(const char *name);
+int Key_StringToKeynum(const char *name);
 bool Key_IsDown(const char *bind);
 float R_NormalizedTextScale(Font_s *font, float scale);
 float UI_TextHeight(Font_s *font, float scale);
 float R_TextHeight(Font_s *font);
-__int32 AimTarget_GetTagPos(__int32 localClientNum, centity_s *cent,
+int AimTarget_GetTagPos(int localClientNum, centity_s *cent,
 	unsigned __int16 tagname, float *pos);
 unsigned __int16 SL_FindString(const char *tagname);
 bool WorldPosToScreenPos(int localClientNum, const float *world, float pos[2]);
 void vectoangles(const float *vec, float *pos);
-bool AimTarget_IsTargetVisible(int targetEntNum, unsigned __int16 bone);
 void CL_GetUserCmd(int cmdNum, usercmd_s *cmd);
 usercmd_s* CL_GetUserCmd(int cmdNum);
 void CL_DrawTextPhysical(const char *text, int maxChars,
@@ -445,14 +481,13 @@ void CL_DrawTextPhysical(const char *text, int maxChars,
 void ScrPlace_ApplyRect(ScreenPlacement *scrPlace,
 	float *x, float *y, float *w, float *h, int horzAlign, int vertAlign);
 void UI_DrawText(ScreenPlacement *scrPlace, const char *text,
-	__int32 maxChars, void *font, float x, float y, float scale,
-	float angle, const float *color, __int32 style);
+	int maxChars, void *font, float x, float y, float scale,
+	float angle, const float *color, int style);
 Font_s* UI_GetFontHandle(ScreenPlacement *scrPlace, int fontEnum);
-float UI_TextWidth(const char *text, __int32 maxChars,
+float UI_TextWidth(const char *text, int maxChars,
 	Font_s *font, float scale);
 int R_TextWidth(const char *text, int maxChars, Font_s *font);
 int Sys_Milliseconds();
-void InsertDvar(const char *dvarName);
 WeaponDef* BG_GetWeaponDef(int weapon);
 void BG_GetSpreadForWeapon(playerState_s *ps, WeaponDef *weap, float *minSpread,
 	float *maxSpread);
@@ -462,3 +497,9 @@ void DrawSketchPicGun(ScreenPlacement *scrPlace, rectDef_s *rect,
 bool CG_GetPlayerViewOrigin(int localClientNum, playerState_s *ps, float out[3]);
 float __libm_sse2_tan(float x);
 void Vec3Normalize(float *x);
+void UI_FillRect(ScreenPlacement *scrPlace, float x, float y, float width,
+	float height, int horzAlign, int veryAlign, const float *color);
+bool InGame();
+void InsertDvar(const char *dvarName);
+void UI_DrawRect(ScreenPlacement *scrPlace, float x, float y, float width,
+	float height, int horzAlign, int vertAlign, float size, const float *color);

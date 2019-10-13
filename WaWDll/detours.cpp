@@ -14,17 +14,17 @@ int(__cdecl *Menu_HandleMouseMove)(ScreenPlacement *scrPlace, void *menu)
 	= (int(__cdecl*)(ScreenPlacement*, void*))Menu_HandleMouseMove_a;
 void(__cdecl *CG_Draw2DInternal)() = (void(__cdecl*)())CG_Draw2DInternal_a;
 void(__cdecl *UI_Refresh)(int localClientNum) = (void(__cdecl*)(int))UI_Refresh_a;
-void(__cdecl *CL_KeyEvent)(__int32 localClientNum, __int32 value, __int32 down,
-	unsigned __int32 time)
-	= (void(*)(__int32, __int32, __int32, unsigned __int32))CL_KeyEvent_a;
-sysEvent_t*(__cdecl *Win_GetEvent)(sysEvent_t *result, __int32 unk)
-	= (sysEvent_t*(*)(sysEvent_t*, __int32))Win_GetEvent_a;
+void(__cdecl *CL_KeyEvent)(int localClientNum, int value, int down,
+	unsigned int time)
+	= (void(*)(int, int, int, unsigned int))CL_KeyEvent_a;
+sysEvent_t*(__cdecl *Win_GetEvent)(sysEvent_t *result, int unk)
+	= (sysEvent_t*(*)(sysEvent_t*, int))Win_GetEvent_a;
 __usercall Cbuf_AddText = (__usercall)Cbuf_AddText_a;
 void(__cdecl *CG_PredictPlayerState_Internal)(int localClientNum)
 	= (void(__cdecl*)(int))CG_PredictPlayerStateInternal_a;
 __usercall CL_CreateCmd = (__usercall)CL_CreateCmd_a;
-void(__thiscall *CL_CreateNewCommands)()
-	= (void(__thiscall*)())CL_CreateNewCommands_a;
+void(__cdecl *CL_CreateNewCommands)()
+	= (void(__cdecl*)())CL_CreateNewCommands_a;
 
 void DetourFunction(DWORD targetFunction, DWORD detourFunction)
 {
@@ -33,7 +33,7 @@ void DetourFunction(DWORD targetFunction, DWORD detourFunction)
 
 	/*Enlists Current Thread in Transaction to Appropriately Update
 	  Instruction Pointers for That Thread*/
-	DetourUpdateThread(GetCurrentThread()),
+	DetourUpdateThread(GetCurrentThread());
 
 	/*Allocates the Detour for the Target Function*/
 	DetourAttach(reinterpret_cast<PVOID*>(targetFunction),
@@ -51,7 +51,7 @@ void DetourRemove(DWORD targetFunction, DWORD detourFunction)
 
 	/*Enlists Current Thread in Transaction to Appropriately Update
 	  Instruction Pointers for That Thread*/
-	DetourUpdateThread(GetCurrentThread()),
+	DetourUpdateThread(GetCurrentThread());
 
 	/*Deallocates the Detour for the Target Function*/
 	DetourDetach(reinterpret_cast<PVOID*>(targetFunction),
@@ -69,11 +69,11 @@ void RemoveDetour(QWORD bytes)
 		(bytes & UINT_MAX));
 }
 
-void InsertDetour(QWORD targetFunction, QWORD detourFunction)
+void InsertDetour(LPVOID targetFunction, LPVOID detourFunction)
 {
-	GameData::detours.push_back((targetFunction << 32) | detourFunction);
-	DetourFunction(static_cast<DWORD>(targetFunction),
-		static_cast<DWORD>(detourFunction));
+	GameData::detours.push_back(
+		((QWORD)targetFunction << 32) | (QWORD)detourFunction);
+	DetourFunction((DWORD)targetFunction, (DWORD)detourFunction);
 }
 
 void __declspec(naked) Menu_PaintAllStub(UiContext *dc)
@@ -93,14 +93,32 @@ void __declspec(naked) Menu_PaintAllStub(UiContext *dc)
 
 void Menu_PaintAllDetour(UiContext *dc)
 {
-	ExecuteMenu();
+	static bool built;
+	if (!built)
+	{
+		Menu::Build();
+		InsertDvar("cl_ingame");
+		InsertDvar("cg_fov");
+		InsertDvar("perk_weapSpreadMultiplier");
+		built = true;
+	}
+
+	Menu::MonitorKeys();
+
+	if (Menu::open)
+		Menu::Execute();
+
 	RenderESP();
 }
 
 void R_EndFrameDetour()
 {
 	WriteBytes(0x46A87E, Variables::noRecoil ? "\xEB" : "\x74", 1);
-	GameData::dvarGlob["cg_fov"]->current.value = (float)Variables::fov;
+
+	const char noRecoilBytes[] = { 0x83, 0xFF, 0x02, 0x75, 0x15 };
+	WriteBytes(0x41DB2B, 
+		Variables::steadyAim ? "\x90\x90\x90\x90\x90" : noRecoilBytes, 5);
+	GameData::dvars["cl_ingame"]->current.value = (float)Variables::fov;
 
 	R_EndFrame();
 }
@@ -243,8 +261,6 @@ bool Cbuf_AddTextDetour(const char *text, int localClientNum)
 void CG_PredictPlayerState_InternalDetour(int localClientNum)
 {
 	CG_PredictPlayerState_Internal(localClientNum);
-
-	return ;
 }
 
 void __declspec(naked) CL_CreateNewCommandsStub()

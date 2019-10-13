@@ -4,13 +4,6 @@
 #include "aimbot.h"
 #include "esp.h"
 
-using __usercall = void*;
-
-void DetourFunction(DWORD targetFunction, DWORD detourFunction);
-void DetourRemove(DWORD targetFunction, DWORD detourFunction);
-void RemoveDetour(QWORD bytes);
-void InsertDetour(QWORD targetFunction, QWORD detourFunction);
-
 enum DetourAddresses : DWORD
 {
 	Win_GetEvent_a						= 0x5FEC60,
@@ -31,6 +24,13 @@ enum DetourAddresses : DWORD
 	CL_CreateNewCommands_a				= 0x63E994,
 };
 
+using __usercall = void*;
+
+void DetourFunction(DWORD targetFunction, DWORD detourFunction);
+void DetourRemove(DWORD targetFunction, DWORD detourFunction);
+void RemoveDetour(QWORD bytes);
+void InsertDetour(LPVOID targetFunction, LPVOID detourFunction);
+
 extern __usercall Menu_PaintAll;
 extern void(__cdecl *R_EndFrame)();
 extern LONG(__stdcall *TopLevelExceptionFilter)
@@ -43,13 +43,13 @@ extern int(__cdecl *Menu_HandleMouseMove)
 	(ScreenPlacement *scrPlace, void *menu);
 extern void(__cdecl *CG_Draw2DInternal)();
 extern void(__cdecl *UI_Refresh)(int localClientNum);
-extern void(__cdecl *CL_KeyEvent)(__int32 localClientNum, __int32 value,
-	__int32 down, unsigned __int32 time);
-extern struct sysEvent_t*(__cdecl *Win_GetEvent)(sysEvent_t *result, __int32 unk);
+extern void(__cdecl *CL_KeyEvent)(int localClientNum, int value,
+	int down, unsigned int time);
+extern struct sysEvent_t*(__cdecl *Win_GetEvent)(sysEvent_t *result, int unk);
 extern __usercall Cbuf_AddText;
 extern void(__cdecl *CG_PredictPlayerState_Internal)(int localClientNum);
 extern __usercall CL_CreateCmd;
-extern void(__thiscall *CL_CreateNewCommands)();
+extern void(__cdecl *CL_CreateNewCommands)();
 
 void Menu_PaintAllStub(UiContext *dc);
 void Menu_PaintAllDetour(UiContext *dc);

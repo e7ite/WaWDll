@@ -66,7 +66,7 @@ int GetAimbotTarget()
 	float vec[3];
 	float closestDistance = static_cast<float>(INT_MAX);
 
-	for (__int32 i = 0; i < 1024; ++i)
+	for (int i = 0; i < 1024; ++i)
 	{
 		if (ValidTarget(&cg_entitiesArray[i])
 			&& AimTarget_GetTagPos(0, 

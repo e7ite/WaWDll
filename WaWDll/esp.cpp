@@ -35,7 +35,7 @@ void RenderESP()
 		float headScreen[2], feetScreen[2];
 		float closest = static_cast<float>(INT_MAX);
 
-		for (__int32 i = 0; i < 1024; ++i)
+		for (int i = 0; i < 1024; ++i)
 		{
 			if (ValidTarget(&cg_entitiesArray[i]))
 			{
@@ -49,8 +49,8 @@ void RenderESP()
 				WorldPosToScreenPos(0, foot, feetScreen);
 
 				if (AimTarget_IsTargetVisible(
-					&cg_entitiesArray[i],
-					SL_FindString("j_head")))
+						&cg_entitiesArray[i],
+						SL_FindString("j_head")))
 					color = Colors::red;
 
 				DrawBorderBox(headScreen, feetScreen, color);

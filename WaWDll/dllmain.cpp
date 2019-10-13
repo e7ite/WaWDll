@@ -9,32 +9,17 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
 		SetConsoleTitle("WaW Hack");
 		freopen("CONOUT$", "w", stdout);
 
-		InsertDvar("cl_ingame");
-		InsertDvar("cg_fov");
-		InsertDvar("perk_weapSpreadMultiplier");
-
-		Variables::enableAimbot = true;
-		Variables::autoShoot = true;
-		Variables::noRecoil = true;
-
-		BuildMenu();
-
-		InsertDetour((QWORD)&Menu_PaintAll, (QWORD)Menu_PaintAllStub);
-		InsertDetour((QWORD)&R_EndFrame, (QWORD)R_EndFrameDetour);
-		InsertDetour((QWORD)&Cmd_ExecuteSingleCommand,
-			(QWORD)Cmd_ExecuteSingleCommandDetour);
-		InsertDetour((QWORD)&TopLevelExceptionFilter,
-			(QWORD)TopLevelExceptionFilterDetour);
-		InsertDetour((QWORD)&CL_WritePacket, (QWORD)CL_WritePacketDetour);
-		InsertDetour((QWORD)&AimTarget_GetTagPos_0,
-			(QWORD)AimTarget_GetTagPos_0Stub);
-		InsertDetour((QWORD)&Menu_HandleMouseMove,
-			(QWORD)Menu_HandleMouseMoveDetour);
-		InsertDetour((QWORD)&Cbuf_AddText, (QWORD)Cbuf_AddTextStub);
-		InsertDetour((QWORD)&CG_PredictPlayerState_Internal, 
-			(QWORD)CG_PredictPlayerState_InternalDetour);
-		InsertDetour((QWORD)&CL_CreateNewCommands, 
-			(QWORD)CL_CreateNewCommandsStub);
+		InsertDetour(&Menu_PaintAll, Menu_PaintAllStub);
+		InsertDetour(&R_EndFrame, R_EndFrameDetour);
+		InsertDetour(&Cmd_ExecuteSingleCommand, Cmd_ExecuteSingleCommandDetour);
+		InsertDetour(&TopLevelExceptionFilter, TopLevelExceptionFilterDetour);
+		InsertDetour(&CL_WritePacket, CL_WritePacketDetour);
+		InsertDetour(&AimTarget_GetTagPos_0, AimTarget_GetTagPos_0Stub);
+		InsertDetour(&Menu_HandleMouseMove, Menu_HandleMouseMoveDetour);
+		InsertDetour(&Cbuf_AddText, Cbuf_AddTextStub);
+		InsertDetour(&CG_PredictPlayerState_Internal, 
+			CG_PredictPlayerState_InternalDetour);
+		InsertDetour(&CL_CreateNewCommands, CL_CreateNewCommandsStub);
 		break;
 
 	case DLL_PROCESS_DETACH:

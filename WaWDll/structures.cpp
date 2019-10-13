@@ -13,27 +13,39 @@ cgs_t *cgs						 = (cgs_t*)0x3466578;
 actor_s *actors					 = (actor_s*)0x176C874;
 int cl_connectionState			 = 0x305842C;
 
-void*(__cdecl *R_RegisterFont)(const char *font, __int32 imageTrac)
-	= (void*(*)(const char*, __int32))R_RegisterFont_a;
+std::vector<QWORD> GameData::detours;
+std::map<const char*, dvar_s*> GameData::dvars;
+GameData::Font GameData::normalFont	   = { 1,    "fonts/normalFont" };
+
+Colors::Color Colors::white			   = { 255, 255, 255, 255 };
+Colors::Color Colors::black			   = {   0,   0,   0, 255 };
+Colors::Color Colors::red			   = { 255,   0,   0, 255 };
+Colors::Color Colors::green			   = {   0, 255,   0, 255 };
+Colors::Color Colors::blue			   = {   0,   0, 255, 255 };
+Colors::Color Colors::transparentBlack = {   0,   0,   0, 100 };
+
+
+Font_s*(__cdecl *R_RegisterFont)(const char *font, int imageTrac)
+	= (Font_s*(*)(const char*, int))R_RegisterFont_a;
 void*(__cdecl *Material_RegisterHandle)(const char *materialName, 
-	__int32 imageTrac)
-	= (void*(*)(const char*, __int32))Material_RegisterHandle_a;
+	int imageTrac)
+	= (void*(*)(const char*, int))Material_RegisterHandle_a;
 void(__cdecl *CG_DrawRotatedPic)(ScreenPlacement *scrPlace, float x, float y,
 	float width, float height, float angle, const float *color, void *material)
 	= (void(*)(ScreenPlacement*, float, float,
 	float, float, float, const float*, void*))CG_DrawRotatedPic_a;
-void(__cdecl *Cmd_ExecuteSingleCommand)(__int32 localClientNum,
-	__int32 controllerIndex, const char *text)
-	= (void(*)(__int32, __int32, const char*))Cmd_ExecuteSingleCommmand_a;
+void(__cdecl *Cmd_ExecuteSingleCommand)(int localClientNum,
+	int controllerIndex, const char *text)
+	= (void(*)(int, int, const char*))Cmd_ExecuteSingleCommmand_a;
 dvar_s*(__cdecl *Dvar_FindVar)(const char *dvarName)
 	= (dvar_s*(*)(const char*))Dvar_FindVar_a;
 void(__cdecl *CL_DrawTextPhysicalInternal)(const char *text, int maxChars,
 	void *font, float x, float y, float xScale, float yScale, float rotation,
 	int style) = (void(__cdecl*)(const char*, int,
 	void*, float, float, float, float, float, int))CL_DrawTextPhysical_a;
-__int32(__cdecl *UI_TextWidthInternal)(const char *text, __int32 maxChars,
+int(__cdecl *UI_TextWidthInternal)(const char *text, int maxChars,
 	void *font, float scale)
-	= (__int32(*)(const char*, __int32, void*, float))UI_TextWidth_a;
+	= (int(*)(const char*, int, void*, float))UI_TextWidth_a;
 void(__cdecl *CG_GameMessage)(int localClientNum, const char *msg, int length)
 	= (void(__cdecl*)(int, const char*, int))CG_GameMessage_a;
 int(__cdecl *CG_GetPlayerWeapon)(playerState_s *ps, int localClientNum)
@@ -121,18 +133,16 @@ void CG_DrawRotatedPicPhysical(ScreenPlacement *scrPlace, float x, float y,
 	}
 }
 
-__int32 Key_StringToKeynum(const char *name)
+int Key_StringToKeynum(const char *name)
 {
 	DWORD addr = Key_StringToKeynum_a;
 	DWORD funcRet;
-
 	__asm
 	{
 		mov			edi, name
 		call		addr
 		mov			funcRet, eax
 	}
-
 	return funcRet;
 }
 
@@ -163,7 +173,7 @@ float R_TextHeight(Font_s *font)
 	return static_cast<float>(font->pixelHeight);
 }
 
-__int32 AimTarget_GetTagPos(__int32 localClientNum, centity_s *cent,
+int AimTarget_GetTagPos(int localClientNum, centity_s *cent,
 	unsigned __int16 tagname, float *pos)
 {
 	DWORD CG_DObjGetWorldTagPos = CG_DObjGetWorldTagPos_a;
@@ -193,7 +203,7 @@ __int32 AimTarget_GetTagPos(__int32 localClientNum, centity_s *cent,
 
 unsigned __int16 SL_FindString(const char *tagname)
 {
-	unsigned __int32 len = strlen(tagname) + 1;
+	unsigned int len = strlen(tagname) + 1;
 	DWORD addr = SL_FindString_a;
 
 	__asm
@@ -234,50 +244,6 @@ void vectoangles(const float *vec, float *pos)
 	}
 }
 
-bool AimTarget_IsTargetVisible(int targetEntNum, unsigned __int16 bone)
-{
-	vec3_t target;
-	trace_t results;
-	float fraction;
-	DWORD mask	                  = 0x280F001;
-	float *vec3_origin			  = (float*)0x816F68;
-	float *playerEyePos			  = (float*)&cgameGlob->refdef.vieworg;
-	int passEntNum				  = cgameGlob->predictedPlayerState.clientNum;
-	DWORD CG_TraceCapsule		  = CG_TraceCapsule_a;
-	DWORD FX_ClientVisibilityTest = FX_ClientVisibilityTest_a;
-
-	if (!AimTarget_GetTagPos(0, &cg_entitiesArray[targetEntNum], bone, target))
-		return false;
-
-	__asm
-	{
-		mov			eax, vec3_origin
-		lea			edi, results
-		push		0
-		push		0
-		push		0
-		push		0
-		push		0
-		push		mask
-		push		passEntNum
-		lea			ebx, target
-		push		ebx
-		mov			ebx, playerEyePos
-		push		ebx
-		push		vec3_origin
-		call		CG_TraceCapsule
-		add			esp, 28h
-		lea			edi, playerEyePos
-		push		edi
-		lea			ecx, results
-		call		FX_ClientVisibilityTest
-		add			esp, 4
-		movss		fraction, xmm0
-	}
-
-	return fraction > 0.000099999997;
-}
-
 void CL_GetUserCmd(int cmdNum, usercmd_s *cmd)
 {
 	__asm
@@ -297,7 +263,6 @@ void CL_GetUserCmd(int cmdNum, usercmd_s *cmd)
 usercmd_s* CL_GetUserCmd(int cmdNum)
 {
 	DWORD funcRet;
-
 	__asm
 	{
 		mov			esi, cmdNum
@@ -357,8 +322,8 @@ void ScrPlace_ApplyRect(ScreenPlacement *scrPlace,
 }
 
 void UI_DrawText(ScreenPlacement *scrPlace, const char *text,
-	__int32 maxChars, void *font, float x, float y, float scale, 
-	float angle, const float *color, __int32 style)
+	int maxChars, void *font, float x, float y, float scale, 
+	float angle, const float *color, int style)
 {
 	DWORD addr = UI_DrawText_a;
 	__asm
@@ -383,7 +348,6 @@ Font_s* UI_GetFontHandle(ScreenPlacement *scrPlace, int fontEnum)
 {
 	DWORD addr = UI_GetFontHandle_a;
 	Font_s *funcRet;
-
 	__asm
 	{
 		mov			ecx, scrPlace
@@ -395,15 +359,13 @@ Font_s* UI_GetFontHandle(ScreenPlacement *scrPlace, int fontEnum)
 		add			esp, 4
 		mov			funcRet, eax
 	}
-
 	return funcRet;
 }
 
-float UI_TextWidth(const char *text, __int32 maxChars,
+float UI_TextWidth(const char *text, int maxChars,
 	Font_s *font, float scale)
 {
 	float funcRet;
-
 	__asm
 	{
 		push			maxChars
@@ -411,11 +373,10 @@ float UI_TextWidth(const char *text, __int32 maxChars,
 		mov				eax, font
 		movss			xmm0, scale
 		call			UI_TextWidthInternal
-		add				esp, 8h
+		add				esp, 8
 		cvtsi2ss		xmm0, eax
 		movss			funcRet, xmm0
 	}
-
 	return funcRet;
 }
 
@@ -423,14 +384,13 @@ int R_TextWidth(const char *text, int maxChars, Font_s *font)
 {
 	DWORD addr = R_TextWidth_a;
 	int funcRet;
-
 	__asm
 	{
 		mov				eax, text
 		push			font
 		push			maxChars
 		call			addr
-		add				esp, 8h
+		add				esp, 8
 		mov				funcRet, eax
 	}
 
@@ -496,7 +456,6 @@ bool CG_GetPlayerViewOrigin(int localClientNum, playerState_s *ps, float out[3])
 {
 	DWORD addr = CG_GetPlayerViewOrigin_a;
 	bool funcRet;
-
 	__asm
 	{
 		mov			eax, localClientNum
@@ -506,7 +465,6 @@ bool CG_GetPlayerViewOrigin(int localClientNum, playerState_s *ps, float out[3])
 		add			esp, 8
 		mov			funcRet, al
 	}
-
 	return funcRet;
 }
 
@@ -514,14 +472,12 @@ float __libm_sse2_tan(float x)
 {
 	DWORD addr = __libm_sse2_tan_a;
 	float funcRet;
-
 	__asm
 	{
 		movss		xmm0, x
 		call		addr
 		movss		funcRet, xmm0
 	}
-
 	return funcRet;
 }
 
@@ -531,6 +487,73 @@ void Vec3Normalize(float *x)
 	__asm
 	{
 		mov			esi, x
-		call		addr
+		mov			edx, addr
+		call		edx
 	}
+}
+
+void UI_DrawRect(ScreenPlacement *scrPlace, float x, float y, float width,
+	float height, int horzAlign, int vertAlign, float thickness, const float *color)
+{
+	DWORD addr = UI_DrawRect_a;
+	__asm
+	{
+		mov			eax, color
+		mov			ecx, horzAlign
+		sub			esp, 4
+		fld			thickness
+		fstp		dword ptr [esp]
+		push		vertAlign
+		sub			esp, 10h
+		fld			height
+		fstp		dword ptr [esp + 0Ch]
+		fld			width
+		fstp		dword ptr [esp + 8]
+		fld			y
+		fstp		dword ptr [esp + 4]
+		fld			x
+		fstp		dword ptr [esp]
+		push		scrPlace
+		call		addr
+		add			esp, 1Ch
+	}
+}
+
+void UI_FillRect(ScreenPlacement *scrPlace, float x, float y, float width,
+	float height, int horzAlign, int vertAlign, const float *color)
+{
+	DWORD addr = UI_FillRect_a;
+	__asm
+	{
+		sub			esp, 1Ch
+		mov			ecx, scrPlace
+		mov			edx, color
+		mov			dword ptr [esp + 18h], edx
+		mov			edx, vertAlign
+		mov			dword ptr [esp + 14h], edx
+		mov			edx, horzAlign
+		mov			dword ptr [esp + 10h], edx
+		fld			height
+		fstp		dword ptr [esp + 0Ch]
+		fld			width
+		fstp		dword ptr [esp + 8]
+		fld			y
+		fstp		dword ptr [esp + 4]
+		fld			x
+		fstp		dword ptr [esp]
+		call		addr
+		add			esp, 1Ch
+	}
+}
+
+bool InGame()
+{
+	return GameData::dvars["cl_ingame"]->current.enabled && *(int*)cl_connectionState >= 9;
+}
+
+void InsertDvar(const char *dvarName)
+{
+	GameData::dvars.insert(
+		std::pair<const char*, dvar_s*>(dvarName, Dvar_FindVar(dvarName))
+	);
 }
