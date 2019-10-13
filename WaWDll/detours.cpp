@@ -115,9 +115,9 @@ void R_EndFrameDetour()
 {
 	WriteBytes(0x46A87E, Variables::noRecoil ? "\xEB" : "\x74", 1);
 
-	const char noRecoilBytes[] = { 0x83, 0xFF, 0x02, 0x75, 0x15 };
+	const char steadyAimBytes[] = { 0x83, 0xFF, 0x02, 0x75, 0x15 };
 	WriteBytes(0x41DB2B, 
-		Variables::steadyAim ? "\x90\x90\x90\x90\x90" : noRecoilBytes, 5);
+		Variables::steadyAim ? "\x90\x90\x90\x90\x90" : steadyAimBytes, 5);
 	GameData::dvars["cl_ingame"]->current.value = (float)Variables::fov;
 
 	R_EndFrame();
@@ -156,7 +156,6 @@ void TopLevelExceptionFilterDetour(struct _EXCEPTION_POINTERS *ExceptionInfo)
 
 void CL_WritePacketDetour()
 {
-
 	CL_WritePacket();
 }
 
@@ -291,10 +290,10 @@ void CL_CreateNewCommandsDetour()
 		if (Key_IsDown("+attack"))
 			if (ExecuteAimbot())
 			{
-				//SetAngles(Aimbot::targetAngles);
-				ccmd->angles[0] = AngleToShort(Aimbot::targetAngles[0]);
-				ccmd->angles[1] = AngleToShort(Aimbot::targetAngles[1]);
-				RemoveSpread(&cgameGlob->predictedPlayerState, ocmd);
+				SetAngles(Aimbot::targetAngles);
+				//ccmd->angles[0] = AngleToShort(Aimbot::targetAngles[0]);
+				//ccmd->angles[1] = AngleToShort(Aimbot::targetAngles[1]);
+				//RemoveSpread(&cgameGlob->predictedPlayerState, ocmd);
 			}
 
 	if (Key_IsDown("+attack"))
