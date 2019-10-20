@@ -16,12 +16,11 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
 		InsertDetour(&CL_WritePacket, CL_WritePacketDetour);
 		InsertDetour(&AimTarget_GetTagPos_0, AimTarget_GetTagPos_0Stub);
 		InsertDetour(&Menu_HandleMouseMove, Menu_HandleMouseMoveDetour);
-		InsertDetour(&Cbuf_AddText, Cbuf_AddTextStub);
+		InsertDetour(&Cbuf_AddTextHook, Cbuf_AddTextStub);
 		InsertDetour(&CG_PredictPlayerState_Internal, 
 			CG_PredictPlayerState_InternalDetour);
 		InsertDetour(&CL_CreateNewCommands, CL_CreateNewCommandsStub);
 		break;
-
 	case DLL_PROCESS_DETACH:
 		FreeConsole();
 

@@ -2,7 +2,6 @@
 
 #include <windows.h>
 #include <stdio.h>
-#include <iostream>
 #include <vector>
 #include <functional>
 #include <detours.h>
@@ -186,8 +185,8 @@ struct clientInfo_t
 	int ffateam;							//0x034
 	char pad00[0x1C];						//0x038
 	char model[0x40];						//0x054
-	char attachModelNames[6][0x40];			//0x094
-	char attachTagNames[6][0x40];			//0x214
+	char attachModelNames[0x6][0x40];		//0x094
+	char attachTagNames[0x6][0x40];			//0x214
 	char pad01[0x6C];						//0x394
 	float playerAngles[3];					//0x400
 	char pad02[0x188];						//0x40C
@@ -292,11 +291,6 @@ struct actor_s
 	struct sentient_s *sentient;
 };	//Size = 0x378
 
-struct trace_t
-{
-	
-};
-
 struct rectDef_s
 {
 	float x;								//0x00
@@ -372,6 +366,7 @@ extern clientActive_t *clientActive;
 extern WORD *clientObjMap;
 extern BYTE *objBuf;
 extern int cl_connectionState;
+extern HWND *hwnd;
 
 enum FuncAddresses : DWORD
 {
@@ -407,6 +402,9 @@ enum FuncAddresses : DWORD
 	Vec3Normalize_a						= 0x4037C0,
 	UI_DrawRect_a						= 0x5B5BD0,
 	UI_FillRect_a						= 0x5B08E0,
+	speex_error_a						= 0x6C1CE0,
+	MessageBoxA_a						= 0x7EB33C,
+	Cbuf_AddText_a						= 0x594200,
 };
 
 namespace Colors
@@ -442,6 +440,12 @@ namespace GameData
 
 	extern std::vector<QWORD> detours;
 	extern std::map<const char*, dvar_s*> dvars;
+	extern bool initialized;
+
+	extern int(__stdcall *MessageBoxA)(HWND hWnd, LPCSTR lpText,
+		LPCSTR lpCaption, UINT uType);
+
+	bool InsertDvar(const char *dvarName, dvar_s *dvar = nullptr);
 };
 
 extern Font_s*(__cdecl *R_RegisterFont)(const char *font, int imageTrac);
@@ -461,6 +465,8 @@ extern void(__cdecl *CG_GameMessage)(int localClientNum, const char *msg, int le
 extern int(__cdecl *CG_GetPlayerWeapon)(playerState_s *ps, int localClientNum);
 extern void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y);
 
+bool InGame();
+void Cbuf_AddText(const char *cmd);
 void CG_DrawRotatedPicPhysical(ScreenPlacement *scrPlace, float x, float y,
 	float width, float height, float angle, const float *color, void *material);
 int Key_StringToKeynum(const char *name);
@@ -486,7 +492,7 @@ void UI_DrawText(ScreenPlacement *scrPlace, const char *text,
 Font_s* UI_GetFontHandle(ScreenPlacement *scrPlace, int fontEnum);
 float UI_TextWidth(const char *text, int maxChars,
 	Font_s *font, float scale);
-int R_TextWidth(const char *text, int maxChars, Font_s *font);
+float R_TextWidth(const char *text, int maxChars, Font_s *font);
 int Sys_Milliseconds();
 WeaponDef* BG_GetWeaponDef(int weapon);
 void BG_GetSpreadForWeapon(playerState_s *ps, WeaponDef *weap, float *minSpread,
@@ -499,7 +505,8 @@ float __libm_sse2_tan(float x);
 void Vec3Normalize(float *x);
 void UI_FillRect(ScreenPlacement *scrPlace, float x, float y, float width,
 	float height, int horzAlign, int veryAlign, const float *color);
-bool InGame();
-void InsertDvar(const char *dvarName);
 void UI_DrawRect(ScreenPlacement *scrPlace, float x, float y, float width,
 	float height, int horzAlign, int vertAlign, float size, const float *color); 
+bool AimTarget_IsTargetVisible(centity_s *cent, unsigned __int16 bone);
+bool IN_IsForegroundWindow();
+void speex_error(const char *arg);

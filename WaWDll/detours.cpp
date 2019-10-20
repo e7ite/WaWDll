@@ -19,7 +19,7 @@ void(__cdecl *CL_KeyEvent)(int localClientNum, int value, int down,
 	= (void(*)(int, int, int, unsigned int))CL_KeyEvent_a;
 sysEvent_t*(__cdecl *Win_GetEvent)(sysEvent_t *result, int unk)
 	= (sysEvent_t*(*)(sysEvent_t*, int))Win_GetEvent_a;
-__usercall Cbuf_AddText = (__usercall)Cbuf_AddText_a;
+__usercall Cbuf_AddTextHook = (__usercall)Cbuf_AddText_a;
 void(__cdecl *CG_PredictPlayerState_Internal)(int localClientNum)
 	= (void(__cdecl*)(int))CG_PredictPlayerStateInternal_a;
 __usercall CL_CreateCmd = (__usercall)CL_CreateCmd_a;
@@ -93,17 +93,26 @@ void __declspec(naked) Menu_PaintAllStub(UiContext *dc)
 
 void Menu_PaintAllDetour(UiContext *dc)
 {
-	static bool built;
-	if (!built)
+	if (!GameData::initialized)
 	{
 		Menu::Build();
-		InsertDvar("cl_ingame");
-		InsertDvar("cg_fov");
-		InsertDvar("perk_weapSpreadMultiplier");
-		built = true;
+
+		if (GameData::InsertDvar("cl_ingame")
+			&& GameData::InsertDvar("cg_fov")
+			&& GameData::InsertDvar("perk_weapSpreadMultiplier")
+			&& GameData::InsertDvar("sv_cheats")
+			&& GameData::InsertDvar("player_sustainAmmo"))
+			GameData::initialized = true;
+		else
+		{
+			GameData::MessageBoxA(*hwnd, "Error reading dvars",
+				"WaW DLL by E7ite", 0x10);
+			speex_error("Error reading dvars");
+		}
 	}
 
-	Menu::MonitorKeys();
+	if (IN_IsForegroundWindow())
+		Menu::MonitorKeys();
 
 	if (Menu::open)
 		Menu::Execute();
@@ -113,12 +122,18 @@ void Menu_PaintAllDetour(UiContext *dc)
 
 void R_EndFrameDetour()
 {
-	WriteBytes(0x46A87E, Variables::noRecoil ? "\xEB" : "\x74", 1);
+	unsigned const char steadyAimBytes[] = { 0x83, 0xFF, 0x02, 0x75, 0x15 };
 
-	const char steadyAimBytes[] = { 0x83, 0xFF, 0x02, 0x75, 0x15 };
-	WriteBytes(0x41DB2B, 
-		Variables::steadyAim ? "\x90\x90\x90\x90\x90" : steadyAimBytes, 5);
-	GameData::dvars["cl_ingame"]->current.value = (float)Variables::fov;
+	WriteBytes(0x46A87E, Variables::noRecoil ? "\xEB" : "\x74", 1);
+	WriteBytes(0x41DB2B, Variables::steadyAim ? "\x90\x90\x90\x90\x90" 
+		: reinterpret_cast<const char*>(steadyAimBytes), 5);
+
+	if (GameData::initialized)
+	{
+		GameData::dvars["cg_fov"]->current.value = static_cast<float>(Variables::fov);
+		GameData::dvars["sv_cheats"]->current.enabled = Variables::cheatsEnabled;
+		GameData::dvars["player_sustainAmmo"]->current.enabled = Variables::infAmmo;
+	}
 
 	R_EndFrame();
 }
@@ -130,7 +145,8 @@ void Cmd_ExecuteSingleCommandDetour(int localClientNum, int controllerIndex, con
 
 void TopLevelExceptionFilterDetour(struct _EXCEPTION_POINTERS *ExceptionInfo)
 {
-	PDWORD_PTR currESP = (PDWORD_PTR)ExceptionInfo->ContextRecord->Esp;
+	PDWORD_PTR currESP 
+		= reinterpret_cast<PDWORD_PTR>(ExceptionInfo->ContextRecord->Esp);
 
 	printf("EAX: 0x%x\n", ExceptionInfo->ContextRecord->Eax);
 	printf("EBX: 0x%x\n", ExceptionInfo->ContextRecord->Ebx);
@@ -142,13 +158,13 @@ void TopLevelExceptionFilterDetour(struct _EXCEPTION_POINTERS *ExceptionInfo)
 	printf("EIP: 0x%x\n", ExceptionInfo->ContextRecord->Eip);
 
 	printf("\nSTACK VIEW:\n");
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < 8; i++)
 	{
 		if (i)
 			++currESP;
 
 		printf("0x%x: %8x ", (unsigned int)currESP, *currESP);
-		for (int j = 0; j < 3; ++j)
+		for (int j = 0; j < 3; j++)
 			printf("%8x ", *(++currESP));
 		printf("\n");
 	}
@@ -161,15 +177,6 @@ void CL_WritePacketDetour()
 
 void CL_SendCmdDetour()
 {
-	if (!InGame())
-		return CL_SendCmd();
-
-	if (Key_IsDown("+attack"));
-	//{
-	//	ocmd->button_bits &= ~1;
-	//	ocmd->button_bits |= 1;
-	//}
-
 	CL_SendCmd();
 }
 
@@ -216,7 +223,8 @@ void CL_KeyEventDetour(int localClientNum, int key, int down, int time)
 {
 	if (InGame() && keys[key].binding 
 		&& !*(int*)0x208E938
-		&& !strcmp(keys[key].binding, "+attack") && Variables::autoShoot)
+		&& (Variables::aimKey != 1 || !strcmp(keys[key].binding, "+attack"))
+		&& Variables::autoShoot)
 		return;
 
 	return CL_KeyEvent(localClientNum, key, down, time);
@@ -250,10 +258,6 @@ LABEL_1:
 
 bool Cbuf_AddTextDetour(const char *text, int localClientNum)
 {
-	if (InGame()
-		&& strstr(text, "attack"))
-		return false;
-
 	return true;
 }
 
@@ -283,22 +287,24 @@ void CL_CreateNewCommandsDetour()
 		*ccmd = &clientActive->cmds[clientActive->cmdNumber & 0x7F],
 		*ocmd = &clientActive->cmds[clientActive->cmdNumber - 1 & 0x7F];
 
-	//memcpy(ocmd, ccmd, sizeof usercmd_s);
 	ocmd->serverTime++;
 
 	if (Variables::enableAimbot)
-		if (Key_IsDown("+attack"))
+	{
+		if ((Variables::aimKey == 1 && Key_IsDown("+attack"))
+			|| (Variables::aimKey == 2 && Key_IsDown("+speed_throw"))
+			|| !Variables::aimKey)
+		{
 			if (ExecuteAimbot())
 			{
 				SetAngles(Aimbot::targetAngles);
-				//ccmd->angles[0] = AngleToShort(Aimbot::targetAngles[0]);
-				//ccmd->angles[1] = AngleToShort(Aimbot::targetAngles[1]);
-				//RemoveSpread(&cgameGlob->predictedPlayerState, ocmd);
-			}
 
-	if (Key_IsDown("+attack"))
-	{
-		ccmd->button_bits &= ~1;
-		ocmd->button_bits |= 1;
+				if (Variables::autoShoot)
+				{
+					ccmd->button_bits &= ~1;
+					ocmd->button_bits |= 1;
+				}
+			}
+		}
 	}
 }  

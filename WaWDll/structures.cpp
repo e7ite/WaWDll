@@ -8,6 +8,7 @@ cg_s *cgameGlob					 = (cg_s*)0x34732B8;
 clientActive_t *clientActive	 = (clientActive_t*)0x3058528;
 WORD *clientObjMap				 = (WORD*)0x1FE58C8;
 BYTE *objBuf					 = (BYTE*)0x1F978C8;
+HWND *hwnd						 = (HWND*)0x22C1BE4;
 WeaponDef **bg_weaponVariantDefs = (WeaponDef**)0x8F6770;
 cgs_t *cgs						 = (cgs_t*)0x3466578;
 actor_s *actors					 = (actor_s*)0x176C874;
@@ -15,7 +16,11 @@ int cl_connectionState			 = 0x305842C;
 
 std::vector<QWORD> GameData::detours;
 std::map<const char*, dvar_s*> GameData::dvars;
+bool GameData::initialized;
 GameData::Font GameData::normalFont	   = { 1,    "fonts/normalFont" };
+int(__stdcall *GameData::MessageBoxA)(HWND hWnd, LPCSTR lpText,
+	LPCSTR lpCaption, UINT uType)
+	= *(int(__stdcall**)(HWND, LPCSTR, LPCSTR, UINT))MessageBoxA_a;
 
 Colors::Color Colors::white			   = { 255, 255, 255, 255 };
 Colors::Color Colors::black			   = {   0,   0,   0, 255 };
@@ -108,6 +113,17 @@ vec3_t& vec3_t::operator-=(float vec[3])
 	return *this;
 }
 
+void Cbuf_AddText(const char *cmd)
+{
+	DWORD addr = Cbuf_AddText_a;
+	__asm
+	{
+		mov			ecx, 0
+		mov			eax, cmd
+		call		addr
+	}
+}
+
 void CG_DrawRotatedPicPhysical(ScreenPlacement *scrPlace, float x, float y,
 	float width, float height, float angle, const float *color, void *material)
 {
@@ -147,7 +163,7 @@ int Key_StringToKeynum(const char *name)
 
 bool Key_IsDown(const char *bind)
 {
-	for (__int16 i = 0; i < 256; ++i)
+	for (__int16 i = 0; i < 256; i++)
 		if (keys[i].binding)
 			if (!strcmp(keys[i].binding, bind))
 				if (keys[i].down)
@@ -379,10 +395,10 @@ float UI_TextWidth(const char *text, int maxChars,
 	return funcRet;
 }
 
-int R_TextWidth(const char *text, int maxChars, Font_s *font)
+float R_TextWidth(const char *text, int maxChars, Font_s *font)
 {
 	DWORD addr = R_TextWidth_a;
-	int funcRet;
+	float funcRet;
 	__asm
 	{
 		mov				eax, text
@@ -390,9 +406,9 @@ int R_TextWidth(const char *text, int maxChars, Font_s *font)
 		push			maxChars
 		call			addr
 		add				esp, 8
-		mov				funcRet, eax
+		cvtsi2ss		xmm0, eax
+		movss			funcRet, xmm0
 	}
-
 	return funcRet;
 }
 
@@ -451,14 +467,14 @@ void DrawSketchPicGun(ScreenPlacement *scrPlace, rectDef_s *rect,
 	}
 }
 
-bool CG_GetPlayerViewOrigin(int localClientNum, playerState_s *ps, float out[3])
+bool CG_GetPlayerViewOrigin(int localClientNum, playerState_s *ps, float origin[3])
 {
 	DWORD addr = CG_GetPlayerViewOrigin_a;
 	bool funcRet;
 	__asm
 	{
 		mov			eax, localClientNum
-		push		out
+		push		origin
 		push		ps
 		call		addr
 		add			esp, 8
@@ -547,12 +563,47 @@ void UI_FillRect(ScreenPlacement *scrPlace, float x, float y, float width,
 
 bool InGame()
 {
-	return GameData::dvars["cl_ingame"]->current.enabled && *(int*)cl_connectionState >= 9;
+	return GameData::initialized && 
+		GameData::dvars["cl_ingame"]->current.enabled
+		&& *(int*)cl_connectionState >= 9;
 }
 
-void InsertDvar(const char *dvarName)
+bool GameData::InsertDvar(const char *dvarName, dvar_s *dvar)
 {
-	GameData::dvars.insert(
-		std::pair<const char*, dvar_s*>(dvarName, Dvar_FindVar(dvarName))
-	);
+	dvar_s *pdvar = dvar ? dvar : Dvar_FindVar(dvarName);
+	if (!pdvar)
+		return false;
+
+	dvars.insert(std::pair<const char*, dvar_s*>(dvarName, pdvar));
+	return true;
+}
+
+bool AimTarget_IsTargetVisible(centity_s *cent, unsigned __int16 bone)
+{
+	DWORD addr = AimTarget_IsTargetVisible_a;
+	bool funcRet;
+	__asm
+	{
+		movzx		eax, bone
+		push		cent
+		call		addr
+		mov			funcRet, al
+		add			esp, 4
+	}
+	return funcRet;
+}
+
+bool IN_IsForegroundWindow()
+{
+	return GetForegroundWindow() == *hwnd;
+}
+
+void speex_error(const char *arg)
+{
+	DWORD addr = speex_error_a;
+	__asm
+	{
+		mov			eax, arg
+		call		addr
+	}
 }

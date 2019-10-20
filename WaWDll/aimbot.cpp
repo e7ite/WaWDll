@@ -15,13 +15,10 @@ bool ExecuteAimbot()
 
 			vectoangles(Aimbot::targetAngles - cgameGlob->refdef.vieworg, 
 				Aimbot::targetAngles);
-
 			Aimbot::targetAngles -= cgameGlob->predictedPlayerState.delta_angles;
-
 			return true;
 		}
 	}
-	
 	return false;
 }
 
@@ -43,51 +40,27 @@ bool ValidTarget(centity_s *target)
 		&& !target->pose.isRagdoll && !target->pose.ragdollHandle;
 }
 
-bool AimTarget_IsTargetVisible(centity_s *cent, unsigned __int16 bone)
-{
-	DWORD addr = AimTarget_IsTargetVisible_a;
-	bool funcRet;
-
-	__asm
-	{
-		movzx		eax, bone
-		push		cent
-		call		addr
-		mov			funcRet, al
-		add			esp, 4
-	}
-
-	return funcRet;
-}
-
 int GetAimbotTarget()
 {
 	int index = -1;
-	float vec[3];
+	float enemyPos[3];
 	float closestDistance = static_cast<float>(INT_MAX);
+	unsigned short id = SL_FindString("j_head");
+	float *myPos = cgameGlob->predictedPlayerState.origin;
 
 	for (int i = 0; i < 1024; ++i)
 	{
-		if (ValidTarget(&cg_entitiesArray[i])
-			&& AimTarget_GetTagPos(0, 
-				&cg_entitiesArray[i],
-				SL_FindString("j_head"), vec))
-		{
-			if (AimTarget_IsTargetVisible(
-				&cg_entitiesArray[i],
-				SL_FindString("j_head")))
-			{
-				float distance = Distance3D(
-					cgameGlob->predictedPlayerState.origin, vec);
-				if (distance < closestDistance)
+		centity_s *cent = &cg_entitiesArray[i];
+		if (ValidTarget(cent)
+			&& AimTarget_GetTagPos(0, cent, id, enemyPos))
+			if (AimTarget_IsTargetVisible(cent, id))
+				if (float distance = Distance3D(myPos, enemyPos); 
+					distance < closestDistance)
 				{
 					index = i;
 					closestDistance = distance;
 				}
-			}
-		}
 	}
-
 	return index;
 }
 
@@ -205,13 +178,11 @@ float DegreesToRadians(float deg)
 float pi()
 {
 	float funcRet;
-
 	__asm
 	{
 		fldpi
 		fstp			funcRet
 	}
-
 	return funcRet;
 }
 

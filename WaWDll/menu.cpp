@@ -13,11 +13,17 @@ int Variables::autoAim;
 int Variables::autoShoot;
 int Variables::noSpread;
 int Variables::noRecoil;
+
 int Variables::enemyESP;
 int Variables::friendlyESP;
-int Variables::fov;
-int Variables::steadyAim;
+
 int Variables::serverInfo;
+
+int Variables::steadyAim;
+int Variables::cheatsEnabled;
+int Variables::godMode;
+int Variables::infAmmo;
+int Variables::fov = 65;
 
 void Menu::Build()
 {
@@ -62,6 +68,22 @@ void Menu::Build()
 		TYPE_INT, std::bind(IntModify, &fov, 65, 125));
 	Insert(MISC_MENU, "Super Steady Aim", &steadyAim,
 		TYPE_BOOL, std::bind(BoolModify, &steadyAim));
+	Insert(MISC_MENU, "Enable Cheats", &cheatsEnabled,
+		TYPE_BOOL, []()
+		{
+			CG_GameMessage(0, "Requires restart to take effect", 0);
+			BoolModify(&cheatsEnabled);
+		});
+	Insert(MISC_MENU, "God Mode", nullptr,
+		TYPE_VOID, std::bind(Cbuf_AddText, "god"));
+	Insert(MISC_MENU, "No Clip", nullptr,
+		TYPE_VOID, std::bind(Cbuf_AddText, "noclip"));
+	Insert(MISC_MENU, "Give All Weapons", nullptr,
+		TYPE_VOID, std::bind(Cbuf_AddText, "give all"));
+	Insert(MISC_MENU, "No Target", nullptr,
+		TYPE_VOID, std::bind(Cbuf_AddText, "notarget"));
+	Insert(MISC_MENU, "Infinite Ammo", &infAmmo,
+		TYPE_BOOL, std::bind(BoolModify, &infAmmo));
 }
 
 void Menu::Insert(int sub, const char *option, int *data,
@@ -128,26 +150,26 @@ void Menu::Execute()
 		/ scrPlace->scaleVirtualToFull[0];
 	float menuCenterY = dc->screenDimensions[1] / 2
 		/ scrPlace->scaleVirtualToFull[1];
-	float optionY = menuCenterY - 100;
-
 	float textWidth, textHeight;
 	Font_s *fontPointer;
 	float xAligned = AlignText("WaW Zombies DLL By E7ite", GameData::normalFont, 0.3f,
 		menuCenterX, ALIGN_CENTER, 1, 1, &fontPointer, &textWidth, &textHeight);
+	float borderW = menuCenterX - 20;
+	float borderH = textHeight * options[currentSub].size();
+	float borderX = menuCenterX - borderW / 2;
+	float borderY = menuCenterY - 98;
+	float optionX = borderX + 4;
+	float optionY = menuCenterY - 100;
+	float optionH = UI_TextHeight(fontPointer, 0.3f);
+
 	optionY += RenderUITextWithBackground("WaW Zombies DLL By E7ite",
 		xAligned, optionY, textWidth, textHeight, Colors::blue,
 		Colors::white, fontPointer, 0.3f);
-
-	float borderW = menuCenterX - 20,
-		borderH = textHeight * options[currentSub].size(),
-		borderX = menuCenterX - borderW / 2, borderY = menuCenterY - 98;
 	UI_FillRect(scrPlace, borderX, borderY, borderW, borderH, 0, 0,
 		Colors::transparentBlack);
 	UI_DrawRect(scrPlace, borderX, borderY, borderW, borderH, 
 		0, 0, 2, Colors::blue);
 
-	float optionX = borderX + 4,
-		optionH = (float)UI_TextHeight(fontPointer, 0.3f);
 	for (const auto &i : options[currentSub])
 	{
 		Colors::Color color = Colors::white;
@@ -184,22 +206,23 @@ bool Menu::MonitorMouse(const Option &opt, float optionX, float optionY,
 		&& dc->cursorPos[1] < optionY)
 	{
 		if (Ready())
+		{
+			int delay = opt.type == TYPE_INT ? 100 : 200;
 			if (GetAsyncKeyState(VK_LBUTTON) & 0x10000)
 			{
 				toggled = true;
 				opt.callback();
 				toggled = false;
-				Wait(100);
+				Wait(delay);
 			}
 			else if (GetAsyncKeyState(VK_RBUTTON) & 0x10000)
 			{
 				opt.callback();
-				Wait(100);
+				Wait(delay);
 			}
-
+		}
 		return true;
 	}
-
 	return false;
 }
 
@@ -256,26 +279,26 @@ float AlignText(const char *text, const GameData::Font &font, float scale, float
 	if (bg && ui)
 	{
 		fontPointer = UI_GetFontHandle(scrPlace, font.index);
-		width = (float)UI_TextWidth(text, INT_MAX, fontPointer, scale) + 12.0f;
-		height = (float)UI_TextHeight(fontPointer, scale) + 2.0f;
+		width = UI_TextWidth(text, INT_MAX, fontPointer, scale) + 12.0f;
+		height = UI_TextHeight(fontPointer, scale) + 2.0f;
 	}
 	else if (!bg && ui)
 	{
 		fontPointer = UI_GetFontHandle(scrPlace, font.index);
-		width = (float)UI_TextWidth(text, INT_MAX, fontPointer, scale);
-		height = (float)UI_TextHeight(fontPointer, scale) + 2.0f;
+		width = UI_TextWidth(text, INT_MAX, fontPointer, scale);
+		height = UI_TextHeight(fontPointer, scale) + 2.0f;
 	}
 	else if (bg && !ui)
 	{
 		fontPointer = R_RegisterFont(font.dir, 0);
-		width = (float)R_TextWidth(text, INT_MAX, fontPointer) * scale + 14.0f;
-		height = (float)R_TextHeight(fontPointer) * scale + 2.0f;
+		width = R_TextWidth(text, INT_MAX, fontPointer) * scale + 14.0f;
+		height = R_TextHeight(fontPointer) * scale + 2.0f;
 	}
 	else
 	{
 		fontPointer = R_RegisterFont(font.dir, 0);
-		width = (float)R_TextWidth(text, INT_MAX, fontPointer) * scale;
-		height = (float)R_TextHeight(fontPointer) * scale + 2.0f;
+		width = R_TextWidth(text, INT_MAX, fontPointer) * scale;
+		height = R_TextHeight(fontPointer) * scale + 2.0f;
 	}
 
 	switch (align)
@@ -300,7 +323,6 @@ float AlignText(const char *text, const GameData::Font &font, float scale, float
 		*hOut = height;
 	if (fOut)
 		*fOut = fontPointer;
-
 	return xAligned;
 }
 
@@ -309,7 +331,6 @@ float RenderGameText(const char *text, float x, float y, float scale,
 {
 	CL_DrawTextPhysical(text, INT_MAX, font, x, y,
 		scale, scale, rotation, color, 0);
-
 	return R_TextHeight(font) * scale;
 }
 
@@ -322,7 +343,6 @@ float RenderGameTextWithBackground(const char *text, float x, float y,
 	DrawEmptyRect(x, y - textH, textW - 2, textH + 2, 2,
 		borderColor);
 	RenderGameText(text, x + 6, y, scale, textColor, font, 0);
-
 	return textH + 2;
 }
 
@@ -331,7 +351,6 @@ float RenderUIText(const char *text, float x, float y, float scale,
 {
 	UI_DrawText(scrPlace, text, INT_MAX, font, x, y,
 		scale, 0.0f, color, 0);
-
 	return UI_TextHeight(font, scale) + 2.0f;
 }
 
@@ -343,7 +362,6 @@ float RenderUITextWithBackground(const char *text, float x, float y,
 		0, 0, Colors::transparentBlack);
 	UI_DrawRect(scrPlace, x, y - textH, textW - 2, textH + 2, 0, 0, 2, borderColor);
 	RenderUIText(text, x + 6, y, scale, textColor, font);
-
 	return textH + 2;
 }
 

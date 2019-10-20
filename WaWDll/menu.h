@@ -20,6 +20,7 @@ enum Submenus
 
 enum OptionType
 {
+	TYPE_VOID,
 	TYPE_SUB,
 	TYPE_INT,
 	TYPE_BOOL,
@@ -37,7 +38,6 @@ struct Option
 		OptionType type, std::function<void()> callback)
 		: option(option), data(data), type(type), callback(callback) {}
 };
-
 
 namespace Menu
 {
@@ -75,9 +75,13 @@ namespace Variables
 	extern int enemyESP;
 	extern int friendlyESP;
 
-	extern int fov;
-	extern int steadyAim;
 	extern int serverInfo;
+
+	extern int fov;	
+	extern int steadyAim;
+	extern int cheatsEnabled;
+	extern int godMode;
+	extern int infAmmo;
 }
 
 void DrawFillRect(float x, float y, float width, float height,

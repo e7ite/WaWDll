@@ -17,7 +17,6 @@ enum DetourAddresses : DWORD
 	CG_PredictPlayerStateInternal_a		= 0x665C30,
 	CG_DrawNightVisionOverlay_a			= 0x43D230,
 	CG_Draw2DInternal_a					= 0x4388A0,
-	Cbuf_AddText_a						= 0x594200,
 	Cbuf_AddTextRet_a					= 0x594208,
 	CL_SendCmd_a						= 0x478D20,
 	CL_CreateCmd_a						= 0x63E936,
@@ -46,7 +45,7 @@ extern void(__cdecl *UI_Refresh)(int localClientNum);
 extern void(__cdecl *CL_KeyEvent)(int localClientNum, int value,
 	int down, unsigned int time);
 extern struct sysEvent_t*(__cdecl *Win_GetEvent)(sysEvent_t *result, int unk);
-extern __usercall Cbuf_AddText;
+extern __usercall Cbuf_AddTextHook;
 extern void(__cdecl *CG_PredictPlayerState_Internal)(int localClientNum);
 extern __usercall CL_CreateCmd;
 extern void(__cdecl *CL_CreateNewCommands)();
