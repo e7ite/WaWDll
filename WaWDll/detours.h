@@ -21,6 +21,8 @@ enum DetourAddresses : DWORD
 	CL_SendCmd_a						= 0x478D20,
 	CL_CreateCmd_a						= 0x63E936,
 	CL_CreateNewCommands_a				= 0x63E994,
+	CL_MouseMove_a						= 0x63DE70,
+	IN_MouseEvent_a						= 0x5FA5F0,
 };
  
 using __usercall = void*;
@@ -49,6 +51,7 @@ extern __usercall Cbuf_AddTextHook;
 extern void(__cdecl *CG_PredictPlayerState_Internal)(int localClientNum);
 extern __usercall CL_CreateCmd;
 extern void(__cdecl *CL_CreateNewCommands)();
+extern void(__cdecl *IN_MouseEvent)(int mstate);
 
 void Menu_PaintAllStub(UiContext *dc);
 void Menu_PaintAllDetour(UiContext *dc);
@@ -69,3 +72,4 @@ bool Cbuf_AddTextDetour(const char *text, int localClientNum);
 void CG_PredictPlayerState_InternalDetour(int localClientNum);
 void CL_CreateNewCommandsStub();
 void CL_CreateNewCommandsDetour();
+void IN_MouseEventDetour(int mstate);

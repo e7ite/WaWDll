@@ -16,6 +16,7 @@ bool ExecuteAimbot()
 			vectoangles(Aimbot::targetAngles - cgameGlob->refdef.vieworg, 
 				Aimbot::targetAngles);
 			Aimbot::targetAngles -= cgameGlob->predictedPlayerState.delta_angles;
+
 			return true;
 		}
 	}

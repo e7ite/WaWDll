@@ -15,8 +15,7 @@ int(__cdecl *Menu_HandleMouseMove)(ScreenPlacement *scrPlace, void *menu)
 void(__cdecl *CG_Draw2DInternal)() = (void(__cdecl*)())CG_Draw2DInternal_a;
 void(__cdecl *UI_Refresh)(int localClientNum) = (void(__cdecl*)(int))UI_Refresh_a;
 void(__cdecl *CL_KeyEvent)(int localClientNum, int value, int down,
-	unsigned int time)
-	= (void(*)(int, int, int, unsigned int))CL_KeyEvent_a;
+	unsigned int time) = (void(*)(int, int, int, unsigned int))CL_KeyEvent_a;
 sysEvent_t*(__cdecl *Win_GetEvent)(sysEvent_t *result, int unk)
 	= (sysEvent_t*(*)(sysEvent_t*, int))Win_GetEvent_a;
 __usercall Cbuf_AddTextHook = (__usercall)Cbuf_AddText_a;
@@ -25,6 +24,7 @@ void(__cdecl *CG_PredictPlayerState_Internal)(int localClientNum)
 __usercall CL_CreateCmd = (__usercall)CL_CreateCmd_a;
 void(__cdecl *CL_CreateNewCommands)()
 	= (void(__cdecl*)())CL_CreateNewCommands_a;
+void(__cdecl *IN_MouseEvent)(int mstate) = (void(__cdecl*)(int))IN_MouseEvent_a;
 
 void DetourFunction(DWORD targetFunction, DWORD detourFunction)
 {
@@ -101,7 +101,8 @@ void Menu_PaintAllDetour(UiContext *dc)
 			&& GameData::InsertDvar("cg_fov")
 			&& GameData::InsertDvar("perk_weapSpreadMultiplier")
 			&& GameData::InsertDvar("sv_cheats")
-			&& GameData::InsertDvar("player_sustainAmmo"))
+			&& GameData::InsertDvar("player_sustainAmmo")
+			&& GameData::InsertDvar("cl_bypassMouseInput"))
 			GameData::initialized = true;
 		else
 		{
@@ -289,22 +290,29 @@ void CL_CreateNewCommandsDetour()
 
 	ocmd->serverTime++;
 
+	bool aimbotRun = false;
+	bool isShooting = Key_IsDown("+attack");
 	if (Variables::enableAimbot)
 	{
-		if ((Variables::aimKey == 1 && Key_IsDown("+attack"))
+		if ((Variables::aimKey == 1 && isShooting)
 			|| (Variables::aimKey == 2 && Key_IsDown("+speed_throw"))
 			|| !Variables::aimKey)
 		{
-			if (ExecuteAimbot())
-			{
+			aimbotRun = ExecuteAimbot();
+			if (aimbotRun)
 				SetAngles(Aimbot::targetAngles);
-
-				if (Variables::autoShoot)
-				{
-					ccmd->button_bits &= ~1;
-					ocmd->button_bits |= 1;
-				}
-			}
 		}
 	}
-}  
+
+	if (Variables::autoShoot && (aimbotRun || isShooting))
+	{
+		ccmd->button_bits &= ~1;
+		ocmd->button_bits |= 1;
+	}
+}
+
+void IN_MouseEventDetour(int mstate)
+{
+	if (!Menu::open)
+		return IN_MouseEvent(mstate);
+}

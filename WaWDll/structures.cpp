@@ -595,7 +595,7 @@ bool AimTarget_IsTargetVisible(centity_s *cent, unsigned __int16 bone)
 
 bool IN_IsForegroundWindow()
 {
-	return GetForegroundWindow() == *hwnd;
+	return *(bool*)(0x229A0D4);
 }
 
 void speex_error(const char *arg)

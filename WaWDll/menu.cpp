@@ -69,7 +69,8 @@ void Menu::Build()
 	Insert(MISC_MENU, "Super Steady Aim", &steadyAim,
 		TYPE_BOOL, std::bind(BoolModify, &steadyAim));
 	Insert(MISC_MENU, "Enable Cheats", &cheatsEnabled,
-		TYPE_BOOL, []()
+		TYPE_BOOL,
+		[]()
 		{
 			CG_GameMessage(0, "Requires restart to take effect", 0);
 			BoolModify(&cheatsEnabled);

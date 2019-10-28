@@ -20,6 +20,7 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
 		InsertDetour(&CG_PredictPlayerState_Internal, 
 			CG_PredictPlayerState_InternalDetour);
 		InsertDetour(&CL_CreateNewCommands, CL_CreateNewCommandsStub);
+		InsertDetour(&IN_MouseEvent, IN_MouseEventDetour);
 		break;
 	case DLL_PROCESS_DETACH:
 		FreeConsole();
