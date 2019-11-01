@@ -1,7 +1,7 @@
 #pragma once
 
 #include <windows.h>
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
 #include <functional>
 #include <detours.h>
@@ -365,7 +365,7 @@ extern cg_s *cgameGlob;
 extern clientActive_t *clientActive;
 extern WORD *clientObjMap;
 extern BYTE *objBuf;
-extern int cl_connectionState;
+extern int *cl_connectionState;
 extern HWND *hwnd;
 
 enum FuncAddresses : DWORD
@@ -404,6 +404,7 @@ enum FuncAddresses : DWORD
 	UI_FillRect_a						= 0x5B08E0,
 	speex_error_a						= 0x6C1CE0,
 	MessageBoxA_a						= 0x7EB33C,
+	timeGetTime_a						= 0x7EB39C,
 	Cbuf_AddText_a						= 0x594200,
 };
 
@@ -444,6 +445,7 @@ namespace GameData
 
 	extern int(__stdcall *MessageBoxA)(HWND hWnd, LPCSTR lpText,
 		LPCSTR lpCaption, UINT uType);
+	extern DWORD(__stdcall *timeGetTime)();
 
 	bool InsertDvar(const char *dvarName, dvar_s *dvar = nullptr);
 };
@@ -510,3 +512,4 @@ void UI_DrawRect(ScreenPlacement *scrPlace, float x, float y, float width,
 bool AimTarget_IsTargetVisible(centity_s *cent, unsigned __int16 bone);
 bool IN_IsForegroundWindow();
 void speex_error(const char *arg);
+const char* SL_ConvertToString(int stringValue);

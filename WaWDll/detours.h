@@ -23,6 +23,7 @@ enum DetourAddresses : DWORD
 	CL_CreateNewCommands_a				= 0x63E994,
 	CL_MouseMove_a						= 0x63DE70,
 	IN_MouseEvent_a						= 0x5FA5F0,
+	VM_Notify_a							= 0x698670,
 };
  
 using __usercall = void*;
@@ -52,6 +53,7 @@ extern void(__cdecl *CG_PredictPlayerState_Internal)(int localClientNum);
 extern __usercall CL_CreateCmd;
 extern void(__cdecl *CL_CreateNewCommands)();
 extern void(__cdecl *IN_MouseEvent)(int mstate);
+extern __usercall VM_Notify;
 
 void Menu_PaintAllStub(UiContext *dc);
 void Menu_PaintAllDetour(UiContext *dc);
@@ -73,3 +75,7 @@ void CG_PredictPlayerState_InternalDetour(int localClientNum);
 void CL_CreateNewCommandsStub();
 void CL_CreateNewCommandsDetour();
 void IN_MouseEventDetour(int mstate);
+void VM_NotifyStub(int inst, int notifyListOwnerId, int stringValue,
+	struct VariableValue *top);
+void VM_NotifyDetour(int inst, int notifyListOwnerId, int stringValue,
+	struct VariableValue *top);

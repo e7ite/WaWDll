@@ -25,6 +25,7 @@ __usercall CL_CreateCmd = (__usercall)CL_CreateCmd_a;
 void(__cdecl *CL_CreateNewCommands)()
 	= (void(__cdecl*)())CL_CreateNewCommands_a;
 void(__cdecl *IN_MouseEvent)(int mstate) = (void(__cdecl*)(int))IN_MouseEvent_a;
+__usercall VM_Notify = (__usercall)VM_Notify_a;
 
 void DetourFunction(DWORD targetFunction, DWORD detourFunction)
 {
@@ -315,4 +316,33 @@ void IN_MouseEventDetour(int mstate)
 {
 	if (!Menu::open)
 		return IN_MouseEvent(mstate);
+}
+
+void __declspec(naked) VM_NotifyStub(int inst, int notifyListOwnerId, 
+	int stringValue, struct VariableValue *top)
+{
+	__asm
+	{
+		push		[esp + 0Ch]
+		push		[esp + 8]
+		push		[esp + 4]
+		push		eax
+		call		VM_NotifyDetour
+		pop			eax
+		add			esp, 0Ch
+		push		ebp
+		mov			ebp, esp
+		and			esp, 0FFFFFFF8h
+		push		00698676h
+		ret
+	}
+}
+
+void VM_NotifyDetour(int inst, int notifyListOwnerId, int stringValue,
+	struct VariableValue *top)
+{
+	if (strlen(SL_ConvertToString(stringValue)))
+		printf("%s\n", SL_ConvertToString(stringValue));
+	if (!strcmp(SL_ConvertToString(stringValue), "weapon_fired"))
+		printf("shooting weapon\n");
 }

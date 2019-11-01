@@ -12,7 +12,7 @@ HWND *hwnd						 = (HWND*)0x22C1BE4;
 WeaponDef **bg_weaponVariantDefs = (WeaponDef**)0x8F6770;
 cgs_t *cgs						 = (cgs_t*)0x3466578;
 actor_s *actors					 = (actor_s*)0x176C874;
-int cl_connectionState			 = 0x305842C;
+int *cl_connectionState			 = (int*)0x305842C;
 
 std::vector<QWORD> GameData::detours;
 std::map<const char*, dvar_s*> GameData::dvars;
@@ -21,6 +21,7 @@ GameData::Font GameData::normalFont	   = { 1,    "fonts/normalFont" };
 int(__stdcall *GameData::MessageBoxA)(HWND hWnd, LPCSTR lpText,
 	LPCSTR lpCaption, UINT uType)
 	= *(int(__stdcall**)(HWND, LPCSTR, LPCSTR, UINT))MessageBoxA_a;
+DWORD(__stdcall *GameData::timeGetTime)() = *(DWORD(__stdcall**)())timeGetTime_a;
 
 Colors::Color Colors::white			   = { 255, 255, 255, 255 };
 Colors::Color Colors::black			   = {   0,   0,   0, 255 };
@@ -111,6 +112,23 @@ vec3_t& vec3_t::operator-=(float vec[3])
 	this->z -= vec[2];
 
 	return *this;
+}
+
+bool GameData::InsertDvar(const char *dvarName, dvar_s *dvar)
+{
+	dvar_s *pdvar = dvar ? dvar : Dvar_FindVar(dvarName);
+	if (!pdvar)
+		return false;
+
+	dvars.insert(std::pair<const char*, dvar_s*>(dvarName, pdvar));
+	return true;
+}
+
+bool InGame()
+{
+	return GameData::initialized &&
+		GameData::dvars["cl_ingame"]->current.enabled
+		&& *cl_connectionState >= 9;
 }
 
 void Cbuf_AddText(const char *cmd)
@@ -220,7 +238,6 @@ unsigned __int16 SL_FindString(const char *tagname)
 {
 	unsigned int len = strlen(tagname) + 1;
 	DWORD addr = SL_FindString_a;
-
 	__asm
 	{
 		mov			eax, 0
@@ -235,7 +252,6 @@ bool WorldPosToScreenPos(int localClientNum, const float *world, float pos[2])
 {
 	DWORD addr = WorldPosToScreenPos_a;
 	bool funcRet;
-
 	__asm
 	{
 		mov			ecx, localClientNum
@@ -244,7 +260,6 @@ bool WorldPosToScreenPos(int localClientNum, const float *world, float pos[2])
 		call		addr
 		mov			funcRet, al
 	}
-
 	return funcRet;
 }
 
@@ -277,7 +292,7 @@ void CL_GetUserCmd(int cmdNum, usercmd_s *cmd)
 
 usercmd_s* CL_GetUserCmd(int cmdNum)
 {
-	DWORD funcRet;
+	usercmd_s *funcRet;
 	__asm
 	{
 		mov			esi, cmdNum
@@ -287,8 +302,7 @@ usercmd_s* CL_GetUserCmd(int cmdNum)
 		lea			esi, ds:30FD700h[eax * 8]
 		mov			funcRet, esi
 	}
-
-	return (usercmd_s*)funcRet;
+	return funcRet;
 }
 
 void CL_DrawTextPhysical(const char *text, int maxChars,
@@ -414,7 +428,7 @@ float R_TextWidth(const char *text, int maxChars, Font_s *font)
 
 int Sys_Milliseconds()
 {
-	return timeGetTime() - *(int*)0x22BEC34;
+	return GameData::timeGetTime() - *(int*)0x22BEC34;
 }
 
 WeaponDef* BG_GetWeaponDef(int weapon)
@@ -502,8 +516,8 @@ void Vec3Normalize(float *x)
 	__asm
 	{
 		mov			esi, x
-		mov			edx, addr
-		call		edx
+		push		addr
+		ret
 	}
 }
 
@@ -561,23 +575,6 @@ void UI_FillRect(ScreenPlacement *scrPlace, float x, float y, float width,
 	}
 }
 
-bool InGame()
-{
-	return GameData::initialized && 
-		GameData::dvars["cl_ingame"]->current.enabled
-		&& *(int*)cl_connectionState >= 9;
-}
-
-bool GameData::InsertDvar(const char *dvarName, dvar_s *dvar)
-{
-	dvar_s *pdvar = dvar ? dvar : Dvar_FindVar(dvarName);
-	if (!pdvar)
-		return false;
-
-	dvars.insert(std::pair<const char*, dvar_s*>(dvarName, pdvar));
-	return true;
-}
-
 bool AimTarget_IsTargetVisible(centity_s *cent, unsigned __int16 bone)
 {
 	DWORD addr = AimTarget_IsTargetVisible_a;
@@ -600,10 +597,16 @@ bool IN_IsForegroundWindow()
 
 void speex_error(const char *arg)
 {
-	DWORD addr = speex_error_a;
 	__asm
 	{
 		mov			eax, arg
-		call		addr
+		push		6C1CE0h
+		ret
 	}
+}
+
+const char* SL_ConvertToString(int stringValue)
+{
+	const char **gScrMemTreePub = (const char**)0x3702390;
+	return *gScrMemTreePub + ((stringValue * 2 + stringValue) * 4) + 4;
 }
