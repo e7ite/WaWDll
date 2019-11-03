@@ -74,7 +74,7 @@ namespace Variables
 
 	extern int enemyESP;
 	extern int friendlyESP;
-
+    
 	extern int serverInfo;
 
 	extern int fov;	

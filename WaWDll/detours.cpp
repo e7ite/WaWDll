@@ -232,7 +232,6 @@ void CL_KeyEventDetour(int localClientNum, int key, int down, int time)
 	return CL_KeyEvent(localClientNum, key, down, time);
 }
 
-DWORD Cbuf_AddTextRet = Cbuf_AddTextRet_a;
 void __declspec(naked) Cbuf_AddTextStub(const char *text, int localClientNum)
 {
 	__asm
@@ -251,7 +250,8 @@ void __declspec(naked) Cbuf_AddTextStub(const char *text, int localClientNum)
 		push		esi
 		push		edi
 		push		22990F8h
-		jmp			Cbuf_AddTextRet
+        push        594208h
+		ret
 LABEL_1:
 		pop			edx
 		jmp			edx
@@ -319,18 +319,19 @@ void IN_MouseEventDetour(int mstate)
 }
 
 void __declspec(naked) VM_NotifyStub(int inst, int notifyListOwnerId, 
-	int stringValue, struct VariableValue *top)
+	int stringValue, VariableValue *top)
 {
 	__asm
 	{
-		push		[esp + 0Ch]
-		push		[esp + 8]
-		push		[esp + 4]
+        push        ebp
+        mov         ebp, esp
+		push        [ebp + 10h]
+		push        [ebp + 0Ch]
+		push        [ebp + 8]
 		push		eax
 		call		VM_NotifyDetour
 		pop			eax
 		add			esp, 0Ch
-		push		ebp
 		mov			ebp, esp
 		and			esp, 0FFFFFFF8h
 		push		00698676h
@@ -339,10 +340,17 @@ void __declspec(naked) VM_NotifyStub(int inst, int notifyListOwnerId,
 }
 
 void VM_NotifyDetour(int inst, int notifyListOwnerId, int stringValue,
-	struct VariableValue *top)
+	VariableValue *top)
 {
-	if (strlen(SL_ConvertToString(stringValue)))
-		printf("%s\n", SL_ConvertToString(stringValue));
-	if (!strcmp(SL_ConvertToString(stringValue), "weapon_fired"))
+    DWORD notifyListId = FindVariable(inst, notifyListOwnerId, 0x15FFE);
+    LPCSTR notifyString = SL_ConvertToString(stringValue);
+
+
+
+    if (!strcmp(notifyString, "spawned_player"))
+        printf("born\n");
+	if (!strcmp(notifyString, "weapon_fired"))
 		printf("shooting weapon\n");
+
+    printf("Scr_GetSelf: %x\n", Scr_GetSelf(inst, notifyListOwnerId));
 }

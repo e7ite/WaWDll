@@ -356,6 +356,23 @@ struct dvar_s
 	dvar_s *next;							//0x58
 }; //Size = 0x5C
 
+struct VariableValue
+{
+    union VariableUnion
+    {
+        int intValue;
+        float floatValue;
+        unsigned int stringValue;
+        const float *vectorValue;
+        const char *codePosValue;
+        unsigned int pointerValue;
+        struct VariableStackBuffer *stackValue;
+        unsigned int entityOffset;
+    };
+    VariableUnion u;                          //0x00
+    int type;                                 //0x04
+}; //Size = 0x08
+
 extern UiContext *dc;
 extern ScreenPlacement *scrPlace;
 extern KeyState *keys;
@@ -367,6 +384,7 @@ extern WORD *clientObjMap;
 extern BYTE *objBuf;
 extern int *cl_connectionState;
 extern HWND *hwnd;
+extern WORD *gScVarGlob;
 
 enum FuncAddresses : DWORD
 {
@@ -406,6 +424,7 @@ enum FuncAddresses : DWORD
 	MessageBoxA_a						= 0x7EB33C,
 	timeGetTime_a						= 0x7EB39C,
 	Cbuf_AddText_a						= 0x594200,
+    FindVariableIndexInternal_a         = 0x68BC20,
 };
 
 namespace Colors
@@ -513,3 +532,6 @@ bool AimTarget_IsTargetVisible(centity_s *cent, unsigned __int16 bone);
 bool IN_IsForegroundWindow();
 void speex_error(const char *arg);
 const char* SL_ConvertToString(int stringValue);
+unsigned int FindVariable(int inst,
+    unsigned int parentId, unsigned int unsignedValue);
+unsigned int Scr_GetSelf(int inst, int threadId);

@@ -13,6 +13,7 @@ WeaponDef **bg_weaponVariantDefs = (WeaponDef**)0x8F6770;
 cgs_t *cgs						 = (cgs_t*)0x3466578;
 actor_s *actors					 = (actor_s*)0x176C874;
 int *cl_connectionState			 = (int*)0x305842C;
+WORD *gScVarGlob = (WORD*)0x3974700;
 
 std::vector<QWORD> GameData::detours;
 std::map<const char*, dvar_s*> GameData::dvars;
@@ -609,4 +610,47 @@ const char* SL_ConvertToString(int stringValue)
 {
 	const char **gScrMemTreePub = (const char**)0x3702390;
 	return *gScrMemTreePub + ((stringValue * 2 + stringValue) * 4) + 4;
+}
+
+unsigned int FindVariableIndexInternal(int inst, unsigned int name,
+    unsigned int index)
+{
+    DWORD addr = FindVariableIndexInternal_a;
+    unsigned int funcRet;
+    __asm
+    {
+        mov         eax, inst
+        push        index
+        push        name
+        call        addr
+        add         esp, 8
+        mov         funcRet, eax
+    }
+    return funcRet;
+}
+
+
+unsigned int FindVariable(int inst,
+    unsigned int parentId, unsigned int unsignedValue)
+{
+    return static_cast<DWORD>(
+        *(WORD*)(  
+            (int)gScVarGlob + (
+                FindVariableIndexInternal(inst,
+                    unsignedValue, (parentId + unsignedValue) % 0xFFFD + 1)
+                + inst * 0x16000 << 4 
+            )
+        )
+    );
+}
+
+unsigned int Scr_GetSelf(int inst, int threadId)
+{
+    unsigned short *gsvg_variableList = (unsigned short*)0x3914716;
+    int index = (threadId + inst * 0x16000) << 4;
+    return static_cast<unsigned int>(
+        *(decltype(gsvg_variableList))(
+            (int)gsvg_variableList + index
+        )
+    );
 }

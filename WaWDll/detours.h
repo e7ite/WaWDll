@@ -17,7 +17,6 @@ enum DetourAddresses : DWORD
 	CG_PredictPlayerStateInternal_a		= 0x665C30,
 	CG_DrawNightVisionOverlay_a			= 0x43D230,
 	CG_Draw2DInternal_a					= 0x4388A0,
-	Cbuf_AddTextRet_a					= 0x594208,
 	CL_SendCmd_a						= 0x478D20,
 	CL_CreateCmd_a						= 0x63E936,
 	CL_CreateNewCommands_a				= 0x63E994,
