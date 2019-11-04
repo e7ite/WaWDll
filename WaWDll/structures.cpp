@@ -10,6 +10,7 @@ WORD *clientObjMap				 = (WORD*)0x1FE58C8;
 BYTE *objBuf					 = (BYTE*)0x1F978C8;
 HWND *hwnd						 = (HWND*)0x22C1BE4;
 scrVmPub_t *gScrVmPub            = (scrVmPub_t*)0x3BD4700;
+gentity_s *g_entities            = (gentity_s*)0x176C6F0;
 WeaponDef **bg_weaponVariantDefs = (WeaponDef**)0x8F6770;
 cgs_t *cgs						 = (cgs_t*)0x3466578;
 actor_s *actors					 = (actor_s*)0x176C874;
@@ -704,7 +705,8 @@ void Scr_AddFloat(float value)
     {
         mov         eax, inst
         sub         esp, 4
-        mov         [esp], value
+        movss       xmm0, value
+        movss       [esp], xmm0
         call        addr
         add         esp, 4
     }
@@ -745,5 +747,3 @@ void Scr_AddVector(const float *value)
         add         esp, 4
     }
 }
-
-void Scr_AddEntity

@@ -94,7 +94,9 @@ struct entityState_s
 {
 	int number;								        //0x000
 	LerpEntityState lerp;					        //0x004
-	char pad00[0x88];						        //0x090
+	char pad00[0x1C];						        //0x090
+    int clientNum;                                  //0x0AC
+    char pad01[0x68];                               //0x0B0
 }; //Size = 0x118
 
 struct playerState_s
@@ -131,6 +133,8 @@ struct playerState_s
 	float aimSpreadScale;					        //0x0914
 	char pad07[0x1794];						        //0x0918
 }; //Size = 0x20AC
+
+//TODO: Resume mapping gentity_s at 018EF1E4
 
 struct cpose_t
 {
@@ -412,9 +416,65 @@ struct scrVmPub_t
     VariableValue stack[0x800];                     //0x0320
 }; //Size = 0x4320
 
+struct EntHandle
+{
+    unsigned short number;                          //0x00
+    unsigned short infoIndex;                       //0x02
+}; //Size = 0x4
+
+struct entityShared_t
+{
+    char linked;                                    //0x00
+    char bmodel;                                    //0x01
+    char svFlags;                                   //0x02
+    int clientMask;                                 //0x03
+    char inuse;                                     //0x07
+    int broadcastTime;                              //0x08
+    char pad00[0x8];                                //0x0C
+    float mins[3];                                  //0x10
+    float maxs[3];                                  //0x1C
+    int contents;                                   //0x28
+    float absmin[3];                                //0x2C
+    float absmax[3];                                //0x38
+    float currentOrigin[3];                         //0x44
+    float currentAngles[3];                         //0x50
+    EntHandle ownerNum;                             //0x5C
+    int eventTime;                                  //0x60
+    char pad01[0x8];                                //0x64
+}; //Size = 0x6C
+
+struct clientSession_t
+{
+    int sessionState;                               //0x00
+    int forceSpectatorClient;                       //0x04
+    int killcamEntity;                              //0x08
+    int killcamTargetEntity;                        //0x0C
+    int archiveTime;                                //0x10
+    unsigned int scriptPersId;                      //0x14
+    char pad00[0x1C];                               //0x18
+    int connected;                                  //0x34
+    usercmd_s cmd;                                  //0x38
+    usercmd_s oldcmd;                               //0x70
+    int localClient;                                //0xA8
+    int predictedItemPickup;                        //0xAC
+    char newnetname[0x20];                          //0xB0
+    int maxHealth;                                  //0xD0
+    char pad01[0x10];                               //0xD4
+    float moveSpeedScaleMultiplier;                 //0xE4
+    int viewmodelIndex;                             //0xE8
+};
+
+struct gclient_s
+{
+    playerState_s ps;                               //0x0000
+    clientSession_t sess;                           //0x20AC
+};
+
 struct gentity_s
 {
-
+    entityState_s s;                                //0x000
+    entityShared_t r;                               //0x118
+    gclient_s *client;                              //0x184
 }; //Size = 0x378
 
 extern UiContext *dc;
@@ -429,6 +489,7 @@ extern BYTE *objBuf;
 extern int *cl_connectionState;
 extern HWND *hwnd;
 extern scrVmPub_t *gScrVmPub;
+extern gentity_s *g_entities;
 
 enum FuncAddresses : DWORD
 {
@@ -517,7 +578,7 @@ namespace GameData
 	extern DWORD(__stdcall *timeGetTime)();
 
 	bool InsertDvar(const char *dvarName, dvar_s *dvar = nullptr);
-};
+}
 
 extern Font_s*(__cdecl *R_RegisterFont)(const char *font, int imageTrac);
 extern void*(__cdecl *Material_RegisterHandle)(const char *materialName,
