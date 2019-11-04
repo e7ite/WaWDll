@@ -35,254 +35,254 @@ struct vec3_t
 
 struct UiContext
 {
-	int contentIndex;						//0x00
-	float bias;								//0x04
-	int realTime;							//0x08
-	int frameTime;							//0x0C
-	float cursorPos[2];						//0x10
-	int isCursorVisible;					//0x18
-	int screenDimensions[2];				//0x1C
-	float screenAspect;						//0x24
-	float fps;								//0x28
+	int contentIndex;						        //0x00
+	float bias;								        //0x04
+	int realTime;							        //0x08
+	int frameTime;							        //0x0C
+	float cursorPos[2];						        //0x10
+	int isCursorVisible;					        //0x18
+	int screenDimensions[2];				        //0x1C
+	float screenAspect;						        //0x24
+	float fps;								        //0x28
 }; //Size = 0x2C
 
 struct Font_s
 {
-	const char *fontName;					//0x00
-	int pixelHeight;						//0x04
-	int glyphCount;							//0x08
-	struct Material *material;				//0x0C
-	struct Material *glowMaterial;			//0x10
-	struct Glyph *glyphs;					//0x14
+	const char *fontName;					        //0x00
+	int pixelHeight;						        //0x04
+	int glyphCount;							        //0x08
+	struct Material *material;				        //0x0C
+	struct Material *glowMaterial;			        //0x10
+	struct Glyph *glyphs;					        //0x14
 }; //Size = 0x18
 
 struct ScreenPlacement
 {
-	float scaleVirtualToReal[2];			//0x00
-	float scaleVirtualToFull[2];			//0x08
-	float scaleRealToVirtual[2];			//0x10
-	float virtualViewableMin[2];			//0x18
-	float virtualViewableMax[2];			//0x20
-	float virtualTweakableMin[2];			//0x28
-	float virtualTweakableMax[2];			//0x30
-	float realViewportBase[2];				//0x38
-	float realViewportSize[2];				//0x40
-	float realViewportMid[2];				//0x48
-	float realViewableMin[2];				//0x50
-	float realViewableMax[2];				//0x58
-	float realTweakableMin[2];				//0x60
-	float realTweakableMax[2];				//0x68
-	float subScreen[2];						//0x70
+	float scaleVirtualToReal[2];			        //0x00
+	float scaleVirtualToFull[2];			        //0x08
+	float scaleRealToVirtual[2];			        //0x10
+	float virtualViewableMin[2];			        //0x18
+	float virtualViewableMax[2];			        //0x20
+	float virtualTweakableMin[2];			        //0x28
+	float virtualTweakableMax[2];			        //0x30
+	float realViewportBase[2];				        //0x38
+	float realViewportSize[2];				        //0x40
+	float realViewportMid[2];				        //0x48
+	float realViewableMin[2];				        //0x50
+	float realViewableMax[2];				        //0x58
+	float realTweakableMin[2];				        //0x60
+	float realTweakableMax[2];				        //0x68
+	float subScreen[2];						        //0x70
 }; //Size = 0x78
 
 struct KeyState
 {
-	int down;								//0x00
-	int repeats;							//0x04
-	const char *binding;					//0x08
-	const char *binding2;					//0x0C
+	int down;								        //0x00
+	int repeats;							        //0x04
+	const char *binding;					        //0x08
+	const char *binding2;					        //0x0C
 }; //Size = 0x10
 
 struct LerpEntityState
 {
-	int eFlags;								//0x000
-	int eType;								//0x004
-	char pad00[0x84];						//0x008
+	int eFlags;								        //0x000
+	int eType;								        //0x004
+	char pad00[0x84];						        //0x008
 }; //Size = 0x8C
 
 struct entityState_s
 {
-	int number;								//0x000
-	LerpEntityState lerp;					//0x004
-	char pad00[0x88];						//0x090
+	int number;								        //0x000
+	LerpEntityState lerp;					        //0x004
+	char pad00[0x88];						        //0x090
 }; //Size = 0x118
 
 struct playerState_s
 {
-	int commandTime;						//0x0000
-	int pm_type;							//0x0004
-	int bobCycle;							//0x0008
-	int pm_flags;							//0x000C
-	int weapFlags;							//0x0010
-	int otherFlags;							//0x0014
-	int pm_time;							//0x0018
-	int loopSoundFade;						//0x001C
-	float origin[3];						//0x0020
-	float velocity[3];						//0x002C
-	char pad00[0x44];						//0x0038
-	float delta_angles[3];					//0x007C
-	char pad01[0x70];						//0x0088
-	int clientNum;							//0x00F8
-	int offHandIndex;						//0x00FC
-	int renderOptions;						//0x0100
-	int weapon;								//0x0104
-	char pad02[0x8];						//0x0108
-	float fWeaponPosFrac;					//0x0110
-	char pad03[0x4];						//0x0114
-	int spreadOverride;						//0x0118
-	int spreadOverrideState;				//0x011C
-	int viewmodelIndex;						//0x0120
-	float viewangles[3];					//0x0124
-	char pad04[0x34];						//0x0130
-	int health;								//0x0164
-	char pad05[0x4];						//0x0168
-	int maxHealth;							//0x016C
-	char pad06[0x7A4];						//0x0170
-	float aimSpreadScale;					//0x0914
-	char pad07[0x1794];						//0x0918
+	int commandTime;						        //0x0000
+	int pm_type;							        //0x0004
+	int bobCycle;							        //0x0008
+	int pm_flags;							        //0x000C
+	int weapFlags;							        //0x0010
+	int otherFlags;							        //0x0014
+	int pm_time;							        //0x0018
+	int loopSoundFade;						        //0x001C
+	float origin[3];						        //0x0020
+	float velocity[3];						        //0x002C
+	char pad00[0x44];						        //0x0038
+	float delta_angles[3];					        //0x007C
+	char pad01[0x70];						        //0x0088
+	int clientNum;							        //0x00F8
+	int offHandIndex;						        //0x00FC
+	int renderOptions;						        //0x0100
+	int weapon;								        //0x0104
+	char pad02[0x8];						        //0x0108
+	float fWeaponPosFrac;					        //0x0110
+	char pad03[0x4];						        //0x0114
+	int spreadOverride;						        //0x0118
+	int spreadOverrideState;				        //0x011C
+	int viewmodelIndex;						        //0x0120
+	float viewangles[3];					        //0x0124
+	char pad04[0x34];						        //0x0130
+	int health;								        //0x0164
+	char pad05[0x4];						        //0x0168
+	int maxHealth;							        //0x016C
+	char pad06[0x7A4];						        //0x0170
+	float aimSpreadScale;					        //0x0914
+	char pad07[0x1794];						        //0x0918
 }; //Size = 0x20AC
 
 struct cpose_t
 {
-	unsigned __int16 lightningHandle;		//0x00
-	char eType;								//0x02
-	char eTypeUnion;						//0x03
-	char localClientNum;					//0x04
-	char isRagdoll;							//0x05
-	char pad00[0x2];						//0x06
-	int ragdollHandle;						//0x08
-	char pad[0x18];							//0x0C
-	float origin[3];						//0x24
-	float angles[3];						//0x30	
-	char pad01[0x8];						//0x3C
+	unsigned __int16 lightningHandle;		        //0x00
+	char eType;								        //0x02
+	char eTypeUnion;						        //0x03
+	char localClientNum;					        //0x04
+	char isRagdoll;							        //0x05
+	char pad00[0x2];						        //0x06
+	int ragdollHandle;						        //0x08
+	char pad[0x18];							        //0x0C
+	float origin[3];						        //0x24
+	float angles[3];						        //0x30	
+	char pad01[0x8];						        //0x3C
 }; //Size = 0x44
 
 struct centity_s
 {
-	cpose_t pose;							//0x000
-	LerpEntityState lerp;					//0x044
-	entityState_s nextState;				//0x0D0
-	char pad00[0xE8];						//0x1E8
-	int alive;								//0x2D0
+	cpose_t pose;							        //0x000
+	LerpEntityState lerp;					        //0x044
+	entityState_s nextState;				        //0x0D0
+	char pad00[0xE8];						        //0x1E8
+	int alive;								        //0x2D0
 }; //Size = 0x2D4
 
 struct refdef_s
 {
-	unsigned int x;							//0x0000
-	unsigned int y;							//0x0004
-	unsigned int width;						//0x0008
-	unsigned int height;					//0x000C
-	float tanHalfFovX;						//0x0010
-	float tanHalfFovY;						//0x0014
-	float fov_x;							//0x0018
-	float vieworg[3];						//0x001C
-	float yaw;								//0x0028
-	float viewaxis[3][3];					//0x002C
-	int time;								//0x0050
-	float zNear;							//0x0054
-	float zFar;								//0x0058
-	char pad00[0x4288];						//0x005C
+	unsigned int x;							        //0x0000
+	unsigned int y;							        //0x0004
+	unsigned int width;						        //0x0008
+	unsigned int height;					        //0x000C
+	float tanHalfFovX;						        //0x0010
+	float tanHalfFovY;						        //0x0014
+	float fov_x;							        //0x0018
+	float vieworg[3];						        //0x001C
+	float yaw;								        //0x0028
+	float viewaxis[3][3];					        //0x002C
+	int time;								        //0x0050
+	float zNear;							        //0x0054
+	float zFar;								        //0x0058
+	char pad00[0x4288];						        //0x005C
 }; //Size = 0x42E4
 
 struct clientInfo_t
 {
-	int infoValid;							//0x000
-	int nextValid;							//0x004
-	int clientNum;							//0x008
-	char name[0x20];						//0x00C
-	int team;								//0x02C
-	int oldteam;							//0x030
-	int ffateam;							//0x034
-	char pad00[0x1C];						//0x038
-	char model[0x40];						//0x054
-	char attachModelNames[0x6][0x40];		//0x094
-	char attachTagNames[0x6][0x40];			//0x214
-	char pad01[0x6C];						//0x394
-	float playerAngles[3];					//0x400
-	char pad02[0x188];						//0x40C
+	int infoValid;							        //0x000
+	int nextValid;							        //0x004
+	int clientNum;							        //0x008
+	char name[0x20];						        //0x00C
+	int team;								        //0x02C
+	int oldteam;							        //0x030
+	int ffateam;							        //0x034
+	char pad00[0x1C];						        //0x038
+	char model[0x40];						        //0x054
+	char attachModelNames[0x6][0x40];		        //0x094
+	char attachTagNames[0x6][0x40];			        //0x214
+	char pad01[0x6C];						        //0x394
+	float playerAngles[3];					        //0x400
+	char pad02[0x188];						        //0x40C
 }; //Size = 0x594
 
 struct snapshot_s
 {
-	int snapFlags;							//0x00000
-	int ping;								//0x00004
-	int serverTime;							//0x00008
-	playerState_s ps;						//0x0000C
-	int numEntities;						//0x020B8
-	int numClients;							//0x020BC
-	char pad00[0xC40C];						//0x020C0
-	entityState_s entities[0x200];			//0x0E4CC
+	int snapFlags;							        //0x00000
+	int ping;								        //0x00004
+	int serverTime;							        //0x00008
+	playerState_s ps;						        //0x0000C
+	int numEntities;						        //0x020B8
+	int numClients;							        //0x020BC
+	char pad00[0xC40C];						        //0x020C0
+	entityState_s entities[0x200];			        //0x0E4CC
 }; //Size = 0x250C0
 
 struct cg_s
 {
-	int clientNum;							//0x000000
-	char pad00[0x20];						//0x000004
-	snapshot_s *snap;						//0x000024
-	snapshot_s *nextSnap;					//0x000028
-	char pad01[0xAAC50];					//0x00002C
-	int time;								//0x0AAC7C
-	int oldTime;							//0x0AAC80
-	int physicsTime;						//0x0AAC84
-	int mapRestart;							//0x0AAC88
-	char pad02[0x4];						//0x0AAC8C
-	int renderingThirdPerson;				//0x0AAC90
-	char pad03[0x4];						//0x0AAC94
-	playerState_s predictedPlayerState;		//0x0AAC98
-	char pad04[0x33C];						//0x0ACD44
-	refdef_s refdef;						//0x0AD080
-	char pad05[0x6F68];						//0x0B1364
-	int weaponSelect;						//0x0B82CC
-	char pad06[0xD4];						//0x0B82D0
-	float gunPitch;							//0x0B83A4
-	float gunYaw;							//0x0B83A8
-	char pad07[0x8C7E4];					//0x0B83AC
-	clientInfo_t clients[0x12];				//0x144B90
-	char pad08[0x10548];					//0x14AFF8
-	float aimSpreadScale;					//0x15B540
-	char pad09[0x1];						//0x15B544
+	int clientNum;							        //0x000000
+	char pad00[0x20];						        //0x000004
+	snapshot_s *snap;						        //0x000024
+	snapshot_s *nextSnap;					        //0x000028
+	char pad01[0xAAC50];					        //0x00002C
+	int time;								        //0x0AAC7C
+	int oldTime;							        //0x0AAC80
+	int physicsTime;						        //0x0AAC84
+	int mapRestart;							        //0x0AAC88
+	char pad02[0x4];						        //0x0AAC8C
+	int renderingThirdPerson;				        //0x0AAC90
+	char pad03[0x4];						        //0x0AAC94
+	playerState_s predictedPlayerState;		        //0x0AAC98
+	char pad04[0x33C];						        //0x0ACD44
+	refdef_s refdef;						        //0x00AD080
+	char pad05[0x6F68];						        //0x0B1364
+	int weaponSelect;						        //0x0B82CC
+	char pad06[0xD4];						        //0x0B82D0
+	float gunPitch;							        //0x0B83A4
+	float gunYaw;							        //0x0B83A8
+	char pad07[0x8C7E4];					        //0x0B83AC
+	clientInfo_t clients[0x12];				        //0x144B90
+	char pad08[0x10548];					        //0x14AFF8
+	float aimSpreadScale;					        //0x15B540
+	char pad09[0x1];						        //0x15B544
 }; //Size = 0x15DAB8
 
 struct cgs_t
 {
-	int viewX;								//0x0000
-	int viewY;								//0x0004
-	int viewWidth;							//0x0008
-	int viewHeight;							//0x000C
-	float viewAspect;						//0x0010
-	int serverCommandSequence;				//0x0014
-	int processedSnapshotNum;				//0x0018
-	int localServer;						//0x001C
-	char gametype[0x20];					//0x0020
-	char szHostName[0x100];					//0x0040
-	int maxclients;							//0x0140
-	char pad00[0x4];						//0x0144
-	char mapname[0x40];						//0x0148
-	char pad01[0xCBA8];						//0x0188
+	int viewX;								        //0x0000
+	int viewY;								        //0x0004
+	int viewWidth;							        //0x0008
+	int viewHeight;							        //0x000C
+	float viewAspect;						        //0x0010
+	int serverCommandSequence;				        //0x0014
+	int processedSnapshotNum;				        //0x0018
+	int localServer;						        //0x001C
+	char gametype[0x20];					        //0x0020
+	char szHostName[0x100];					        //0x0040
+	int maxclients;							        //0x0140
+	char pad00[0x4];						        //0x0144
+	char mapname[0x40];						        //0x0148
+	char pad01[0xCBA8];						        //0x0188
 }; //Size = 0xCD30
 
 struct usercmd_s
 {
-	int serverTime;							//0x00
-	int button_bits;						//0x04
-	int angles[3];							//0x08
-	char weapon;							//0x14
-	char offhandIndex;						//0x15
-	char forwardmove;						//0x16
-	char rightmove;							//0x17
-	char pad00[0x20];						//0x18
+	int serverTime;							        //0x00
+	int button_bits;						        //0x04
+	int angles[3];							        //0x08
+	char weapon;							        //0x14
+	char offhandIndex;						        //0x15
+	char forwardmove;						        //0x16
+	char rightmove;							        //0x17
+	char pad00[0x20];						        //0x18
 };	//Size = 0x38
 
 struct clientActive_t
 {
-	int ads;								//0x000000
-	char pad00[0xC];						//0x000004
-	playerState_s ps;						//0x000010
-	char pad01[0x2305C];					//0x0020BC
-	int parseEntitiesNum;					//0x025118
-	char pad02[0x64];						//0x02511C
-	float cgameOrigin[3];					//0x025180
-	float cgameVelocity[3];					//0x02518C
-	int cgameBobCycle;						//0x025198
-	int cgameMovementDir;					//0x02519C
-	char pad03[0x4];						//0x0251A0		
-	int cgamePredictedDataServerTime;		//0x0251A4
-	float viewangles[3];					//0x0251A8
-	char pad04[0x80024];					//0x0251B4
-	usercmd_s cmds[0x80];					//0x0A51D8
-	int cmdNumber;							//0x0A6DD8
-	char pad05[0x81254];					//0x0A6DDC
-	entityState_s parseEntities[0x800];		//0x128030
+	int ads;								        //0x000000
+	char pad00[0xC];						        //0x000004
+	playerState_s ps;						        //0x000010
+	char pad01[0x2305C];					        //0x0020BC
+	int parseEntitiesNum;					        //0x025118
+	char pad02[0x64];						        //0x02511C
+	float cgameOrigin[3];					        //0x025180
+	float cgameVelocity[3];					        //0x02518C
+	int cgameBobCycle;						        //0x025198
+	int cgameMovementDir;					        //0x02519C
+	char pad03[0x4];						        //0x0251A0		
+	int cgamePredictedDataServerTime;		        //0x0251A4
+	float viewangles[3];					        //0x0251A8
+	char pad04[0x80024];					        //0x0251B4
+	usercmd_s cmds[0x80];					        //0x0A51D8
+	int cmdNumber;							        //0x0A6DD8
+	char pad05[0x81254];					        //0x0A6DDC
+	entityState_s parseEntities[0x800];		        //0x128030
 }; //Size = 0x1B4030
 
 struct actor_s
@@ -293,68 +293,75 @@ struct actor_s
 
 struct rectDef_s
 {
-	float x;								//0x00
-	float y;								//0x04
-	float w;								//0x08
-	float h;								//0x0C
-	int horzAlign;							//0x10
-	int vertAlign;							//0x14
+	float x;								        //0x00
+	float y;								        //0x04
+	float w;								        //0x08
+	float h;								        //0x0C
+	int horzAlign;							        //0x10
+	int vertAlign;							        //0x14
 }; //Size = 0x18
 
 struct WeaponDef
 {
-	const char *szInternalName;				//0x000
-	const char *szOverlayName;				//0x004
-	char pad00[0x13C];						//0x008
-	int weapType;							//0x144
-	int weapClass;							//0x148
-	int penetrateType;						//0x14C
-	int impactType;							//0x150
-	int inventoryType;						//0x154
-	int fireType;							//0x158
-	int clipType;							//0x15C
-	int itemIndex;							//0x160
-	char pad01[0x13C];						//0x164
-	struct Material *reticleSlide;			//0x2A0
-	char pad02[0x134];						//0x2A4
-	struct Material *hudIcon;				//0x3D8
-	int hudIconRatio;						//0x3DC
-	struct Material *ammoCounterIcon;		//0x3E0
-	int	ammoCounterIconRatio;				//0x3E4
-	char pad03[0x24];						//0x3E8
-	int shotCount;							//0x40C
-	char pad04[0x420];						//0x410
-	float fAdsSpread;						//0x830
-	char pad05[0xEC];						//0x834
-	float fMinDamageRange;					//0x920
-};
+	const char *szInternalName;				        //0x000
+	const char *szOverlayName;				        //0x004
+	char pad00[0x13C];						        //0x008
+	int weapType;							        //0x144
+	int weapClass;							        //0x148
+	int penetrateType;						        //0x14C
+	int impactType;							        //0x150
+	int inventoryType;						        //0x154
+	int fireType;							        //0x158
+	int clipType;							        //0x15C
+	int itemIndex;							        //0x160
+	char pad01[0x13C];						        //0x164
+	struct Material *reticleSlide;			        //0x2A0
+	char pad02[0x134];						        //0x2A4
+	struct Material *hudIcon;				        //0x3D8
+	int hudIconRatio;						        //0x3DC
+	struct Material *ammoCounterIcon;		        //0x3E0
+	int	ammoCounterIconRatio;				        //0x3E4
+	char pad03[0x24];						        //0x3E8
+	int shotCount;							        //0x40C
+	char pad04[0x420];						        //0x410
+	float fAdsSpread;						        //0x830
+	char pad05[0xEC];						        //0x834
+	float fMinDamageRange;					        //0x920
+}; //Size = 0x924
 
 union DvarValue
 {
-	bool enabled;							//0x01
-	int integer;							//0x04
-	unsigned int unsignedInt;				//0x04
-	__int64 integer64;						//0x08
-	unsigned __int64 unsignedInt64;			//0x08
-	float value;							//0x04
-	float vector[4];						//0x10
-	const char *string;						//0x04
-	char color[4];							//0x04
+	bool enabled;							        //0x01
+	int integer;							        //0x04
+	unsigned int unsignedInt;				        //0x04
+	__int64 integer64;						        //0x08
+	unsigned __int64 unsignedInt64;			        //0x08
+	float value;							        //0x04
+	float vector[4];						        //0x10
+	const char *string;						        //0x04
+	char color[4];							        //0x04
 }; //Size = 0x10
 
 struct dvar_s
 {
-	const char *name;						//0x00
-	const char *description;				//0x04
-	unsigned int flags;						//0x08
-	char pad00[0x4];						//0x0C
-	DvarValue current;						//0x10
-	DvarValue latched;						//0x20
-	DvarValue reset;						//0x30
-	DvarValue saved;						//0x40
-	char pad01[0x8];						//0x50
-	dvar_s *next;							//0x58
+	const char *name;						        //0x00
+	const char *description;				        //0x04
+	unsigned int flags;						        //0x08
+	char pad00[0x4];						        //0x0C
+	DvarValue current;						        //0x10
+	DvarValue latched;						        //0x20
+	DvarValue reset;						        //0x30
+	DvarValue saved;						        //0x40
+	char pad01[0x8];						        //0x50
+	dvar_s *next;							        //0x58
 }; //Size = 0x5C
+
+enum scriptInstance_t : int
+{
+    SCRIPTINSTANCE_SERVER = 0x0,
+    SCRIPTINSTANCE_CLIENT = 0x1,
+    SCRIPT_INSTANCE_MAX = 0x2,
+};
 
 struct VariableValue
 {
@@ -369,9 +376,46 @@ struct VariableValue
         struct VariableStackBuffer *stackValue;
         unsigned int entityOffset;
     };
-    VariableUnion u;                          //0x00
-    int type;                                 //0x04
+    VariableUnion u;                                //0x00
+    int type;                                       //0x04
 }; //Size = 0x08
+
+struct function_stack_t
+{
+    const char *pos;                                //0x00
+    unsigned int localId;                           //0x04
+    unsigned int localVarCount;                     //0x08
+    VariableValue *top;                             //0x0C
+    VariableValue *startTop;                        //0x10
+}; //Size = 0x14
+
+struct function_frame_t
+{
+    function_stack_t fs;                            //0x00
+    int topType;                                    //0x14
+}; //Size = 0x18
+
+struct scrVmPub_t
+{
+    unsigned int *localVars;                        //0x0000
+    VariableValue *maxstack;                        //0x0004
+    int function_count;                             //0x0008
+    function_frame_t *function_frame;               //0x000C
+    VariableValue *top;                             //0x0010
+    bool debugCode;                                 //0x0014
+    bool abort_on_error;                            //0x0015
+    bool terminal_error;                            //0x0016
+    char pad00[0x1];                                //0x0017
+    unsigned int inparamcount;                      //0x0018
+    unsigned int outparamcount;                     //0x001C
+    function_frame_t function_frame_start[0x20];    //0x0020
+    VariableValue stack[0x800];                     //0x0320
+}; //Size = 0x4320
+
+struct gentity_s
+{
+
+}; //Size = 0x378
 
 extern UiContext *dc;
 extern ScreenPlacement *scrPlace;
@@ -384,7 +428,7 @@ extern WORD *clientObjMap;
 extern BYTE *objBuf;
 extern int *cl_connectionState;
 extern HWND *hwnd;
-extern WORD *gScVarGlob;
+extern scrVmPub_t *gScrVmPub;
 
 enum FuncAddresses : DWORD
 {
@@ -425,6 +469,11 @@ enum FuncAddresses : DWORD
 	timeGetTime_a						= 0x7EB39C,
 	Cbuf_AddText_a						= 0x594200,
     FindVariableIndexInternal_a         = 0x68BC20,
+    FindLastSibling_a                   = 0x68BCA0,
+    Scr_AddFloat_a                      = 0x69A670,
+    Scr_AddInt_a                        = 0x42A2B0,
+    Scr_AddString_a                     = 0x69A7E0,
+    Scr_AddVector_a                     = 0x69A940,
 };
 
 namespace Colors
@@ -439,6 +488,7 @@ namespace Colors
 
 		operator float*() { return reinterpret_cast<float*>(this); }
 	};
+
 	extern Color white;
 	extern Color black;
 	extern Color red;
@@ -456,8 +506,8 @@ namespace GameData
 		int index;
 		const char *dir;
 	};
-	extern Font normalFont;
 
+	extern Font normalFont;
 	extern std::vector<QWORD> detours;
 	extern std::map<const char*, dvar_s*> dvars;
 	extern bool initialized;
@@ -532,6 +582,14 @@ bool AimTarget_IsTargetVisible(centity_s *cent, unsigned __int16 bone);
 bool IN_IsForegroundWindow();
 void speex_error(const char *arg);
 const char* SL_ConvertToString(int stringValue);
-unsigned int FindVariable(int inst,
+unsigned int FindVariable(scriptInstance_t inst,
     unsigned int parentId, unsigned int unsignedValue);
-unsigned int Scr_GetSelf(int inst, int threadId);
+unsigned int FindObject(scriptInstance_t inst, unsigned int id);
+unsigned int Scr_GetSelf(scriptInstance_t inst, unsigned int threadId);
+unsigned int FindLastSibling(scriptInstance_t inst, unsigned int id);
+int GetVariableKeyObject(scriptInstance_t inst, unsigned int id);
+void Scr_SetParameters(int count);
+void Scr_AddFloat(float value);
+void Scr_AddInt(int value);
+void Scr_AddString(const char *string);
+void Scr_AddVector(const float *value);

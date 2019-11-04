@@ -9,11 +9,11 @@ clientActive_t *clientActive	 = (clientActive_t*)0x3058528;
 WORD *clientObjMap				 = (WORD*)0x1FE58C8;
 BYTE *objBuf					 = (BYTE*)0x1F978C8;
 HWND *hwnd						 = (HWND*)0x22C1BE4;
+scrVmPub_t *gScrVmPub            = (scrVmPub_t*)0x3BD4700;
 WeaponDef **bg_weaponVariantDefs = (WeaponDef**)0x8F6770;
 cgs_t *cgs						 = (cgs_t*)0x3466578;
 actor_s *actors					 = (actor_s*)0x176C874;
 int *cl_connectionState			 = (int*)0x305842C;
-WORD *gScVarGlob = (WORD*)0x3974700;
 
 std::vector<QWORD> GameData::detours;
 std::map<const char*, dvar_s*> GameData::dvars;
@@ -612,7 +612,7 @@ const char* SL_ConvertToString(int stringValue)
 	return *gScrMemTreePub + ((stringValue * 2 + stringValue) * 4) + 4;
 }
 
-unsigned int FindVariableIndexInternal(int inst, unsigned int name,
+unsigned int FindVariableIndexInternal(scriptInstance_t inst, unsigned int name,
     unsigned int index)
 {
     DWORD addr = FindVariableIndexInternal_a;
@@ -630,21 +630,28 @@ unsigned int FindVariableIndexInternal(int inst, unsigned int name,
 }
 
 
-unsigned int FindVariable(int inst,
+unsigned int FindVariable(scriptInstance_t inst,
     unsigned int parentId, unsigned int unsignedValue)
 {
+    WORD *gScVarGlob = (WORD*)0x3974700;
     return static_cast<DWORD>(
         *(WORD*)(  
             (int)gScVarGlob + (
-                FindVariableIndexInternal(inst,
+                (FindVariableIndexInternal(inst,
                     unsignedValue, (parentId + unsignedValue) % 0xFFFD + 1)
-                + inst * 0x16000 << 4 
+                + inst * 0x16000) << 4 
             )
         )
     );
 }
 
-unsigned int Scr_GetSelf(int inst, int threadId)
+unsigned int FindObject(scriptInstance_t inst, unsigned int id)
+{
+    WORD *gScVarGlob = (WORD*)0x3974704;
+    return *(unsigned int*)((int)gScVarGlob + ((id + inst * 0x16000) << 4));
+}
+
+unsigned int Scr_GetSelf(scriptInstance_t inst, unsigned int threadId)
 {
     unsigned short *gsvg_variableList = (unsigned short*)0x3914716;
     int index = (threadId + inst * 0x16000) << 4;
@@ -654,3 +661,89 @@ unsigned int Scr_GetSelf(int inst, int threadId)
         )
     );
 }
+
+unsigned int FindLastSibling(scriptInstance_t inst, unsigned int parentId)
+{
+    DWORD addr = FindLastSibling_a;
+    DWORD funcRet;
+    __asm
+    {
+        mov         edx, parentId
+        mov         esi, inst
+        call        addr
+        mov         funcRet, eax
+    }
+    return funcRet;
+}
+
+int GetVariableKeyObject(scriptInstance_t inst, unsigned int id)
+{
+    WORD *gsvg_variableList = (WORD*)0x3974700;
+    int *gScrVarGlob = (int*)0x3974708;
+    int index = inst * 0x16000;
+
+    id = static_cast<DWORD>(
+        *(WORD*)(
+        (int)gsvg_variableList + ((id + inst) << 4)
+        )
+    );
+
+    return ((*(int*)((int)gScrVarGlob + ((id + inst) << 4))) >> 8) - 0x10000;
+}
+
+void Scr_SetParameters(int count)
+{
+    gScrVmPub[SCRIPTINSTANCE_CLIENT].top->u.intValue = count;
+}
+
+void Scr_AddFloat(float value)
+{
+    DWORD addr = Scr_AddFloat_a;
+    scriptInstance_t inst = SCRIPTINSTANCE_CLIENT;
+    __asm
+    {
+        mov         eax, inst
+        sub         esp, 4
+        mov         [esp], value
+        call        addr
+        add         esp, 4
+    }
+}
+
+void Scr_AddInt(int value)
+{
+    DWORD addr = Scr_AddInt_a;
+    __asm
+    {
+        mov         eax, value
+        call        addr
+    }
+}
+
+void Scr_AddString(const char *string)
+{
+    DWORD addr = Scr_AddString_a;
+    scriptInstance_t inst = SCRIPTINSTANCE_CLIENT;
+    __asm
+    {
+        mov         eax, inst
+        push        string
+        call        addr
+        add         esp, 4
+    }
+}
+
+void Scr_AddVector(const float *value)
+{
+    DWORD addr = Scr_AddVector_a;
+    scriptInstance_t inst = SCRIPTINSTANCE_CLIENT;
+    __asm
+    {
+        mov         eax, inst
+        push        value
+        call        addr
+        add         esp, 4
+    }
+}
+
+void Scr_AddEntity

@@ -318,7 +318,7 @@ void IN_MouseEventDetour(int mstate)
 		return IN_MouseEvent(mstate);
 }
 
-void __declspec(naked) VM_NotifyStub(int inst, int notifyListOwnerId, 
+void __declspec(naked) VM_NotifyStub(scriptInstance_t inst, int notifyListOwnerId, 
 	int stringValue, VariableValue *top)
 {
 	__asm
@@ -339,18 +339,28 @@ void __declspec(naked) VM_NotifyStub(int inst, int notifyListOwnerId,
 	}
 }
 
-void VM_NotifyDetour(int inst, int notifyListOwnerId, int stringValue,
+void VM_NotifyDetour(scriptInstance_t inst, int notifyListOwnerId, int stringValue,
 	VariableValue *top)
 {
-    DWORD notifyListId = FindVariable(inst, notifyListOwnerId, 0x15FFE);
     LPCSTR notifyString = SL_ConvertToString(stringValue);
 
+    DWORD notifyListId = FindVariable(inst, notifyListOwnerId, 0x15FFE);
+    if (!notifyListId)
+        return;
+    notifyListId = FindObject(inst, notifyListId);
 
+    DWORD notifyNameListId = FindVariable(inst, notifyListId, stringValue);
+    if (!notifyNameListId)
+        return;
+    notifyNameListId = FindObject(inst, notifyNameListId);
 
-    if (!strcmp(notifyString, "spawned_player"))
+    DWORD notifyListIndex = FindLastSibling(inst, notifyNameListId);
+    DWORD threadId = GetVariableKeyObject(inst, notifyListIndex);
+
+    if (!strcmp(notifyString, "spawned_player"))    
         printf("born\n");
 	if (!strcmp(notifyString, "weapon_fired"))
 		printf("shooting weapon\n");
-
-    printf("Scr_GetSelf: %x\n", Scr_GetSelf(inst, notifyListOwnerId));
+    
+    int self = Scr_GetSelf(inst, threadId);
 }

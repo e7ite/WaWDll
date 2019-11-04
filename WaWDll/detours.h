@@ -74,7 +74,7 @@ void CG_PredictPlayerState_InternalDetour(int localClientNum);
 void CL_CreateNewCommandsStub();
 void CL_CreateNewCommandsDetour();
 void IN_MouseEventDetour(int mstate);
-void VM_NotifyStub(int inst, int notifyListOwnerId, int stringValue,
+void VM_NotifyStub(scriptInstance_t inst, int notifyListOwnerId, int stringValue,
 	struct VariableValue *top);
-void VM_NotifyDetour(int inst, int notifyListOwnerId, int stringValue,
+void VM_NotifyDetour(scriptInstance_t inst, int notifyListOwnerId, int stringValue,
 	struct VariableValue *top);
