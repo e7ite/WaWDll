@@ -287,12 +287,6 @@ struct clientActive_t
     entityState_s parseEntities[0x800];             //0x128030
 }; //Size = 0x1B4030
 
-struct actor_s
-{
-    gentity_s *gent;
-    struct sentient_s *sentient;
-};    //Size = 0x378
-
 struct rectDef_s
 {
     float x;                                        //0x00
@@ -424,9 +418,8 @@ struct entityShared_t
 {
     char linked;                                    //0x00
     char bmodel;                                    //0x01
-    char svFlags;                                   //0x02
-    int clientMask;                                 //0x03
-    char inuse;                                     //0x07
+    unsigned short svFlags;                         //0x02
+    int clientMask;                                 //0x04
     int broadcastTime;                              //0x08
     char pad00[0x8];                                //0x0C
     float mins[3];                                  //0x10
@@ -460,14 +453,21 @@ struct clientSession_t
     char pad01[0x10];                               //0xD4
     float moveSpeedScaleMultiplier;                 //0xE4
     int viewmodelIndex;                             //0xE8
-};
+}; //Size = 0x18C
 
 //TODO: Resume mapping gentity_s at 018EF1E4
 struct gclient_s
 {
     playerState_s ps;                               //0x0000
     clientSession_t sess;                           //0x20AC
-};
+
+}; //Size = 0x2348
+
+struct actor_s
+{
+    struct gentity_s *gent;
+    struct sentient_s *sentient;
+}; //Size = 0x378
 
 struct gentity_s
 {
