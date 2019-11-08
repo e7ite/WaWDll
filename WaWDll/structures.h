@@ -35,38 +35,38 @@ struct vec3_t
 
 struct UiContext
 {
-	int contentIndex;						        //0x00
-	float bias;								        //0x04
-	int realTime;							        //0x08
-	int frameTime;							        //0x0C
-	float cursorPos[2];						        //0x10
-	int isCursorVisible;					        //0x18
-	int screenDimensions[2];				        //0x1C
-	float screenAspect;						        //0x24
-	float fps;								        //0x28
+	int contentIndex;                               //0x00
+	float bias;                                     //0x04
+	int realTime;                                   //0x08
+	int frameTime;                                  //0x0C
+	float cursorPos[2];                             //0x10
+	int isCursorVisible;                            //0x18
+	int screenDimensions[2];                        //0x1C
+	float screenAspect;                             //0x24
+	float fps;                                      //0x28
 }; //Size = 0x2C
 
 struct Font_s
 {
-	const char *fontName;					        //0x00
-	int pixelHeight;						        //0x04
-	int glyphCount;							        //0x08
-	struct Material *material;				        //0x0C
-	struct Material *glowMaterial;			        //0x10
-	struct Glyph *glyphs;					        //0x14
+	const char *fontName;                           //0x00
+	int pixelHeight;                                //0x04
+	int glyphCount;                                 //0x08
+	struct Material *material;                      //0x0C
+	struct Material *glowMaterial;                  //0x10
+	struct Glyph *glyphs;                           //0x14
 }; //Size = 0x18
 
 struct ScreenPlacement
 {
-	float scaleVirtualToReal[2];			        //0x00
-	float scaleVirtualToFull[2];			        //0x08
-	float scaleRealToVirtual[2];			        //0x10
-	float virtualViewableMin[2];			        //0x18
-	float virtualViewableMax[2];			        //0x20
-	float virtualTweakableMin[2];			        //0x28
-	float virtualTweakableMax[2];			        //0x30
-	float realViewportBase[2];				        //0x38
-	float realViewportSize[2];				        //0x40
+	float scaleVirtualToReal[2];                    //0x00
+	float scaleVirtualToFull[2];                    //0x08
+	float scaleRealToVirtual[2];                    //0x10
+	float virtualViewableMin[2];                    //0x18
+	float virtualViewableMax[2];                    //0x20
+	float virtualTweakableMin[2];                   //0x28
+	float virtualTweakableMax[2];                   //0x30
+	float realViewportBase[2];                      //0x38
+    float realViewportSize[2];                      //0x40
 	float realViewportMid[2];				        //0x48
 	float realViewableMin[2];				        //0x50
 	float realViewableMax[2];				        //0x58
@@ -134,8 +134,6 @@ struct playerState_s
 	char pad07[0x1794];						        //0x0918
 }; //Size = 0x20AC
 
-//TODO: Resume mapping gentity_s at 018EF1E4
-
 struct cpose_t
 {
 	unsigned __int16 lightningHandle;		        //0x00
@@ -187,11 +185,11 @@ struct clientInfo_t
 	int team;								        //0x02C
 	int oldteam;							        //0x030
 	int ffateam;							        //0x034
-	char pad00[0x1C];						        //0x038
-	char model[0x40];						        //0x054
-	char attachModelNames[0x6][0x40];		        //0x094
-	char attachTagNames[0x6][0x40];			        //0x214
-	char pad01[0x6C];						        //0x394
+	char pad00[0x20];						        //0x038
+	char model[0x40];						        //0x058
+	char attachModelNames[0x6][0x40];		        //0x098
+	char attachTagNames[0x6][0x40];			        //0x218
+	char pad01[0x68];						        //0x398
 	float playerAngles[3];					        //0x400
 	char pad02[0x188];						        //0x40C
 }; //Size = 0x594
@@ -224,7 +222,7 @@ struct cg_s
 	char pad03[0x4];						        //0x0AAC94
 	playerState_s predictedPlayerState;		        //0x0AAC98
 	char pad04[0x33C];						        //0x0ACD44
-	refdef_s refdef;						        //0x00AD080
+	refdef_s refdef;						        //0x0AD080
 	char pad05[0x6F68];						        //0x0B1364
 	int weaponSelect;						        //0x0B82CC
 	char pad06[0xD4];						        //0x0B82D0
@@ -291,7 +289,7 @@ struct clientActive_t
 
 struct actor_s
 {
-	struct gentity_s *gent;
+	gentity_s *gent;
 	struct sentient_s *sentient;
 };	//Size = 0x378
 
@@ -440,8 +438,8 @@ struct entityShared_t
     float currentAngles[3];                         //0x50
     EntHandle ownerNum;                             //0x5C
     int eventTime;                                  //0x60
-    char pad01[0x8];                                //0x64
-}; //Size = 0x6C
+    char pad01[0x4];                                //0x64
+}; //Size = 0x68
 
 struct clientSession_t
 {
@@ -464,6 +462,7 @@ struct clientSession_t
     int viewmodelIndex;                             //0xE8
 };
 
+//TODO: Resume mapping gentity_s at 018EF1E4
 struct gclient_s
 {
     playerState_s ps;                               //0x0000
@@ -474,7 +473,13 @@ struct gentity_s
 {
     entityState_s s;                                //0x000
     entityShared_t r;                               //0x118
-    gclient_s *client;                              //0x184
+    gclient_s *client;                              //0x180
+    actor_s *actor;                                 //0x184
+    struct sentient_s *sentient;                    //0x188
+    char pad00[0xC];                                //0x18C
+    unsigned short model;                           //0x198
+    char pad01[0x142];                              //0x19A
+    unsigned short attachModelNames[0x13];          //0x2DC
 }; //Size = 0x378
 
 extern UiContext *dc;

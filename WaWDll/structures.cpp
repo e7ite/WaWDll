@@ -656,6 +656,7 @@ unsigned int Scr_GetSelf(scriptInstance_t inst, unsigned int threadId)
 {
     unsigned short *gsvg_variableList = (unsigned short*)0x3914716;
     int index = (threadId + inst * 0x16000) << 4;
+
     return static_cast<unsigned int>(
         *(decltype(gsvg_variableList))(
             (int)gsvg_variableList + index
