@@ -657,6 +657,9 @@ unsigned int Scr_GetSelf(scriptInstance_t inst, unsigned int threadId)
     unsigned short *gsvg_variableList = (unsigned short*)0x3914716;
     int index = (threadId + inst * 0x16000) << 4;
 
+    printf("inst: %x threadid: %x index: %x abs addr: %x\n", inst, threadId, //0x8BA
+        index, (int)gsvg_variableList + index);
+
     return static_cast<unsigned int>(
         *(decltype(gsvg_variableList))(
             (int)gsvg_variableList + index
@@ -684,13 +687,20 @@ int GetVariableKeyObject(scriptInstance_t inst, unsigned int id)
     int *gScrVarGlob = (int*)0x3974708;
     int index = inst * 0x16000;
 
-    id = static_cast<DWORD>(
-        *(WORD*)(
-        (int)gsvg_variableList + ((id + inst) << 4)
-        )
+    unsigned int index2 = 
+        static_cast<unsigned int>(
+            *(WORD*)((int)gsvg_variableList + ((id + index) << 4))
     );
 
-    return ((*(int*)((int)gScrVarGlob + ((id + inst) << 4))) >> 8) - 0x10000;
+    printf("index2: %x ", index2); //0x944
+    int indexn = (index2 + index) << 4;
+    printf("indexn: %x ", indexn); //0x944
+    printf("addr: %x ", 0x3974708 + indexn);
+    int index3 = *(int*)(0x3974708 + indexn);
+    printf("index3: %x\n", index3); //0108BA20
+
+    return (index3 >> 8) - 0x10000;
+
 }
 
 void Scr_SetParameters(int count)

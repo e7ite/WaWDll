@@ -6,24 +6,25 @@ int Menu::toggled;
 int Menu::currentSub;
 int Menu::timer;
 
-int Variables::enableAimbot;
-int Variables::aimKey;
-int Variables::aimType;
-int Variables::autoAim;
-int Variables::autoShoot;
-int Variables::noSpread;
-int Variables::noRecoil;
+OptionData Variables::enableAimbot;
+OptionData Variables::aimKey;
+OptionData Variables::aimType;
+OptionData Variables::autoAim;
+OptionData Variables::autoShoot;
+OptionData Variables::noSpread;
+OptionData Variables::noRecoil;
 
-int Variables::enemyESP;
-int Variables::friendlyESP;
+OptionData Variables::enemyESP;
+OptionData Variables::friendlyESP;
 
-int Variables::serverInfo;
+OptionData Variables::serverInfo;
 
-int Variables::steadyAim;
-int Variables::cheatsEnabled;
-int Variables::godMode;
-int Variables::infAmmo;
-int Variables::fov = 65;
+OptionData Variables::steadyAim;
+OptionData Variables::cheatsEnabled;
+OptionData Variables::godMode;
+OptionData Variables::infAmmo;
+OptionData Variables::noFlinch;
+OptionData Variables::fov;
 
 void Menu::Build()
 {
@@ -52,9 +53,9 @@ void Menu::Build()
 	Insert(AIMBOT_MENU, "Enable Aimbot", &enableAimbot,
 		TYPE_BOOL, std::bind(BoolModify, &enableAimbot));
 	Insert(AIMBOT_MENU, "Aim Key", &aimKey,
-		TYPE_INT, std::bind(IntModify, &aimKey, 0, 2));
+		TYPE_INT, std::bind(IntModify, TYPE_INT, &aimKey, 0, 2));
 	Insert(AIMBOT_MENU, "Aim Type", &aimType,
-		TYPE_INT, std::bind(IntModify, &aimType, 0, 2));
+		TYPE_INT, std::bind(IntModify, TYPE_INT, &aimType, 0, 2));
 	Insert(AIMBOT_MENU, "Auto Aim", &autoAim,
 		TYPE_BOOL, std::bind(BoolModify, &autoAim));
 	Insert(AIMBOT_MENU, "Auto Shoot", &autoShoot,
@@ -65,7 +66,7 @@ void Menu::Build()
 		TYPE_BOOL, std::bind(BoolModify, &noSpread));
 
 	Insert(MISC_MENU, "FOV", &fov,
-		TYPE_INT, std::bind(IntModify, &fov, 65, 125));
+		TYPE_INT, std::bind(IntModify, TYPE_INT, &fov, 65, 125));
 	Insert(MISC_MENU, "Super Steady Aim", &steadyAim,
 		TYPE_BOOL, std::bind(BoolModify, &steadyAim));
 	Insert(MISC_MENU, "Enable Cheats", &cheatsEnabled,
@@ -85,9 +86,11 @@ void Menu::Build()
 		TYPE_VOID, std::bind(Cbuf_AddText, "notarget"));
 	Insert(MISC_MENU, "Infinite Ammo", &infAmmo,
 		TYPE_BOOL, std::bind(BoolModify, &infAmmo));
+    Insert(MISC_MENU, "No Flinch", &noFlinch,
+        TYPE_BOOL, std::bind(BoolModify, &noFlinch));
 }
 
-void Menu::Insert(int sub, const char *option, int *data,
+void Menu::Insert(int sub, const char *option, OptionData *data,
 	OptionType type, const std::function<void()> &callback)
 {
 	options.at(sub).push_back(Option(option, data, type, callback));
@@ -117,22 +120,22 @@ void Menu::CloseSub()
 	}
 }
 
-void Menu::BoolModify(int *var)
+void Menu::BoolModify(OptionData *var)
 {
-	*var = !*var;
+	var->boolean = !var->boolean;
 }
 
-void Menu::IntModify(int *var, int min, int max)
-{
-	if (toggled)
-		++(*var);
-	else
-		--(*var);
+void Menu::IntModify(OptionType type, OptionData *var, int min, int max)
+{;
+    if (toggled)
+        var->integer++;
+    else
+        var->integer--;
 
-	if (*var > max)
-		*var = min;
-	if (*var < min)
-		*var = max;
+    if (var->integer > max)
+        var->integer = min;
+    if (var->integer < min)
+        var->integer = max;
 }
 
 bool Menu::Ready()
@@ -182,10 +185,10 @@ void Menu::Execute()
 		case TYPE_BOOL:
 			UI_FillRect(scrPlace, borderX + borderW - 12,
 				optionY - optionH + 2, 8, 8, 0, 0,
-				*i.data ? Colors::blue : Colors::transparentBlack);
+				i.data->boolean ? Colors::blue : Colors::transparentBlack);
 			break;
 		case TYPE_INT:
-			std::string data = std::to_string(*i.data);
+			std::string data = std::to_string(i.data->integer);
 			RenderUIText(data.data(),
 				AlignText(data.data(), GameData::normalFont,
 					0.3f, borderX + borderW - 3, ALIGN_RIGHT, 1, 0),

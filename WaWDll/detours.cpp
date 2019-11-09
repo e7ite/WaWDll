@@ -1,6 +1,6 @@
 #include "detours.h"
 
-__usercall Menu_PaintAll = (__usercall)Menu_PaintAll_a;
+usercall_ Menu_PaintAll = (usercall_)Menu_PaintAll_a;
 void(__cdecl *R_EndFrame)() = (void(*)())R_EndFrame_a;
 void(*CL_SendCmd)() = (void(*)())CL_SendCmd_a;
 LONG(__stdcall *TopLevelExceptionFilter)(
@@ -9,7 +9,7 @@ LONG(__stdcall *TopLevelExceptionFilter)(
 void(__cdecl *CL_WritePacket)() = (void(__cdecl*)())CL_WritePacket_a;
 void(__fastcall *CG_DrawNightVisionOverlay)(int localClientNum)
     = (void(__fastcall*)(int))CG_DrawNightVisionOverlay_a;
-__usercall AimTarget_GetTagPos_0 = (__usercall)AimTarget_GetTagPos_0_a;
+usercall_ AimTarget_GetTagPos_0 = (usercall_)AimTarget_GetTagPos_0_a;
 int(__cdecl *Menu_HandleMouseMove)(ScreenPlacement *scrPlace, void *menu)
     = (int(__cdecl*)(ScreenPlacement*, void*))Menu_HandleMouseMove_a;
 void(__cdecl *CG_Draw2DInternal)() = (void(__cdecl*)())CG_Draw2DInternal_a;
@@ -18,14 +18,15 @@ void(__cdecl *CL_KeyEvent)(int localClientNum, int value, int down,
     unsigned int time) = (void(*)(int, int, int, unsigned int))CL_KeyEvent_a;
 sysEvent_t*(__cdecl *Win_GetEvent)(sysEvent_t *result, int unk)
     = (sysEvent_t*(*)(sysEvent_t*, int))Win_GetEvent_a;
-__usercall Cbuf_AddTextHook = (__usercall)Cbuf_AddText_a;
+usercall_ Cbuf_AddTextHook = (usercall_)Cbuf_AddText_a;
 void(__cdecl *CG_PredictPlayerState_Internal)(int localClientNum)
     = (void(__cdecl*)(int))CG_PredictPlayerStateInternal_a;
-__usercall CL_CreateCmd = (__usercall)CL_CreateCmd_a;
+usercall_ CL_CreateCmd = (usercall_)CL_CreateCmd_a;
 void(__cdecl *CL_CreateNewCommands)()
     = (void(__cdecl*)())CL_CreateNewCommands_a;
 void(__cdecl *IN_MouseEvent)(int mstate) = (void(__cdecl*)(int))IN_MouseEvent_a;
-__usercall VM_Notify = (__usercall)VM_Notify_a;
+usercall_ VM_Notify = (usercall_)VM_Notify_a;
+usercall_ CG_DamageFeedback = (usercall_)CG_DamageFeedback_a;
 
 void DetourFunction(DWORD targetFunction, DWORD detourFunction)
 {
@@ -83,11 +84,11 @@ void __declspec(naked) Menu_PaintAllStub(UiContext *dc)
     {
         push        esi
         call        Menu_PaintAllDetour
-        add            esp, 4
-        pop            edi
-        pop            ebp
-        pop            ebx
-        add            esp, 410h
+        add         esp, 4
+        pop         edi
+        pop         ebp
+        pop         ebx
+        add         esp, 410h
         ret
     }
 }
@@ -104,7 +105,10 @@ void Menu_PaintAllDetour(UiContext *dc)
             && GameData::InsertDvar("sv_cheats")
             && GameData::InsertDvar("player_sustainAmmo")
             && GameData::InsertDvar("cl_bypassMouseInput"))
+        {
             GameData::initialized = true;
+            Variables::fov.integer = 65;
+        }
         else
         {
             GameData::MessageBoxA(*hwnd, "Error reading dvars",
@@ -126,15 +130,18 @@ void R_EndFrameDetour()
 {
     unsigned const char steadyAimBytes[] = { 0x83, 0xFF, 0x02, 0x75, 0x15 };
 
-    WriteBytes(0x46A87E, Variables::noRecoil ? "\xEB" : "\x74", 1);
-    WriteBytes(0x41DB2B, Variables::steadyAim ? "\x90\x90\x90\x90\x90" 
+    WriteBytes(0x46A87E, Variables::noRecoil.boolean ? "\xEB" : "\x74", 1);
+    WriteBytes(0x41DB2B, Variables::steadyAim.boolean ? "\x90\x90\x90\x90\x90"
         : reinterpret_cast<const char*>(steadyAimBytes), 5);
 
     if (GameData::initialized)
     {
-        GameData::dvars["cg_fov"]->current.value = static_cast<float>(Variables::fov);
-        GameData::dvars["sv_cheats"]->current.enabled = Variables::cheatsEnabled;
-        GameData::dvars["player_sustainAmmo"]->current.enabled = Variables::infAmmo;
+        GameData::dvars["cg_fov"]->current.value
+            = static_cast<float>(Variables::fov.integer);
+        GameData::dvars["sv_cheats"]->current.enabled
+            = Variables::cheatsEnabled.boolean;
+        GameData::dvars["player_sustainAmmo"]->current.enabled 
+            = Variables::infAmmo.boolean;
     }
 
     R_EndFrame();
@@ -225,8 +232,8 @@ void CL_KeyEventDetour(int localClientNum, int key, int down, int time)
 {
     if (InGame() && keys[key].binding 
         && !*(int*)0x208E938
-        && (Variables::aimKey != 1 || !strcmp(keys[key].binding, "+attack"))
-        && Variables::autoShoot)
+        && (Variables::aimKey.integer != 1 || !strcmp(keys[key].binding, "+attack"))
+        && Variables::autoShoot.boolean)
         return;
 
     return CL_KeyEvent(localClientNum, key, down, time);
@@ -293,11 +300,11 @@ void CL_CreateNewCommandsDetour()
 
     bool aimbotRun = false;
     bool isShooting = Key_IsDown("+attack");
-    if (Variables::enableAimbot)
+    if (Variables::enableAimbot.boolean)
     {
-        if ((Variables::aimKey == 1 && isShooting)
-            || (Variables::aimKey == 2 && Key_IsDown("+speed_throw"))
-            || !Variables::aimKey)
+        if ((Variables::aimKey.integer == 1 && isShooting)
+            || (Variables::aimKey.integer == 2 && Key_IsDown("+speed_throw"))
+            || !Variables::aimKey.integer)
         {
             aimbotRun = ExecuteAimbot();
             if (aimbotRun)
@@ -305,7 +312,7 @@ void CL_CreateNewCommandsDetour()
         }
     }
 
-    if (Variables::autoShoot && (aimbotRun || isShooting))
+    if (Variables::autoShoot.boolean && (aimbotRun || isShooting))
     {
         ccmd->button_bits &= ~1;
         ocmd->button_bits |= 1;
@@ -343,6 +350,8 @@ void VM_NotifyDetour(scriptInstance_t inst, int notifyListOwnerId, int stringVal
     VariableValue *top)
 {
     LPCSTR notifyString = SL_ConvertToString(stringValue);
+    
+    printf("notifyListOwnerId: %x inst: %x\n", notifyListOwnerId, inst);
 
     DWORD notifyListId = FindVariable(inst, notifyListOwnerId, 0x15FFE);
     if (!notifyListId)
@@ -350,11 +359,13 @@ void VM_NotifyDetour(scriptInstance_t inst, int notifyListOwnerId, int stringVal
     notifyListId = FindObject(inst, notifyListId);
 
     DWORD notifyNameListId = FindVariable(inst, notifyListId, stringValue);
+    notifyNameListId = FindObject(inst, notifyNameListId);
     if (!notifyNameListId)
         return;
-    notifyNameListId = FindObject(inst, notifyNameListId);
 
     DWORD notifyListIndex = FindLastSibling(inst, notifyNameListId);
+    if (!notifyListIndex)
+        return;
     DWORD threadId = GetVariableKeyObject(inst, notifyListIndex);
 
     if (!strcmp(notifyString, "spawned_player"))    
@@ -362,5 +373,39 @@ void VM_NotifyDetour(scriptInstance_t inst, int notifyListOwnerId, int stringVal
     if (!strcmp(notifyString, "weapon_fired"))
         printf("shooting weapon\n");
     
+    //TODO: Fix crash here
     int self = Scr_GetSelf(inst, threadId);
+    printf("Scr_GetSelf: %x\n", self);
+}
+
+void __declspec(naked) CG_DamageFeedbackStub(int localClientNum, int yawByte, 
+    int pitchByte, int damage)
+{
+    __asm
+    {
+        push        ecx
+        push        ebp
+        mov         ebp, esp
+        push        [ebp + 0Ch]                     ;damage
+        push        eax                             ;pitchByte
+        push        edx                             ;yawByte
+        push        [ebp + 8]
+        call        CG_DamageFeedbackDetour
+        add         esp, 10h
+        pop         ebp
+        pop         ecx
+        test        al, al
+        jnz         CONTINUE_FLOW
+        ret
+CONTINUE_FLOW:
+        sub         esp, 28h
+        mov         ecx, dword ptr [8F435Ch]
+        push        00455379h
+        ret
+    }
+}
+
+bool CG_DamageFeedbackDetour(int localClientNum, int yawByte, int pitchByte, int damage)
+{
+    return !Variables::noFlinch.boolean;
 }

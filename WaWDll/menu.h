@@ -27,14 +27,21 @@ enum OptionType
 	TYPE_ARRAY,
 };
 
+union OptionData
+{
+    bool boolean;
+    int integer;
+    float rational;
+};
+
 struct Option
 {
 	const char *option;
-	int *data;
+	OptionData *data;
 	OptionType type;
 	std::function<void()> callback;
 
-	Option(const char *option, int *data,
+	Option(const char *option, OptionData *data,
 		OptionType type, std::function<void()> callback)
 		: option(option), data(data), type(type), callback(callback) {}
 };
@@ -49,12 +56,12 @@ namespace Menu
 
 	void Build();
 	void Execute();
-	void Insert(int sub, const char *option, int *data,
+	void Insert(int sub, const char *option, OptionData *data,
 		OptionType type, const std::function<void()> &func);
 	void LoadSub(int sub);
 	void CloseSub();
-	void BoolModify(int *var);
-	void IntModify(int *var, int min, int max);
+	void BoolModify(OptionData *var);
+	void IntModify(OptionType type, OptionData *var, int min, int max);
 	bool Ready();
 	void Wait(int ms);
 	bool MonitorMouse(const Option &opt, float optionX, float optionY,
@@ -64,24 +71,25 @@ namespace Menu
 
 namespace Variables
 {
-	extern int enableAimbot;
-	extern int aimKey;
-	extern int aimType;
-	extern int autoAim;
-	extern int autoShoot;
-	extern int noSpread;
-	extern int noRecoil;
+	extern OptionData enableAimbot;
+	extern OptionData aimKey;
+	extern OptionData aimType;
+	extern OptionData autoAim;
+	extern OptionData autoShoot;
+	extern OptionData noSpread;
+	extern OptionData noRecoil;
 
-	extern int enemyESP;
-	extern int friendlyESP;
+	extern OptionData enemyESP;
+	extern OptionData friendlyESP;
     
-	extern int serverInfo;
+	extern OptionData serverInfo;
 
-	extern int fov;	
-	extern int steadyAim;
-	extern int cheatsEnabled;
-	extern int godMode;
-	extern int infAmmo;
+	extern OptionData fov;	
+	extern OptionData steadyAim;
+	extern OptionData cheatsEnabled;
+	extern OptionData godMode;
+	extern OptionData infAmmo;
+    extern OptionData noFlinch;
 }
 
 void DrawFillRect(float x, float y, float width, float height,
