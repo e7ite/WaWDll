@@ -56,7 +56,7 @@ extern void(__cdecl *IN_MouseEvent)(int mstate);
 extern usercall_ VM_Notify;
 extern usercall_ CG_DamageFeedback;
 
-void Menu_PaintAllStub(UiContext *dc);
+void Menu_PaintAllDetourInvoke(UiContext *dc);
 void Menu_PaintAllDetour(UiContext *dc);
 void R_EndFrameDetour();
 void Cmd_ExecuteSingleCommandDetour(int localClientNum, int controllerIndex,
@@ -65,23 +65,23 @@ void TopLevelExceptionFilterDetour(struct _EXCEPTION_POINTERS *ExceptionInfo);
 void CL_WritePacketDetour();
 void CL_SendCmdDetour();
 void CG_DrawNightVisionOverlayDetour(int localClientNum);
-void AimTarget_GetTagPos_0Stub(centity_s *cent,
+void AimTarget_GetTagPos_0DetourInvoke(centity_s *cent,
     unsigned __int16 bone, float *out);
 int Menu_HandleMouseMoveDetour(ScreenPlacement *scrPlace, void *item);
 void CG_Draw2DInternalDetour();
 void UI_RefreshDetour(int localClientNum);
 void CL_KeyEventDetour(int localClientNum, int key, int down, int time);
-void Cbuf_AddTextStub(const char *text, int localClientNum);
+void Cbuf_AddTextDetourInvoke(const char *text, int localClientNum);
 bool Cbuf_AddTextDetour(const char *text, int localClientNum);
 void CG_PredictPlayerState_InternalDetour(int localClientNum);
-void CL_CreateNewCommandsStub();
+void CL_CreateNewCommandsDetourInvoke();
 void CL_CreateNewCommandsDetour();
 void IN_MouseEventDetour(int mstate);
-void VM_NotifyStub(scriptInstance_t inst, int notifyListOwnerId, int stringValue,
-    struct VariableValue *top);
+void VM_NotifyDetourInvoke(scriptInstance_t inst, int notifyListOwnerId, 
+    int stringValue, struct VariableValue *top);
 void VM_NotifyDetour(scriptInstance_t inst, int notifyListOwnerId,
     int stringValue, struct VariableValue *top);
-void CG_DamageFeedbackStub(int localClientNum, int yawByte, int pitchByte,
-    int damage);
+void CG_DamageFeedbackDetourInvoke(int localClientNum, int yawByte, 
+    int pitchByte, int damage);
 bool CG_DamageFeedbackDetour(int localClientNum, int yawByte, int pitchByte,
     int damage);

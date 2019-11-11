@@ -434,25 +434,33 @@ struct entityShared_t
     char pad01[0x4];                                //0x64
 }; //Size = 0x68
 
+struct clientState_s
+{
+
+};
+
 struct clientSession_t
 {
-    int sessionState;                               //0x00
-    int forceSpectatorClient;                       //0x04
-    int killcamEntity;                              //0x08
-    int killcamTargetEntity;                        //0x0C
-    int archiveTime;                                //0x10
-    unsigned int scriptPersId;                      //0x14
-    char pad00[0x1C];                               //0x18
-    int connected;                                  //0x34
-    usercmd_s cmd;                                  //0x38
-    usercmd_s oldcmd;                               //0x70
-    int localClient;                                //0xA8
-    int predictedItemPickup;                        //0xAC
-    char newnetname[0x20];                          //0xB0
-    int maxHealth;                                  //0xD0
-    char pad01[0x10];                               //0xD4
-    float moveSpeedScaleMultiplier;                 //0xE4
-    int viewmodelIndex;                             //0xE8
+    int sessionState;                               //0x000
+    int forceSpectatorClient;                       //0x004
+    int killcamEntity;                              //0x008
+    int killcamTargetEntity;                        //0x00C
+    int archiveTime;                                //0x010
+    unsigned int scriptPersId;                      //0x014
+    char pad00[0x1C];                               //0x018
+    int connected;                                  //0x034
+    usercmd_s cmd;                                  //0x038
+    usercmd_s oldcmd;                               //0x070
+    int localClient;                                //0x0A8
+    int predictedItemPickup;                        //0x0AC
+    char newnetname[0x20];                          //0x0B0
+    int maxHealth;                                  //0x0D0
+    char pad01[0x10];                               //0x0D4
+    float moveSpeedScaleMultiplier;                 //0x0E4
+    int viewmodelIndex;                             //0x0E8
+    int noSpectate;                                 //0x0EC
+    int teamInfo;                                   //0x0F0
+    clientState_s cs;                               //0x100
 }; //Size = 0x18C
 
 //TODO: Resume mapping gentity_s at 018EF1E4
@@ -460,7 +468,8 @@ struct gclient_s
 {
     playerState_s ps;                               //0x0000
     clientSession_t sess;                           //0x20AC
-
+    int spectatorClient;                            //0x2238
+    int flags;                                      //0x223C
 }; //Size = 0x2348
 
 struct actor_s
@@ -481,6 +490,35 @@ struct gentity_s
     char pad01[0x142];                              //0x19A
     unsigned short attachModelNames[0x13];          //0x2DC
 }; //Size = 0x378
+
+struct PrimedSound
+{
+    const char *name;                               //0x00
+    char *buffer;                                   //0x04
+    unsigned int size;                              //0x08
+};
+
+struct snd_alias_t
+{
+    char pad00[0x4];                                //0x00
+    PrimedSound *file;                              //0x04
+};
+
+struct snd_alias_list_t
+{
+    const char *name;                   
+    unsigned short aliasCount;                      //0x04
+    unsigned short aliasCount2;                     //0x06
+    char pad00[0xC];                                //0x08
+    snd_alias_t *head;                              //0x14
+};
+
+struct SndBank
+{
+    const char *name;                               //0x00
+    snd_alias_list_t *alias;                        //0x04
+    unsigned int aliasCount;                        //0x08
+}; 
 
 extern UiContext *dc;
 extern ScreenPlacement *scrPlace;
@@ -540,6 +578,9 @@ enum FuncAddresses : DWORD
     Scr_AddInt_a                         = 0x42A2B0,
     Scr_AddString_a                      = 0x69A7E0,
     Scr_AddVector_a                      = 0x69A940,
+    DB_FindXAssetEntry_a                 = 0x48D760,
+    FS_WriteFile_a                       = 0x5DC050,
+    FS_ReadFile_a                        = 0x5DBFB0,
 };
 
 namespace Colors
@@ -659,3 +700,5 @@ void Scr_AddFloat(float value);
 void Scr_AddInt(int value);
 void Scr_AddString(const char *string);
 void Scr_AddVector(const float *value);
+int FS_WriteFile(const char *filename, const void *buffer, int size);
+int FS_ReadFile(const char *qpath, void *buffer);

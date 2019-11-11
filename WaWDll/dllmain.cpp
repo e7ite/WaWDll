@@ -7,22 +7,23 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
 	case DLL_PROCESS_ATTACH:
 		AllocConsole();
 		SetConsoleTitle("WaW Hack");
-		freopen("CONOUT$", "w", stdout);
+        FILE *f;
+		freopen_s(&f, "CONOUT$", "w", stdout);
 
-		InsertDetour(&Menu_PaintAll, Menu_PaintAllStub);
+		InsertDetour(&Menu_PaintAll, Menu_PaintAllDetourInvoke);
 		InsertDetour(&R_EndFrame, R_EndFrameDetour);
 		InsertDetour(&Cmd_ExecuteSingleCommand, Cmd_ExecuteSingleCommandDetour);
 		InsertDetour(&TopLevelExceptionFilter, TopLevelExceptionFilterDetour);
 		InsertDetour(&CL_WritePacket, CL_WritePacketDetour);
-		InsertDetour(&AimTarget_GetTagPos_0, AimTarget_GetTagPos_0Stub);
+		InsertDetour(&AimTarget_GetTagPos_0, AimTarget_GetTagPos_0DetourInvoke);
 		InsertDetour(&Menu_HandleMouseMove, Menu_HandleMouseMoveDetour);
-		InsertDetour(&Cbuf_AddTextHook, Cbuf_AddTextStub);
+		InsertDetour(&Cbuf_AddTextHook, Cbuf_AddTextDetourInvoke);
 		InsertDetour(&CG_PredictPlayerState_Internal, 
 			CG_PredictPlayerState_InternalDetour);
-		InsertDetour(&CL_CreateNewCommands, CL_CreateNewCommandsStub);
+		InsertDetour(&CL_CreateNewCommands, CL_CreateNewCommandsDetourInvoke);
 		InsertDetour(&IN_MouseEvent, IN_MouseEventDetour);
-		InsertDetour(&VM_Notify, VM_NotifyStub);
-        InsertDetour(&CG_DamageFeedback, CG_DamageFeedbackStub);
+		InsertDetour(&VM_Notify, VM_NotifyDetourInvoke);
+        InsertDetour(&CG_DamageFeedback, CG_DamageFeedbackDetourInvoke);
 		break;
 	case DLL_PROCESS_DETACH:
 		FreeConsole();

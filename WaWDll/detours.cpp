@@ -78,7 +78,7 @@ void InsertDetour(LPVOID targetFunction, LPVOID detourFunction)
     DetourFunction((DWORD)targetFunction, (DWORD)detourFunction);
 }
 
-void __declspec(naked) Menu_PaintAllStub(UiContext *dc)
+void __declspec(naked) Menu_PaintAllDetourInvoke(UiContext *dc)
 {
     __asm
     {
@@ -93,8 +93,11 @@ void __declspec(naked) Menu_PaintAllStub(UiContext *dc)
     }
 }
 
+#include <fstream>
+
 void Menu_PaintAllDetour(UiContext *dc)
 {
+    static void *buf = new char[631000];
     if (!GameData::initialized)
     {
         Menu::Build();
@@ -103,11 +106,25 @@ void Menu_PaintAllDetour(UiContext *dc)
             && GameData::InsertDvar("cg_fov")
             && GameData::InsertDvar("perk_weapSpreadMultiplier")
             && GameData::InsertDvar("sv_cheats")
-            && GameData::InsertDvar("player_sustainAmmo")
-            && GameData::InsertDvar("cl_bypassMouseInput"))
+            && GameData::InsertDvar("player_sustainAmmo"))
         {
             GameData::initialized = true;
             Variables::fov.integer = 65;
+
+            memset(buf, 0, 631000);
+
+            SndBank ***test = (SndBank***)0x957568;
+            printf("%x %s\n", (**test)->alias->head->file->size,
+                (**test)->alias->head->file->buffer);
+
+            /*if (FS_WriteFile("cow.txt", (**test)->alias->head->file->buffer,
+                (**test)->alias->head->file->size))
+                printf("yay\n");
+                */
+
+            printf("%p\n", buf);
+            if (FS_ReadFile("monkey.wav", buf))
+                printf("%s\n", "hi");
         }
         else
         {
@@ -194,7 +211,7 @@ void CG_DrawNightVisionOverlayDetour(int localClientNum)
     CG_DrawNightVisionOverlay(localClientNum);
 }
 
-void __declspec(naked) AimTarget_GetTagPos_0Stub(centity_s *cent,
+void __declspec(naked) AimTarget_GetTagPos_0DetourInvoke(centity_s *cent,
     unsigned __int16 bone, float *out)
 {
     __asm
@@ -239,7 +256,7 @@ void CL_KeyEventDetour(int localClientNum, int key, int down, int time)
     return CL_KeyEvent(localClientNum, key, down, time);
 }
 
-void __declspec(naked) Cbuf_AddTextStub(const char *text, int localClientNum)
+void __declspec(naked) Cbuf_AddTextDetourInvoke(const char *text, int localClientNum)
 {
     __asm
     {
@@ -275,7 +292,7 @@ void CG_PredictPlayerState_InternalDetour(int localClientNum)
     CG_PredictPlayerState_Internal(localClientNum);
 }
 
-void __declspec(naked) CL_CreateNewCommandsStub()
+void __declspec(naked) CL_CreateNewCommandsDetourInvoke()
 {
     __asm
     {
@@ -325,8 +342,8 @@ void IN_MouseEventDetour(int mstate)
         return IN_MouseEvent(mstate);
 }
 
-void __declspec(naked) VM_NotifyStub(scriptInstance_t inst, int notifyListOwnerId, 
-    int stringValue, VariableValue *top)
+void __declspec(naked) VM_NotifyDetourInvoke(scriptInstance_t inst,
+    int notifyListOwnerId, int stringValue, VariableValue *top)
 {
     __asm
     {
@@ -346,40 +363,35 @@ void __declspec(naked) VM_NotifyStub(scriptInstance_t inst, int notifyListOwnerI
     }
 }
 
-void VM_NotifyDetour(scriptInstance_t inst, int notifyListOwnerId, int stringValue,
-    VariableValue *top)
+void VM_NotifyDetour(scriptInstance_t inst, int notifyListOwnerId,
+    int stringValue, VariableValue *top)
 {
     LPCSTR notifyString = SL_ConvertToString(stringValue);
-    
-    printf("notifyListOwnerId: %x inst: %x\n", notifyListOwnerId, inst);
-
-    DWORD notifyListId = FindVariable(inst, notifyListOwnerId, 0x15FFE);
-    if (!notifyListId)
-        return;
-    notifyListId = FindObject(inst, notifyListId);
-
-    DWORD notifyNameListId = FindVariable(inst, notifyListId, stringValue);
-    notifyNameListId = FindObject(inst, notifyNameListId);
-    if (!notifyNameListId)
-        return;
-
-    DWORD notifyListIndex = FindLastSibling(inst, notifyNameListId);
-    if (!notifyListIndex)
-        return;
-    DWORD threadId = GetVariableKeyObject(inst, notifyListIndex);
-
-    if (!strcmp(notifyString, "spawned_player"))    
+    if (!strcmp(notifyString, "spawned_player"))
         printf("born\n");
     if (!strcmp(notifyString, "weapon_fired"))
         printf("shooting weapon\n");
-    
-    //TODO: Fix crash here
-    int self = Scr_GetSelf(inst, threadId);
-    printf("Scr_GetSelf: %x\n", self);
+
+    //DWORD notifyListId = FindVariable(inst, notifyListOwnerId, 0x15FFE);
+    //if (!notifyListId)
+    //    return;
+    //notifyListId = FindObject(inst, notifyListId);
+
+    //DWORD notifyNameListId = FindVariable(inst, notifyListId, stringValue);
+    //if (!notifyNameListId)
+    //    return;
+    //notifyNameListId = FindObject(inst, notifyNameListId);
+
+    //DWORD notifyListIndex = FindLastSibling(inst, notifyNameListId);
+    //if (!notifyListIndex)
+    //    return;
+
+    //DWORD threadId = GetVariableKeyObject(inst, notifyListIndex);
+    int self = Scr_GetSelf(inst, notifyListOwnerId);
 }
 
-void __declspec(naked) CG_DamageFeedbackStub(int localClientNum, int yawByte, 
-    int pitchByte, int damage)
+void __declspec(naked) CG_DamageFeedbackDetourInvoke(int localClientNum, 
+    int yawByte, int pitchByte, int damage)
 {
     __asm
     {
@@ -405,7 +417,8 @@ CONTINUE_FLOW:
     }
 }
 
-bool CG_DamageFeedbackDetour(int localClientNum, int yawByte, int pitchByte, int damage)
+bool CG_DamageFeedbackDetour(int localClientNum, int yawByte, int pitchByte, 
+    int damage)
 {
     return !Variables::noFlinch.boolean;
 }

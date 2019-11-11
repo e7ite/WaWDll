@@ -61,7 +61,7 @@ namespace Menu
 	void LoadSub(int sub);
 	void CloseSub();
 	void BoolModify(OptionData *var);
-	void IntModify(OptionType type, OptionData *var, int min, int max);
+	void IntModify(OptionData *var, OptionType type, int min, int max);
 	bool Ready();
 	void Wait(int ms);
 	bool MonitorMouse(const Option &opt, float optionX, float optionY,
@@ -83,6 +83,7 @@ namespace Variables
 	extern OptionData friendlyESP;
     
 	extern OptionData serverInfo;
+    extern OptionData healthBar;
 
 	extern OptionData fov;	
 	extern OptionData steadyAim;

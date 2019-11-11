@@ -18,6 +18,7 @@ OptionData Variables::enemyESP;
 OptionData Variables::friendlyESP;
 
 OptionData Variables::serverInfo;
+OptionData Variables::healthBar;
 
 OptionData Variables::steadyAim;
 OptionData Variables::cheatsEnabled;
@@ -53,9 +54,9 @@ void Menu::Build()
 	Insert(AIMBOT_MENU, "Enable Aimbot", &enableAimbot,
 		TYPE_BOOL, std::bind(BoolModify, &enableAimbot));
 	Insert(AIMBOT_MENU, "Aim Key", &aimKey,
-		TYPE_INT, std::bind(IntModify, TYPE_INT, &aimKey, 0, 2));
+		TYPE_INT, std::bind(IntModify, &aimKey, TYPE_INT, 0, 2));
 	Insert(AIMBOT_MENU, "Aim Type", &aimType,
-		TYPE_INT, std::bind(IntModify, TYPE_INT, &aimType, 0, 2));
+		TYPE_INT, std::bind(IntModify, &aimType, TYPE_INT, 0, 2));
 	Insert(AIMBOT_MENU, "Auto Aim", &autoAim,
 		TYPE_BOOL, std::bind(BoolModify, &autoAim));
 	Insert(AIMBOT_MENU, "Auto Shoot", &autoShoot,
@@ -66,16 +67,11 @@ void Menu::Build()
 		TYPE_BOOL, std::bind(BoolModify, &noSpread));
 
 	Insert(MISC_MENU, "FOV", &fov,
-		TYPE_INT, std::bind(IntModify, TYPE_INT, &fov, 65, 125));
+		TYPE_INT, std::bind(IntModify, &fov, TYPE_INT, 65, 125));
 	Insert(MISC_MENU, "Super Steady Aim", &steadyAim,
 		TYPE_BOOL, std::bind(BoolModify, &steadyAim));
 	Insert(MISC_MENU, "Enable Cheats", &cheatsEnabled,
-		TYPE_BOOL,
-		[]()
-		{
-			CG_GameMessage(0, "Requires restart to take effect", 0);
-			BoolModify(&cheatsEnabled);
-		});
+		TYPE_BOOL, std::bind(BoolModify, &cheatsEnabled));
 	Insert(MISC_MENU, "God Mode", nullptr,
 		TYPE_VOID, std::bind(Cbuf_AddText, "god"));
 	Insert(MISC_MENU, "No Clip", nullptr,
@@ -125,7 +121,7 @@ void Menu::BoolModify(OptionData *var)
 	var->boolean = !var->boolean;
 }
 
-void Menu::IntModify(OptionType type, OptionData *var, int min, int max)
+void Menu::IntModify(OptionData *var, OptionType type, int min, int max)
 {;
     if (toggled)
         var->integer++;
@@ -150,14 +146,17 @@ void Menu::Wait(int ms)
 
 void Menu::Execute()
 {
+    const char *title = "WaW Zombies DLL By E7ite";
 	float menuCenterX = dc->screenDimensions[0] / 2
 		/ scrPlace->scaleVirtualToFull[0];
 	float menuCenterY = dc->screenDimensions[1] / 2
 		/ scrPlace->scaleVirtualToFull[1];
+
 	float textWidth, textHeight;
 	Font_s *fontPointer;
-	float xAligned = AlignText("WaW Zombies DLL By E7ite", GameData::normalFont, 0.3f,
+	float xAligned = AlignText(title, GameData::normalFont, 0.3f,
 		menuCenterX, ALIGN_CENTER, 1, 1, &fontPointer, &textWidth, &textHeight);
+
 	float borderW = menuCenterX - 20;
 	float borderH = textHeight * options[currentSub].size();
 	float borderX = menuCenterX - borderW / 2;
@@ -166,9 +165,8 @@ void Menu::Execute()
 	float optionY = menuCenterY - 100;
 	float optionH = UI_TextHeight(fontPointer, 0.3f);
 
-	optionY += RenderUITextWithBackground("WaW Zombies DLL By E7ite",
-		xAligned, optionY, textWidth, textHeight, Colors::blue,
-		Colors::white, fontPointer, 0.3f);
+	optionY += RenderUITextWithBackground(title, xAligned, optionY, textWidth, 
+        textHeight, Colors::blue, Colors::white, fontPointer, 0.3f);
 	UI_FillRect(scrPlace, borderX, borderY, borderW, borderH, 0, 0,
 		Colors::transparentBlack);
 	UI_DrawRect(scrPlace, borderX, borderY, borderW, borderH, 
@@ -196,8 +194,8 @@ void Menu::Execute()
 			break;
 		}
 
-		optionY += RenderUIText(i.option, optionX,
-			optionY, 0.3f, color, fontPointer);
+		optionY += RenderUIText(i.option, optionX, optionY,
+            0.3f, color, fontPointer);
 	}
 }
 
@@ -335,6 +333,7 @@ float RenderGameText(const char *text, float x, float y, float scale,
 {
 	CL_DrawTextPhysical(text, INT_MAX, font, x, y,
 		scale, scale, rotation, color, 0);
+
 	return R_TextHeight(font) * scale;
 }
 
@@ -347,6 +346,7 @@ float RenderGameTextWithBackground(const char *text, float x, float y,
 	DrawEmptyRect(x, y - textH, textW - 2, textH + 2, 2,
 		borderColor);
 	RenderGameText(text, x + 6, y, scale, textColor, font, 0);
+
 	return textH + 2;
 }
 
@@ -355,6 +355,7 @@ float RenderUIText(const char *text, float x, float y, float scale,
 {
 	UI_DrawText(scrPlace, text, INT_MAX, font, x, y,
 		scale, 0.0f, color, 0);
+
 	return UI_TextHeight(font, scale) + 2.0f;
 }
 
@@ -366,6 +367,7 @@ float RenderUITextWithBackground(const char *text, float x, float y,
 		0, 0, Colors::transparentBlack);
 	UI_DrawRect(scrPlace, x, y - textH, textW - 2, textH + 2, 0, 0, 2, borderColor);
 	RenderUIText(text, x + 6, y, scale, textColor, font);
+
 	return textH + 2;
 }
 
