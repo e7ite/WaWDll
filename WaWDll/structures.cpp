@@ -777,3 +777,33 @@ int FS_ReadFile(const char *qpath, void *buffer)
     }
     return status;
 }
+
+XAsset DB_FindXAsset(XAssetType type)
+{
+    XAssetHeader **DB_XAssetPool = (XAssetHeader**)0x8DC828;
+    int *g_poolSize = (int*)0x8DC5D0;
+    const char*(__cdecl **DB_XAssetGetNameHandler)(XAssetHeader *header)
+        = (const char*(__cdecl**)(XAssetHeader*))0x8DCAF8;
+
+    XAsset xasset;
+    xasset.header = DB_XAssetPool[type];
+    xasset.type = type;
+    xasset.assets = g_poolSize[type];
+    xasset.name = DB_XAssetGetNameHandler[type](xasset.header);
+    return xasset;
+}
+
+snd_alias_list_t* SND_FindAlias(int localClientNum, const char *name)
+{
+    DWORD addr = SND_FindAlias_a;
+    snd_alias_list_t *funcRet;
+    __asm
+    {
+        mov         esi, name
+        push        localClientNum
+        call        addr
+        add         esp, 4
+        mov         funcRet, eax
+    }
+    return funcRet;
+}

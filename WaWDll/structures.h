@@ -491,7 +491,7 @@ struct gentity_s
     unsigned short attachModelNames[0x13];          //0x2DC
 }; //Size = 0x378
 
-struct PrimedSound
+struct SoundFile
 {
     const char *name;                               //0x00
     char *buffer;                                   //0x04
@@ -501,7 +501,7 @@ struct PrimedSound
 struct snd_alias_t
 {
     char pad00[0x4];                                //0x00
-    PrimedSound *file;                              //0x04
+    SoundFile *file;                                //0x04
 };
 
 struct snd_alias_list_t
@@ -511,14 +511,38 @@ struct snd_alias_list_t
     unsigned short aliasCount2;                     //0x06
     char pad00[0xC];                                //0x08
     snd_alias_t *head;                              //0x14
-};
+}; //Size = 0x18
 
 struct SndBank
 {
     const char *name;                               //0x00
     snd_alias_list_t *alias;                        //0x04
     unsigned int aliasCount;                        //0x08
-}; 
+}; //Size = 0x0C
+
+enum XAssetType
+{
+    ASSET_TYPE_SOUND = 0x9,
+};
+
+union XAssetHeader
+{
+    template <typename T, int N>
+    struct XAssetPool
+    {
+        T *freeHead;
+        T entries[N];
+    };
+    XAssetPool<SndBank, 0x3E80> sound;
+};
+
+struct XAsset
+{
+    const char *name;                               //0x00
+    XAssetType type;                                //0x04
+    int assets;                                     //0x08
+    XAssetHeader *header;                           //0x0C
+}; //Size = 0x10
 
 extern UiContext *dc;
 extern ScreenPlacement *scrPlace;
@@ -581,6 +605,7 @@ enum FuncAddresses : DWORD
     DB_FindXAssetEntry_a                 = 0x48D760,
     FS_WriteFile_a                       = 0x5DC050,
     FS_ReadFile_a                        = 0x5DBFB0,
+    SND_FindAlias_a                      = 0x63B560,
 };
 
 namespace Colors
@@ -702,3 +727,5 @@ void Scr_AddString(const char *string);
 void Scr_AddVector(const float *value);
 int FS_WriteFile(const char *filename, const void *buffer, int size);
 int FS_ReadFile(const char *qpath, void *buffer);
+XAsset DB_FindXAsset(XAssetType type);
+snd_alias_list_t* SND_FindAlias(int localClientNum, const char *name);

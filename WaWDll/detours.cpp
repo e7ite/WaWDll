@@ -113,18 +113,19 @@ void Menu_PaintAllDetour(UiContext *dc)
 
             memset(buf, 0, 631000);
 
-            SndBank ***test = (SndBank***)0x957568;
-            printf("%x %s\n", (**test)->alias->head->file->size,
-                (**test)->alias->head->file->buffer);
+            //SndBank ***test = (SndBank***)0x957568;
+            XAsset sndBank = DB_FindXAsset(ASSET_TYPE_SOUND);
+            printf("%p\n", SND_FindAlias(0, "music_mainmenu"));
+            
+            if (FS_WriteFile("lol.wav", 
+                SND_FindAlias(0, "music_mainmenu")->head->file->buffer,
+                SND_FindAlias(0, "music_mainmenu")->head->file->size))
+                printf("yay\n");   
 
-            /*if (FS_WriteFile("cow.txt", (**test)->alias->head->file->buffer,
-                (**test)->alias->head->file->size))
-                printf("yay\n");
-                */
-
+            /*
             printf("%p\n", buf);
             if (FS_ReadFile("monkey.wav", buf))
-                printf("%s\n", "hi");
+                printf("%s\n", "hi");*/
         }
         else
         {
