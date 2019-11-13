@@ -27,6 +27,8 @@ void(__cdecl *CL_CreateNewCommands)()
 void(__cdecl *IN_MouseEvent)(int mstate) = (void(__cdecl*)(int))IN_MouseEvent_a;
 usercall_ VM_Notify = (usercall_)VM_Notify_a;
 usercall_ CG_DamageFeedback = (usercall_)CG_DamageFeedback_a;
+int(*Com_Printf)(int channel, const char* format, ...) = (int(*)(int channel,
+    const char* format, ...))Com_Printf_a;
 
 void DetourFunction(DWORD targetFunction, DWORD detourFunction)
 {
@@ -93,11 +95,8 @@ void __declspec(naked) Menu_PaintAllDetourInvoke(UiContext *dc)
     }
 }
 
-#include <fstream>
-
 void Menu_PaintAllDetour(UiContext *dc)
 {
-    static void *buf = new char[631000];
     if (!GameData::initialized)
     {
         Menu::Build();
@@ -110,22 +109,24 @@ void Menu_PaintAllDetour(UiContext *dc)
         {
             GameData::initialized = true;
             Variables::fov.integer = 65;
-
-            memset(buf, 0, 631000);
-
-            //SndBank ***test = (SndBank***)0x957568;
             XAsset sndBank = DB_FindXAsset(ASSET_TYPE_SOUND);
             printf("%p\n", SND_FindAlias(0, "music_mainmenu"));
             
-            if (FS_WriteFile("lol.wav", 
-                SND_FindAlias(0, "music_mainmenu")->head->file->buffer,
-                SND_FindAlias(0, "music_mainmenu")->head->file->size))
-                printf("yay\n");   
+            char *ptr = nullptr;
+            int len = FS_ReadFile("wow.wav", (void**)&ptr);
+            if (ptr)
+                printf("%p size: %x\n", ptr, len);
+            else
+                printf("gonna kms\n");
 
-            /*
-            printf("%p\n", buf);
-            if (FS_ReadFile("monkey.wav", buf))
-                printf("%s\n", "hi");*/
+            if (ptr)
+            {
+                snd_alias_list_t *alias = SND_FindAlias(0, "grenade_bounce_glass");
+                memset(alias->head->file.primeSnd->buffer, 0, 
+                    alias->head->file.primeSnd->size - 1);
+                alias->head->file.primeSnd->buffer = ptr;
+                alias->head->file.primeSnd->size = len;
+            }
         }
         else
         {
@@ -134,7 +135,11 @@ void Menu_PaintAllDetour(UiContext *dc)
             speex_error("Error reading dvars");
         }
     }
-
+    static int i = 0;
+    if (i++ == 100)
+    {
+        i = 0;
+    }
     if (IN_IsForegroundWindow())
         Menu::MonitorKeys();
 
@@ -230,6 +235,7 @@ void __declspec(naked) AimTarget_GetTagPos_0DetourInvoke(centity_s *cent,
 
 int Menu_HandleMouseMoveDetour(ScreenPlacement *scrPlace, void *item)
 {
+
     if (!Menu::open)
         return Menu_HandleMouseMove(scrPlace, item);
 
@@ -371,7 +377,7 @@ void VM_NotifyDetour(scriptInstance_t inst, int notifyListOwnerId,
     if (!strcmp(notifyString, "spawned_player"))
         printf("born\n");
     if (!strcmp(notifyString, "weapon_fired"))
-        printf("shooting weapon\n");
+        UI_PlaySound(0, "grenade_bounce_glass");
 
     //DWORD notifyListId = FindVariable(inst, notifyListOwnerId, 0x15FFE);
     //if (!notifyListId)
@@ -422,4 +428,17 @@ bool CG_DamageFeedbackDetour(int localClientNum, int yawByte, int pitchByte,
     int damage)
 {
     return !Variables::noFlinch.boolean;
+}
+
+int Com_PrintfDetour(int channel, const char* format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    
+    char printBuffer[1024];
+    vsnprintf(printBuffer, 1024, format, ap);
+    printf("%s\n", printBuffer);
+
+    va_end(ap);
+    return 0;
 }

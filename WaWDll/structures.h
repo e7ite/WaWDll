@@ -491,24 +491,36 @@ struct gentity_s
     unsigned short attachModelNames[0x13];          //0x2DC
 }; //Size = 0x378
 
-struct SoundFile
+union SoundFile
 {
-    const char *name;                               //0x00
-    char *buffer;                                   //0x04
-    unsigned int size;                              //0x08
+    struct PrimedSound
+    {
+        const char *directory;                          //0x00
+        char *buffer;                                   //0x04
+        unsigned int size;                              //0x08
+    } ;
+    struct LoadedSound
+    {
+        char pad00[0x4];                                //0x00
+        const char *directory;                          //0x04
+        const char *name;                               //0x08               
+    };
+    PrimedSound *primeSnd;                          //0x04
+    LoadedSound loadSnd;                            //0x0C
 };
 
 struct snd_alias_t
 {
     char pad00[0x4];                                //0x00
-    SoundFile *file;                                //0x04
+    SoundFile file;                                 //0x04
+    char pad01[0x4];                                //0x10
+    char nameBuf[0x40];                             //0x50
 };
 
 struct snd_alias_list_t
 {
-    const char *name;                   
-    unsigned short aliasCount;                      //0x04
-    unsigned short aliasCount2;                     //0x06
+    const char *name;                               //0x00
+    unsigned int id;                                //0x04
     char pad00[0xC];                                //0x08
     snd_alias_t *head;                              //0x14
 }; //Size = 0x18
@@ -606,6 +618,8 @@ enum FuncAddresses : DWORD
     FS_WriteFile_a                       = 0x5DC050,
     FS_ReadFile_a                        = 0x5DBFB0,
     SND_FindAlias_a                      = 0x63B560,
+    FileWrapper_Open_a                   = 0x7AC7B1,
+    UI_PlaySound_a                       = 0x5CAC10,
 };
 
 namespace Colors
@@ -667,6 +681,7 @@ extern int(__cdecl *UI_TextWidthInternal)(const char *text, int maxChars,
 extern void(__cdecl *CG_GameMessage)(int localClientNum, const char *msg, int length);
 extern int(__cdecl *CG_GetPlayerWeapon)(playerState_s *ps, int localClientNum);
 extern void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y);
+extern _iobuf*(__cdecl *FileWrapper_Open)(const char *filename, const char *mode);
 
 bool InGame();
 void Cbuf_AddText(const char *cmd);
@@ -726,6 +741,8 @@ void Scr_AddInt(int value);
 void Scr_AddString(const char *string);
 void Scr_AddVector(const float *value);
 int FS_WriteFile(const char *filename, const void *buffer, int size);
-int FS_ReadFile(const char *qpath, void *buffer);
+int FS_ReadFile(const char *qpath, void **buffer);
 XAsset DB_FindXAsset(XAssetType type);
 snd_alias_list_t* SND_FindAlias(int localClientNum, const char *name);
+_iobuf* FS_FileOpenReadBinary(const char *filename);
+void UI_PlaySound(int context, const char *aliasname);

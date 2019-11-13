@@ -24,6 +24,7 @@ enum DetourAddresses : DWORD
     IN_MouseEvent_a                     = 0x5FA5F0,
     VM_Notify_a                         = 0x698670,
     CG_DamageFeedback_a                 = 0x455370,
+    Com_Printf_a                        = 0x59A2C0,
 };
  
 using usercall_ = void*;
@@ -55,6 +56,7 @@ extern void(__cdecl *CL_CreateNewCommands)();
 extern void(__cdecl *IN_MouseEvent)(int mstate);
 extern usercall_ VM_Notify;
 extern usercall_ CG_DamageFeedback;
+extern int(*Com_Printf)(int channel, const char* format, ...);
 
 void Menu_PaintAllDetourInvoke(UiContext *dc);
 void Menu_PaintAllDetour(UiContext *dc);
@@ -85,3 +87,4 @@ void CG_DamageFeedbackDetourInvoke(int localClientNum, int yawByte,
     int pitchByte, int damage);
 bool CG_DamageFeedbackDetour(int localClientNum, int yawByte, int pitchByte,
     int damage);
+int Com_PrintfDetour(int channel, const char* format, ...);

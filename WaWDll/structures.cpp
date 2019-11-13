@@ -59,6 +59,8 @@ int(__cdecl *CG_GetPlayerWeapon)(playerState_s *ps, int localClientNum)
     = (int(__cdecl*)(playerState_s*, int))CG_GetPlayerWeapon_a;
 void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y)
     = (void(__cdecl*)(int, float*, float*))RandomBulletDir_a;
+_iobuf*(__cdecl *FileWrapper_Open)(const char *filename, const char *mode)
+    = (_iobuf*(__cdecl*)(const char*, const char*))FileWrapper_Open_a;
 
 vec3_t vec3_t::operator+(const vec3_t &vec) const
 {
@@ -763,7 +765,7 @@ int FS_WriteFile(const char *filename, const void *buffer, int limit)
     return status;
 }
 
-int FS_ReadFile(const char *qpath, void *buffer)
+int FS_ReadFile(const char *qpath, void **buffer)
 {
     DWORD addr = FS_ReadFile_a;
     int status;
@@ -773,7 +775,7 @@ int FS_ReadFile(const char *qpath, void *buffer)
         push        buffer
         call        addr
         add         esp, 4
-        mov         eax, status
+        mov         status, eax
     }
     return status;
 }
@@ -806,4 +808,21 @@ snd_alias_list_t* SND_FindAlias(int localClientNum, const char *name)
         mov         funcRet, eax
     }
     return funcRet;
+}
+
+_iobuf* FS_FileOpenReadBinary(const char *filename)
+{
+    return FileWrapper_Open(filename, "rb");
+}
+
+void UI_PlaySound(int context, const char *aliasname)
+{
+    DWORD addr = UI_PlaySound_a;
+    __asm
+    {
+        mov         eax, aliasname
+        push        context
+        call        addr
+        add         esp, 4
+    }
 }

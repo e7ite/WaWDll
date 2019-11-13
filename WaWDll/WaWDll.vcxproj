@@ -91,7 +91,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;WAWDLL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions />
       <BufferSecurityCheck>
       </BufferSecurityCheck>
