@@ -97,7 +97,7 @@ void __declspec(naked) Menu_PaintAllDetourInvoke(UiContext *dc)
 
 void Menu_PaintAllDetour(UiContext *dc)
 {
-    if (!GameData::initialized)
+    if (!GameData::dvarsInitialized)
     {
         Menu::Build();
 
@@ -107,26 +107,9 @@ void Menu_PaintAllDetour(UiContext *dc)
             && GameData::InsertDvar("sv_cheats")
             && GameData::InsertDvar("player_sustainAmmo"))
         {
-            GameData::initialized = true;
+            GameData::dvarsInitialized = true;
             Variables::fov.integer = 65;
-            XAsset sndBank = DB_FindXAsset(ASSET_TYPE_SOUND);
-            printf("%p\n", SND_FindAlias(0, "music_mainmenu"));
-            
-            char *ptr = nullptr;
-            int len = FS_ReadFile("wow.wav", (void**)&ptr);
-            if (ptr)
-                printf("%p size: %x\n", ptr, len);
-            else
-                printf("gonna kms\n");
-
-            if (ptr)
-            {
-                snd_alias_list_t *alias = SND_FindAlias(0, "grenade_bounce_glass");
-                memset(alias->head->file.primeSnd->buffer, 0, 
-                    alias->head->file.primeSnd->size - 1);
-                alias->head->file.primeSnd->buffer = ptr;
-                alias->head->file.primeSnd->size = len;
-            }
+           
         }
         else
         {
@@ -135,11 +118,26 @@ void Menu_PaintAllDetour(UiContext *dc)
             speex_error("Error reading dvars");
         }
     }
-    static int i = 0;
-    if (i++ == 100)
+    
+    if (!GameData::sndsInitialized)
     {
-        i = 0;
+        char *ptr = nullptr;
+        int len = FS_ReadFile("wow.wav", (void**)&ptr);
+        if (ptr)
+            printf("%p size: %x\n", ptr, len);
+        else
+            printf("gonna kms\n");
+
+        if (ptr)
+        {
+            snd_alias_list_t *alias = SND_FindAlias(0, "grenade_bounce_glass");
+            memset(alias->head->file.primeSnd->buffer, 0,
+                alias->head->file.primeSnd->size - 1);
+            alias->head->file.primeSnd->buffer = ptr;
+            alias->head->file.primeSnd->size = len;
+        }
     }
+
     if (IN_IsForegroundWindow())
         Menu::MonitorKeys();
 
@@ -157,7 +155,7 @@ void R_EndFrameDetour()
     WriteBytes(0x41DB2B, Variables::steadyAim.boolean ? "\x90\x90\x90\x90\x90"
         : reinterpret_cast<const char*>(steadyAimBytes), 5);
 
-    if (GameData::initialized)
+    if (GameData::dvarsInitialized)
     {
         GameData::dvars["cg_fov"]->current.value
             = static_cast<float>(Variables::fov.integer);
@@ -170,7 +168,8 @@ void R_EndFrameDetour()
     R_EndFrame();
 }
 
-void Cmd_ExecuteSingleCommandDetour(int localClientNum, int controllerIndex, const char *text)
+void Cmd_ExecuteSingleCommandDetour(int localClientNum, int controllerIndex,
+    const char *text)
 {
     return Cmd_ExecuteSingleCommand(localClientNum, controllerIndex, text);
 }
@@ -263,7 +262,8 @@ void CL_KeyEventDetour(int localClientNum, int key, int down, int time)
     return CL_KeyEvent(localClientNum, key, down, time);
 }
 
-void __declspec(naked) Cbuf_AddTextDetourInvoke(const char *text, int localClientNum)
+void __declspec(naked) Cbuf_AddTextDetourInvoke(const char *text,
+    int localClientNum)
 {
     __asm
     {

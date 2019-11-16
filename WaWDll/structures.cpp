@@ -18,11 +18,12 @@ int *cl_connectionState           = (int*)0x305842C;
 
 std::vector<QWORD> GameData::detours;
 std::map<const char*, dvar_s*> GameData::dvars;
-bool GameData::initialized;
+bool GameData::dvarsInitialized;
+bool GameData::sndsInitialized;
 GameData::Font GameData::normalFont       = { 1, "fonts/normalFont" };
 int(__stdcall *GameData::MessageBoxA)(HWND hWnd, LPCSTR lpText,
 LPCSTR lpCaption, UINT uType)
-	= *(int(__stdcall**)(HWND, LPCSTR, LPCSTR, UINT))MessageBoxA_a;
+    = *(int(__stdcall**)(HWND, LPCSTR, LPCSTR, UINT))MessageBoxA_a;
 DWORD(__stdcall *GameData::timeGetTime)() = *(DWORD(__stdcall**)())timeGetTime_a;
 
 Colors::Color Colors::white               = { 255, 255, 255, 255 };
@@ -130,7 +131,7 @@ bool GameData::InsertDvar(const char *dvarName, dvar_s *dvar)
 
 bool InGame()
 {
-    return GameData::initialized &&
+    return GameData::dvarsInitialized &&
         GameData::dvars["cl_ingame"]->current.enabled
         && *cl_connectionState >= 9;
 }

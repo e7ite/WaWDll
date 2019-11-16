@@ -498,7 +498,7 @@ union SoundFile
         const char *directory;                          //0x00
         char *buffer;                                   //0x04
         unsigned int size;                              //0x08
-    } ;
+    };
     struct LoadedSound
     {
         char pad00[0x4];                                //0x00
@@ -507,7 +507,7 @@ union SoundFile
     };
     PrimedSound *primeSnd;                          //0x04
     LoadedSound loadSnd;                            //0x0C
-};
+}; //Size = 0x0C
 
 struct snd_alias_t
 {
@@ -515,7 +515,7 @@ struct snd_alias_t
     SoundFile file;                                 //0x04
     char pad01[0x4];                                //0x10
     char nameBuf[0x40];                             //0x50
-};
+}; //Size = 0x90
 
 struct snd_alias_list_t
 {
@@ -630,7 +630,7 @@ namespace Colors
 
         Color() : r(0.0F), g(0.0f), b(0.0f), a(1.0f) {}
         Color(float r, float g, float b, float a)
-            : r(r / 255), g(g / 255), b(b / 255), a(a / 255) {}
+            : r(r / 255.0f), g(g / 255.0f), b(b / 255.0f), a(a / 255.0f) {}
 
         operator float*() { return reinterpret_cast<float*>(this); }
     };
@@ -656,7 +656,8 @@ namespace GameData
     extern Font normalFont;
     extern std::vector<QWORD> detours;
     extern std::map<const char*, dvar_s*> dvars;
-    extern bool initialized;
+    extern bool dvarsInitialized;
+    extern bool sndsInitialized;
 
     extern int(__stdcall *MessageBoxA)(HWND hWnd, LPCSTR lpText,
         LPCSTR lpCaption, UINT uType);
