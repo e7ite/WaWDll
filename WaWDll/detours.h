@@ -1,9 +1,5 @@
 #pragma once
 
-#include "menu.h"
-#include "aimbot.h"
-#include "esp.h"
-
 enum DetourAddresses : DWORD
 {
     Win_GetEvent_a                      = 0x5FEC60,

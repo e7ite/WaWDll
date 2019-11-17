@@ -1,13 +1,5 @@
 #pragma once
 
-#include <windows.h>
-#include <cstdio>
-#include <vector>
-#include <functional>
-#include <detours.h>
-#include <sstream>
-#include <map>
-
 struct vec3_t
 {
     union
@@ -556,6 +548,16 @@ struct XAsset
     XAssetHeader *header;                           //0x0C
 }; //Size = 0x10
 
+struct snd_buffer
+{
+    char *data;
+    int reference_count;
+    char filename[0x104];
+    unsigned int offset_in_file;
+    unsigned int data_size;
+    unsigned int file_size;
+};
+
 extern UiContext *dc;
 extern ScreenPlacement *scrPlace;
 extern KeyState *keys;
@@ -572,54 +574,56 @@ extern gentity_s *g_entities;
 
 enum FuncAddresses : DWORD
 {
-    R_RegisterFont_a                     = 0x6E8D84,
-    Material_RegisterHandle_a            = 0x6E9C00,
-    CG_DrawRotatedPic_a                  = 0x43E570,
-    Cmd_ExecuteSingleCommmand_a          = 0x594ED0,
-    Dvar_FindVar_a                       = 0x5EDE30,
-    CL_DrawTextPhysical_a                = 0x6F5F10,
-    UI_TextWidth_a                       = 0x5B5EC0,
-    CG_GameMessage_a                     = 0x661910,
-    CG_GetPlayerWeapon_a                 = 0x46BF20,
-    WorldPosToScreenPos_a                = 0x44CD30,
-    vectoangles_a                        = 0x5DF960,
-    UI_GetFontHandle_a                   = 0x5B6400,
-    UI_DrawText_a                        = 0x5B5FB0,
-    SL_FindString_a                      = 0x68DA90,
-    ScrPlace_ApplyRect_a                 = 0x47A450,
-    R_TextWidth_a                        = 0x6E8DA0,
-    R_EndFrame_a                         = 0x6F6A80,
-    CG_DObjGetWorldTagPos_a              = 0x443030,
-    FX_ClientVisibilityTest_a            = 0x4AF130,
-    Key_StringToKeynum_a                 = 0x477540,
-    CG_TraceCapsule_a                    = 0x46D5B0,
-    CG_DrawRotatedPicPhysical_a          = 0x43E3C0,
-    AimTarget_IsTargetVisible_a          = 0x403CA0,
-    BG_GetSpreadForWeapon_a              = 0x41DB20,
-    AngleVectors_a                       = 0x5E3150,
-    DrawSketchPicGun_a                   = 0x42CC30,
-    CG_GetPlayerViewOrigin_a             = 0x468A00,
-    __libm_sse2_tan_a                    = 0x7E0892,
-    RandomBulletDir_a                    = 0x4E54C0,
-    Vec3Normalize_a                      = 0x4037C0,
-    UI_DrawRect_a                        = 0x5B5BD0,
-    UI_FillRect_a                        = 0x5B08E0,
-    speex_error_a                        = 0x6C1CE0,
-    MessageBoxA_a                        = 0x7EB33C,
-    timeGetTime_a                        = 0x7EB39C,
-    Cbuf_AddText_a                       = 0x594200,
-    FindVariableIndexInternal_a          = 0x68BC20,
-    FindLastSibling_a                    = 0x68BCA0,
-    Scr_AddFloat_a                       = 0x69A670,
-    Scr_AddInt_a                         = 0x42A2B0,
-    Scr_AddString_a                      = 0x69A7E0,
-    Scr_AddVector_a                      = 0x69A940,
-    DB_FindXAssetEntry_a                 = 0x48D760,
-    FS_WriteFile_a                       = 0x5DC050,
-    FS_ReadFile_a                        = 0x5DBFB0,
-    SND_FindAlias_a                      = 0x63B560,
-    FileWrapper_Open_a                   = 0x7AC7B1,
-    UI_PlaySound_a                       = 0x5CAC10,
+    R_RegisterFont_a                    = 0x6E8D84,
+    Material_RegisterHandle_a           = 0x6E9C00,
+    CG_DrawRotatedPic_a                 = 0x43E570,
+    Cmd_ExecuteSingleCommmand_a         = 0x594ED0,
+    Dvar_FindVar_a                      = 0x5EDE30,
+    CL_DrawTextPhysical_a               = 0x6F5F10,
+    UI_TextWidth_a                      = 0x5B5EC0,
+    CG_GameMessage_a                    = 0x661910,
+    CG_GetPlayerWeapon_a                = 0x46BF20,
+    WorldPosToScreenPos_a               = 0x44CD30,
+    vectoangles_a                       = 0x5DF960,
+    UI_GetFontHandle_a                  = 0x5B6400,
+    UI_DrawText_a                       = 0x5B5FB0,
+    SL_FindString_a                     = 0x68DA90,
+    ScrPlace_ApplyRect_a                = 0x47A450,
+    R_TextWidth_a                       = 0x6E8DA0,
+    R_EndFrame_a                        = 0x6F6A80,
+    CG_DObjGetWorldTagPos_a             = 0x443030,
+    FX_ClientVisibilityTest_a           = 0x4AF130,
+    Key_StringToKeynum_a                = 0x477540,
+    CG_TraceCapsule_a                   = 0x46D5B0,
+    CG_DrawRotatedPicPhysical_a         = 0x43E3C0,
+    AimTarget_IsTargetVisible_a         = 0x403CA0,
+    BG_GetSpreadForWeapon_a             = 0x41DB20,
+    AngleVectors_a                      = 0x5E3150,
+    DrawSketchPicGun_a                  = 0x42CC30,
+    CG_GetPlayerViewOrigin_a            = 0x468A00,
+    __libm_sse2_tan_a                   = 0x7E0892,
+    RandomBulletDir_a                   = 0x4E54C0,
+    Vec3Normalize_a                     = 0x4037C0,
+    UI_DrawRect_a                       = 0x5B5BD0,
+    UI_FillRect_a                       = 0x5B08E0,
+    MessageBoxA_a                       = 0x7EB33C,
+    timeGetTime_a                       = 0x7EB39C,
+    Cbuf_AddText_a                      = 0x594200,
+    FindVariableIndexInternal_a         = 0x68BC20,
+    FindLastSibling_a                   = 0x68BCA0,
+    Scr_AddFloat_a                      = 0x69A670,
+    Scr_AddInt_a                        = 0x42A2B0,
+    Scr_AddString_a                     = 0x69A7E0,
+    Scr_AddVector_a                     = 0x69A940,
+    DB_FindXAssetEntry_a                = 0x48D760,
+    FS_WriteFile_a                      = 0x5DC050,
+    FS_ReadFile_a                       = 0x5DBFB0,
+    SND_FindAlias_a                     = 0x63B560,
+    FileWrapper_Open_a                  = 0x7AC7B1,
+    UI_PlaySound_a                      = 0x5CAC10,
+    SND_Play_a                          = 0x6B2530,
+    Com_Error_a                         = 0x59AC50,
+    SND_FindBuffer_a                    = 0x6BE4D0,
 };
 
 namespace Colors
@@ -683,6 +687,8 @@ extern void(__cdecl *CG_GameMessage)(int localClientNum, const char *msg, int le
 extern int(__cdecl *CG_GetPlayerWeapon)(playerState_s *ps, int localClientNum);
 extern void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y);
 extern _iobuf*(__cdecl *FileWrapper_Open)(const char *filename, const char *mode);
+extern void(__cdecl *Com_Error)(int code, const char *fmt, ...);
+extern snd_buffer*(__cdecl *SND_FindBuffer)(const char *filename, unsigned int offset);
 
 bool InGame();
 void Cbuf_AddText(const char *cmd);
@@ -747,3 +753,4 @@ XAsset DB_FindXAsset(XAssetType type);
 snd_alias_list_t* SND_FindAlias(int localClientNum, const char *name);
 _iobuf* FS_FileOpenReadBinary(const char *filename);
 void UI_PlaySound(int context, const char *aliasname);
+int SND_Play(const char *alias, int entIndex, float volume);

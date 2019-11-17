@@ -1,4 +1,4 @@
-#include "menu.h"
+#include "stdafx.h"
 
 std::vector<std::vector<Option>> Menu::options;
 int Menu::open;

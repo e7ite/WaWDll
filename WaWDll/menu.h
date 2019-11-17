@@ -1,7 +1,5 @@
 #pragma once
 
-#include "structures.h"
-
 enum ScreenAlignment
 {
     ALIGN_LEFT,

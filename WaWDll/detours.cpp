@@ -1,4 +1,4 @@
-#include "detours.h"
+#include "stdafx.h"
 
 usercall_ Menu_PaintAll = (usercall_)Menu_PaintAll_a;
 void(__cdecl *R_EndFrame)() = (void(*)())R_EndFrame_a;
@@ -109,33 +109,45 @@ void Menu_PaintAllDetour(UiContext *dc)
         {
             GameData::dvarsInitialized = true;
             Variables::fov.integer = 65;
-           
+
         }
         else
-        {
-            GameData::MessageBoxA(*hwnd, "Error reading dvars",
-                "WaW DLL by E7ite", 0x10);
-            speex_error("Error reading dvars");
-        }
+            Com_Error(0, "Dvars failed to load\n");
     }
     
     if (!GameData::sndsInitialized)
     {
+        snd_buffer *buf = SND_FindBuffer("sound/Stream\\Music\\Mission\\s"
+            "niper\\final\\mx_brave_soldat.wav", 0);
+
+        printf("buf pointer: %p buf datasize: %x buf filesize: %x\n", buf, 
+            &buf->data_size, &buf->file_size);
+
         char *ptr = nullptr;
-        int len = FS_ReadFile("wow.wav", (void**)&ptr);
+        int len = FS_ReadFile("monkey.wav", (void**)&ptr);
         if (ptr)
             printf("%p size: %x\n", ptr, len);
         else
             printf("gonna kms\n");
 
+        static bool notInit = 0;
         if (ptr)
         {
-            snd_alias_list_t *alias = SND_FindAlias(0, "grenade_bounce_glass");
-            memset(alias->head->file.primeSnd->buffer, 0,
-                alias->head->file.primeSnd->size - 1);
-            alias->head->file.primeSnd->buffer = ptr;
-            alias->head->file.primeSnd->size = len;
+            if (!notInit && (buf = SND_FindBuffer("sound/Stream\\Music\\Mission\\s"
+                "niper\\final\\mx_brave_soldat.wav", 0)))
+            {
+                notInit = true;
+                buf->data = ptr;
+                buf->data_size = len;
+            }
         }
+
+        if (FS_WriteFile("funman.wav", buf->data, buf->data_size))
+            printf("hoorah\n");
+        else
+            printf("f\n");
+            
+        GameData::sndsInitialized = true;
     }
 
     if (IN_IsForegroundWindow())
@@ -377,7 +389,7 @@ void VM_NotifyDetour(scriptInstance_t inst, int notifyListOwnerId,
     if (!strcmp(notifyString, "spawned_player"))
         printf("born\n");
     if (!strcmp(notifyString, "weapon_fired"))
-        UI_PlaySound(0, "grenade_bounce_glass");
+        SND_Play("grenade_bounce_glass", 0, 50.0f);
 
     //DWORD notifyListId = FindVariable(inst, notifyListOwnerId, 0x15FFE);
     //if (!notifyListId)

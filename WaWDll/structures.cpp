@@ -1,20 +1,20 @@
-#include "structures.h"
+#include "stdafx.h"
 
-UiContext *dc                     = (UiContext*)0x208E920;
-ScreenPlacement *scrPlace         = (ScreenPlacement*)0x957360;
-KeyState *keys                    = (KeyState*)0x951C44;
-centity_s *cg_entitiesArray       = (centity_s*)0x35D39F0;
-cg_s *cgameGlob                   = (cg_s*)0x34732B8;
-clientActive_t *clientActive      = (clientActive_t*)0x3058528;
-WORD *clientObjMap                = (WORD*)0x1FE58C8;
-BYTE *objBuf                      = (BYTE*)0x1F978C8;
-HWND *hwnd                        = (HWND*)0x22C1BE4;
-scrVmPub_t *gScrVmPub             = (scrVmPub_t*)0x3BD4700;
-gentity_s *g_entities             = (gentity_s*)0x176C6F0;
-WeaponDef **bg_weaponVariantDefs  = (WeaponDef**)0x8F6770;
-cgs_t *cgs                        = (cgs_t*)0x3466578;
-actor_s *actors                   = (actor_s*)0x176C874;
-int *cl_connectionState           = (int*)0x305842C;
+UiContext *dc                       = (UiContext*)0x208E920;
+ScreenPlacement *scrPlace           = (ScreenPlacement*)0x957360;
+KeyState *keys                      = (KeyState*)0x951C44;
+centity_s *cg_entitiesArray         = (centity_s*)0x35D39F0;
+cg_s *cgameGlob                     = (cg_s*)0x34732B8;
+clientActive_t *clientActive        = (clientActive_t*)0x3058528;
+WORD *clientObjMap                  = (WORD*)0x1FE58C8;
+BYTE *objBuf                        = (BYTE*)0x1F978C8;
+HWND *hwnd                          = (HWND*)0x22C1BE4;
+scrVmPub_t *gScrVmPub               = (scrVmPub_t*)0x3BD4700;
+gentity_s *g_entities               = (gentity_s*)0x176C6F0;
+WeaponDef **bg_weaponVariantDefs    = (WeaponDef**)0x8F6770;
+cgs_t *cgs                          = (cgs_t*)0x3466578;
+actor_s *actors                     = (actor_s*)0x176C874;
+int *cl_connectionState             = (int*)0x305842C;
 
 std::vector<QWORD> GameData::detours;
 std::map<const char*, dvar_s*> GameData::dvars;
@@ -22,8 +22,8 @@ bool GameData::dvarsInitialized;
 bool GameData::sndsInitialized;
 GameData::Font GameData::normalFont       = { 1, "fonts/normalFont" };
 int(__stdcall *GameData::MessageBoxA)(HWND hWnd, LPCSTR lpText,
-LPCSTR lpCaption, UINT uType)
-    = *(int(__stdcall**)(HWND, LPCSTR, LPCSTR, UINT))MessageBoxA_a;
+    LPCSTR lpCaption, UINT uType)
+= *(int(__stdcall**)(HWND, LPCSTR, LPCSTR, UINT))MessageBoxA_a;
 DWORD(__stdcall *GameData::timeGetTime)() = *(DWORD(__stdcall**)())timeGetTime_a;
 
 Colors::Color Colors::white               = { 255, 255, 255, 255 };
@@ -62,6 +62,10 @@ void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y)
     = (void(__cdecl*)(int, float*, float*))RandomBulletDir_a;
 _iobuf*(__cdecl *FileWrapper_Open)(const char *filename, const char *mode)
     = (_iobuf*(__cdecl*)(const char*, const char*))FileWrapper_Open_a;
+void(__cdecl *Com_Error)(int code, const char *fmt, ...)
+    = (void(__cdecl*)(int, const char*,...))Com_Error_a;
+snd_buffer*(__cdecl *SND_FindBuffer)(const char *filename, unsigned int offset)
+    = (snd_buffer*(__cdecl*)(const char*, unsigned int))SND_FindBuffer_a;
 
 vec3_t vec3_t::operator+(const vec3_t &vec) const
 {
@@ -826,4 +830,23 @@ void UI_PlaySound(int context, const char *aliasname)
         call        addr
         add         esp, 4
     }
+}
+
+int SND_Play(const char *alias, int entIndex, float volume)
+{
+    DWORD addr = SND_Play_a;
+    int funcRet;
+    __asm
+    {
+        mov         eax, alias
+        sub         esp, 8
+        fld         volume
+        fstp        [esp + 4]
+        mov         ecx, entIndex
+        mov         [esp], ecx
+        call        addr
+        add         esp, 8
+        mov         funcRet, eax
+    }
+    return funcRet;
 }

@@ -1,4 +1,4 @@
-#include "aimbot.h"
+#include "stdafx.h"
 
 vec3_t Aimbot::targetAngles;
 bool Aimbot::gotTarget;
