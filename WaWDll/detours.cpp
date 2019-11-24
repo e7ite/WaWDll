@@ -117,36 +117,29 @@ void Menu_PaintAllDetour(UiContext *dc)
     
     if (!GameData::sndsInitialized)
     {
-        snd_buffer *buf = SND_FindBuffer("sound/Stream\\Music\\Mission\\s"
-            "niper\\final\\mx_brave_soldat.wav", 0);
-
-        printf("buf pointer: %p buf datasize: %x buf filesize: %x\n", buf, 
-            &buf->data_size, &buf->file_size);
-
-        char *ptr = nullptr;
-        int len = FS_ReadFile("monkey.wav", (void**)&ptr);
+      /*  int len = FS_ReadFile("monkey.wav", (void**)&ptr);
         if (ptr)
             printf("%p size: %x\n", ptr, len);
         else
             printf("gonna kms\n");
-
-        static bool notInit = 0;
+*/
+        /*static bool notInit = 0;
+        snd_buffer *buf;
         if (ptr)
         {
-            if (!notInit && (buf = SND_FindBuffer("sound/Stream\\Music\\Mission\\s"
-                "niper\\final\\mx_brave_soldat.wav", 0)))
+            if (!notInit 
+                && (buf = Snd_FindBufferOfFile("sound/Stream\\Music\\Mission\\s"
+                    "niper\\final\\mx_brave_soldat.wav")))
             {
                 notInit = true;
                 buf->data = ptr;
-                buf->data_size = len;
+                buf->file_size = len;
+                printf("written\n");
             }
-        }
+        }*/
+        
+        //printf("%p\n", SND_FindAlias(0, "grenade_bounce_"))
 
-        if (FS_WriteFile("funman.wav", buf->data, buf->data_size))
-            printf("hoorah\n");
-        else
-            printf("f\n");
-            
         GameData::sndsInitialized = true;
     }
 

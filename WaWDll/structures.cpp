@@ -64,8 +64,8 @@ _iobuf*(__cdecl *FileWrapper_Open)(const char *filename, const char *mode)
     = (_iobuf*(__cdecl*)(const char*, const char*))FileWrapper_Open_a;
 void(__cdecl *Com_Error)(int code, const char *fmt, ...)
     = (void(__cdecl*)(int, const char*,...))Com_Error_a;
-snd_buffer*(__cdecl *SND_FindBuffer)(const char *filename, unsigned int offset)
-    = (snd_buffer*(__cdecl*)(const char*, unsigned int))SND_FindBuffer_a;
+snd_buffer*(__cdecl *Snd_FindBuffer)(const char *filename, unsigned int offset)
+    = (snd_buffer*(__cdecl*)(const char*, unsigned int))Snd_FindBuffer_a;
 
 vec3_t vec3_t::operator+(const vec3_t &vec) const
 {
@@ -788,15 +788,15 @@ int FS_ReadFile(const char *qpath, void **buffer)
 XAsset DB_FindXAsset(XAssetType type)
 {
     XAssetHeader **DB_XAssetPool = (XAssetHeader**)0x8DC828;
+    int(__cdecl **DB_GetXAssetSizeHandler)() = (int(__cdecl**)())0x8DCC18;
+    const char **g_assetNames = (const char**)0x8DCA68;
     int *g_poolSize = (int*)0x8DC5D0;
-    const char*(__cdecl **DB_XAssetGetNameHandler)(XAssetHeader *header)
-        = (const char*(__cdecl**)(XAssetHeader*))0x8DCAF8;
 
     XAsset xasset;
     xasset.header = DB_XAssetPool[type];
     xasset.type = type;
     xasset.assets = g_poolSize[type];
-    xasset.name = DB_XAssetGetNameHandler[type](xasset.header);
+    xasset.name = g_assetNames[type];
     return xasset;
 }
 
@@ -813,11 +813,6 @@ snd_alias_list_t* SND_FindAlias(int localClientNum, const char *name)
         mov         funcRet, eax
     }
     return funcRet;
-}
-
-_iobuf* FS_FileOpenReadBinary(const char *filename)
-{
-    return FileWrapper_Open(filename, "rb");
 }
 
 void UI_PlaySound(int context, const char *aliasname)

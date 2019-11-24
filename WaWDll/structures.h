@@ -550,12 +550,29 @@ struct XAsset
 
 struct snd_buffer
 {
-    char *data;
-    int reference_count;
-    char filename[0x104];
-    unsigned int offset_in_file;
-    unsigned int data_size;
-    unsigned int file_size;
+    char *data;                                     //0x000
+    int reference_count;                            //0x004
+    char filename[0x104];                           //0x008
+    unsigned int offset_in_file;                    //0x10C
+    unsigned int data_size;                         //0x110
+    unsigned int file_size;                         //0x114
+};
+
+struct snd_asset
+{
+    char pad00[0xC];                                //0x000
+    unsigned int header_size;                       //0x00C
+    unsigned int block_size;                        //0x010
+    unsigned int buffer_size;                       //0x014
+    char pad01[0x8];                                //0x018
+    char data[0x830];                               //0x020
+}; //Size = 0x850
+
+struct snd_stream
+{
+    char filename[0x104];                           //0x000
+    snd_asset header;                               //0x104
+    char pad00[0x4];                                //0x954
 };
 
 extern UiContext *dc;
@@ -623,7 +640,8 @@ enum FuncAddresses : DWORD
     UI_PlaySound_a                      = 0x5CAC10,
     SND_Play_a                          = 0x6B2530,
     Com_Error_a                         = 0x59AC50,
-    SND_FindBuffer_a                    = 0x6BE4D0,
+    Snd_FindBuffer_a                    = 0x6BE4D0,
+    Snd_StreamGetRequest_a              = 0x6BE1A0,
 };
 
 namespace Colors
@@ -688,7 +706,7 @@ extern int(__cdecl *CG_GetPlayerWeapon)(playerState_s *ps, int localClientNum);
 extern void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y);
 extern _iobuf*(__cdecl *FileWrapper_Open)(const char *filename, const char *mode);
 extern void(__cdecl *Com_Error)(int code, const char *fmt, ...);
-extern snd_buffer*(__cdecl *SND_FindBuffer)(const char *filename, unsigned int offset);
+extern snd_buffer*(__cdecl *Snd_FindBuffer)(const char *filename, unsigned int offset);
 
 bool InGame();
 void Cbuf_AddText(const char *cmd);
@@ -751,6 +769,5 @@ int FS_WriteFile(const char *filename, const void *buffer, int size);
 int FS_ReadFile(const char *qpath, void **buffer);
 XAsset DB_FindXAsset(XAssetType type);
 snd_alias_list_t* SND_FindAlias(int localClientNum, const char *name);
-_iobuf* FS_FileOpenReadBinary(const char *filename);
 void UI_PlaySound(int context, const char *aliasname);
 int SND_Play(const char *alias, int entIndex, float volume);
