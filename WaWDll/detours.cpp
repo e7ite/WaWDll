@@ -117,12 +117,12 @@ void Menu_PaintAllDetour(UiContext *dc)
     
     if (!GameData::sndsInitialized)
     {
-      /*  int len = FS_ReadFile("monkey.wav", (void**)&ptr);
+        /*  int len = FS_ReadFile("monkey.wav", (void**)&ptr);
         if (ptr)
             printf("%p size: %x\n", ptr, len);
         else
             printf("gonna kms\n");
-*/
+        */
         /*static bool notInit = 0;
         snd_buffer *buf;
         if (ptr)
@@ -139,7 +139,13 @@ void Menu_PaintAllDetour(UiContext *dc)
         }*/
         
         //printf("%p\n", SND_FindAlias(0, "grenade_bounce_"))
+        SndBank *bank = DB_FindXAsset(ASSET_TYPE_SOUND).header->sound.entries;
+        for (int i = 0; i < 0x100 && strcmp(bank->name, "heart_beat"); i++)
+        {
+            printf("%s\n", bank++->name);
+        }
 
+        CopyTextToClipboard(va("%p\n", &bank->alias->head->file.primeSnd->buffer));
         GameData::sndsInitialized = true;
     }
 

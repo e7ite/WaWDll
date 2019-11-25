@@ -642,6 +642,7 @@ enum FuncAddresses : DWORD
     Com_Error_a                         = 0x59AC50,
     Snd_FindBuffer_a                    = 0x6BE4D0,
     Snd_StreamGetRequest_a              = 0x6BE1A0,
+    va_a                                = 0x5F6D80,
 };
 
 namespace Colors
@@ -688,6 +689,7 @@ namespace GameData
     bool InsertDvar(const char *dvarName, dvar_s *dvar = nullptr);
 }
 
+//Game Function Pointers
 extern Font_s*(__cdecl *R_RegisterFont)(const char *font, int imageTrac);
 extern void*(__cdecl *Material_RegisterHandle)(const char *materialName,
     int imageTrac);
@@ -707,8 +709,13 @@ extern void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y);
 extern _iobuf*(__cdecl *FileWrapper_Open)(const char *filename, const char *mode);
 extern void(__cdecl *Com_Error)(int code, const char *fmt, ...);
 extern snd_buffer*(__cdecl *Snd_FindBuffer)(const char *filename, unsigned int offset);
+extern char* (__cdecl *va)(const char *fmt, ...);
 
+//Custom Functions
 bool InGame();
+bool CopyTextToClipboard(const std::string &text);
+
+//Rebuilt Game Functions
 void Cbuf_AddText(const char *cmd);
 void CG_DrawRotatedPicPhysical(ScreenPlacement *scrPlace, float x, float y,
     float width, float height, float angle, const float *color, void *material);
@@ -752,7 +759,6 @@ void UI_DrawRect(ScreenPlacement *scrPlace, float x, float y, float width,
     float height, int horzAlign, int vertAlign, float size, const float *color); 
 bool AimTarget_IsTargetVisible(centity_s *cent, unsigned __int16 bone);
 bool IN_IsForegroundWindow();
-void speex_error(const char *arg);
 const char* SL_ConvertToString(int stringValue);
 unsigned int FindVariable(scriptInstance_t inst,
     unsigned int parentId, unsigned int unsignedValue);

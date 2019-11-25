@@ -23,7 +23,7 @@ bool GameData::sndsInitialized;
 GameData::Font GameData::normalFont       = { 1, "fonts/normalFont" };
 int(__stdcall *GameData::MessageBoxA)(HWND hWnd, LPCSTR lpText,
     LPCSTR lpCaption, UINT uType)
-= *(int(__stdcall**)(HWND, LPCSTR, LPCSTR, UINT))MessageBoxA_a;
+    = *(int(__stdcall**)(HWND, LPCSTR, LPCSTR, UINT))MessageBoxA_a;
 DWORD(__stdcall *GameData::timeGetTime)() = *(DWORD(__stdcall**)())timeGetTime_a;
 
 Colors::Color Colors::white               = { 255, 255, 255, 255 };
@@ -63,9 +63,11 @@ void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y)
 _iobuf*(__cdecl *FileWrapper_Open)(const char *filename, const char *mode)
     = (_iobuf*(__cdecl*)(const char*, const char*))FileWrapper_Open_a;
 void(__cdecl *Com_Error)(int code, const char *fmt, ...)
-    = (void(__cdecl*)(int, const char*,...))Com_Error_a;
+    = (void(__cdecl*)(int, const char*, ...))Com_Error_a;
 snd_buffer*(__cdecl *Snd_FindBuffer)(const char *filename, unsigned int offset)
     = (snd_buffer*(__cdecl*)(const char*, unsigned int))Snd_FindBuffer_a;
+char*(__cdecl *va)(const char *fmt, ...) 
+    = (char*(__cdecl*)(const char*, ...))va_a;
 
 vec3_t vec3_t::operator+(const vec3_t &vec) const
 {
@@ -138,6 +140,32 @@ bool InGame()
     return GameData::dvarsInitialized &&
         GameData::dvars["cl_ingame"]->current.enabled
         && *cl_connectionState >= 9;
+}
+
+bool CopyTextToClipboard(const std::string &text)
+{
+    HGLOBAL hg;
+    bool state = false;
+
+    if (!OpenClipboard(*hwnd))
+        return false;
+    if (!EmptyClipboard())
+        return false;
+
+    hg = GlobalAlloc(GMEM_MOVEABLE, text.size());
+    if (!hg)
+    {
+        state = false;
+        goto end;
+    }
+    strncpy(static_cast<LPSTR>(GlobalLock(hg)), text.c_str(), text.size());
+    GlobalUnlock(hg);
+    state = SetClipboardData(CF_TEXT, hg);
+
+end:
+    CloseClipboard();
+    GlobalFree(hg);
+    return state;
 }
 
 void Cbuf_AddText(const char *cmd)
@@ -602,16 +630,6 @@ bool AimTarget_IsTargetVisible(centity_s *cent, unsigned __int16 bone)
 bool IN_IsForegroundWindow()
 {
     return *(bool*)(0x229A0D4);
-}
-
-void speex_error(const char *arg)
-{
-    __asm
-    {
-        mov         eax, arg
-        push        6C1CE0h
-        ret
-    }
 }
 
 const char* SL_ConvertToString(int stringValue)

@@ -12,7 +12,6 @@
 #include <detours.h>
 
 // Standard Library 
-#include <cstdio>
 #include <vector>
 #include <functional>
 #include <sstream>
