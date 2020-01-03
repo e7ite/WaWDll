@@ -152,7 +152,7 @@ bool CopyTextToClipboard(const std::string &text)
     if (!EmptyClipboard())
         return false;
 
-    hg = GlobalAlloc(GMEM_MOVEABLE, text.size());
+    hg = GlobalAlloc(GMEM_MOVEABLE, text.size() + 1);
     if (!hg)
     {
         state = false;
@@ -862,4 +862,26 @@ int SND_Play(const char *alias, int entIndex, float volume)
         mov         funcRet, eax
     }
     return funcRet;
+}
+
+void FS_FreeFile(void *buffer)
+{
+    DWORD addr = FS_FreeMem_a; 
+    __asm
+    {
+        mov         esi, buffer
+        call        addr
+    }
+}
+
+void Snd_StreamGetRequest(snd_stream *s, snd_stream_request *r)
+{
+    DWORD addr = Snd_StreamGetRequest_a;
+    __asm
+    {
+        mov         eax, s
+        push        r
+        call        addr
+        add         esp, 4
+    }
 }

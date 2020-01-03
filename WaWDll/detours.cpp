@@ -117,12 +117,12 @@ void Menu_PaintAllDetour(UiContext *dc)
     
     if (!GameData::sndsInitialized)
     {
-        /*  int len = FS_ReadFile("monkey.wav", (void**)&ptr);
+       /* int len = FS_ReadFile("monkey.wav", (void**)&ptr);
         if (ptr)
             printf("%p size: %x\n", ptr, len);
         else
-            printf("gonna kms\n");
-        */
+            printf("gonna kms\n");*/
+        
         /*static bool notInit = 0;
         snd_buffer *buf;
         if (ptr)
@@ -140,12 +140,17 @@ void Menu_PaintAllDetour(UiContext *dc)
         
         //printf("%p\n", SND_FindAlias(0, "grenade_bounce_"))
         SndBank *bank = DB_FindXAsset(ASSET_TYPE_SOUND).header->sound.entries;
-        for (int i = 0; i < 0x100 && strcmp(bank->name, "heart_beat"); i++)
+        /*for (int i = 0; i < 0x100 && strcmp(bank->name, "heart_beat"); i++)
         {
             printf("%s\n", bank++->name);
-        }
-
+        }*/
+        
         CopyTextToClipboard(va("%p\n", &bank->alias->head->file.primeSnd->buffer));
+
+        snd_stream_request r;
+        snd_stream *s = (snd_stream*)0x46E5648;
+        Snd_StreamGetRequest(&s[0], &r);
+        
         GameData::sndsInitialized = true;
     }
 
@@ -189,27 +194,34 @@ void TopLevelExceptionFilterDetour(struct _EXCEPTION_POINTERS *ExceptionInfo)
 {
     PDWORD_PTR currESP 
         = reinterpret_cast<PDWORD_PTR>(ExceptionInfo->ContextRecord->Esp);
+    PDWORD_PTR currEIP
+        = reinterpret_cast<PDWORD_PTR>(ExceptionInfo->ContextRecord->Eip);
 
-    printf("EAX: 0x%x\n", ExceptionInfo->ContextRecord->Eax);
-    printf("EBX: 0x%x\n", ExceptionInfo->ContextRecord->Ebx);
-    printf("ECX: 0x%x\n", ExceptionInfo->ContextRecord->Ecx);
-    printf("EDX: 0x%x\n", ExceptionInfo->ContextRecord->Edx);
-    printf("EDI: 0x%x\n", ExceptionInfo->ContextRecord->Edi);
-    printf("ESI: 0x%x\n", ExceptionInfo->ContextRecord->Esi);
-    printf("EBP: 0x%x\n", ExceptionInfo->ContextRecord->Ebp);
-    printf("EIP: 0x%x\n", ExceptionInfo->ContextRecord->Eip);
+    printf("EAX: %p\n", ExceptionInfo->ContextRecord->Eax);
+    printf("EBX: %p\n", ExceptionInfo->ContextRecord->Ebx);
+    printf("ECX: %p\n", ExceptionInfo->ContextRecord->Ecx);
+    printf("EDX: %p\n", ExceptionInfo->ContextRecord->Edx);
+    printf("EDI: %p\n", ExceptionInfo->ContextRecord->Edi);
+    printf("ESI: %p\n", ExceptionInfo->ContextRecord->Esi);
+    printf("EBP: %p\n", ExceptionInfo->ContextRecord->Ebp);
+    printf("ESP: %p\n", currESP);
+    printf("EIP: %p\n", currEIP);
 
     printf("\nSTACK VIEW:\n");
     for (int i = 0; i < 8; i++)
     {
         if (i)
             ++currESP;
-
-        printf("0x%x: %8x ", (unsigned int)currESP, *currESP);
+        printf("%p: %p ", (unsigned int)currESP, *currESP);
         for (int j = 0; j < 3; j++)
-            printf("%8x ", *(++currESP));
+            printf("%p ", *(++currESP));
         printf("\n");
     }
+
+    if (CopyTextToClipboard(va("%p", currEIP)))
+        printf("\nInstruction pointer copied to clipboard\n");
+    else
+        printf("\nProblem copying instruction pointer to clipboard\n");
 }
 
 void CL_WritePacketDetour()
@@ -245,7 +257,6 @@ void __declspec(naked) AimTarget_GetTagPos_0DetourInvoke(centity_s *cent,
 
 int Menu_HandleMouseMoveDetour(ScreenPlacement *scrPlace, void *item)
 {
-
     if (!Menu::open)
         return Menu_HandleMouseMove(scrPlace, item);
 

@@ -1,5 +1,7 @@
 #pragma once
 
+using QWORD = unsigned __int64;
+
 struct vec3_t
 {
     union
@@ -575,6 +577,14 @@ struct snd_stream
     char pad00[0x4];                                //0x954
 };
 
+struct snd_stream_request
+{
+    char filename[0x104];                           //0x000
+    unsigned int start_of_read;                     //0x104
+    int need;                                       //0x108
+    snd_buffer *buffer;                             //0x10C
+}; //Size = 0x110
+
 extern UiContext *dc;
 extern ScreenPlacement *scrPlace;
 extern KeyState *keys;
@@ -643,6 +653,8 @@ enum FuncAddresses : DWORD
     Snd_FindBuffer_a                    = 0x6BE4D0,
     Snd_StreamGetRequest_a              = 0x6BE1A0,
     va_a                                = 0x5F6D80,
+    FS_FreeMem_a                        = 0x5E4580,
+    Snd_LoadBuffer_a                    = 0x6BE530,
 };
 
 namespace Colors
@@ -665,8 +677,6 @@ namespace Colors
     extern Color blue;
     extern Color transparentBlack;
 }
-
-using QWORD = unsigned __int64;
 
 namespace GameData
 {
@@ -777,3 +787,5 @@ XAsset DB_FindXAsset(XAssetType type);
 snd_alias_list_t* SND_FindAlias(int localClientNum, const char *name);
 void UI_PlaySound(int context, const char *aliasname);
 int SND_Play(const char *alias, int entIndex, float volume);
+void FS_FreeFile(void *buffer);
+void Snd_StreamGetRequest(snd_stream *s, snd_stream_request *r);
