@@ -15,11 +15,7 @@
 #include <vector>
 #include <functional>
 #include <sstream>
-#include <map>
-
-// Project Files
-#include "structures.h"
-#include "detours.h"
-#include "aimbot.h"
-#include "esp.h"
-#include "menu.h"
+#include <unordered_map>
+#ifdef _DEBUG
+#include <iostream>
+#endif

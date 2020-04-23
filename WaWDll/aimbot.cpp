@@ -1,21 +1,19 @@
 #include "stdafx.h"
+#include "aimbot.h"
 
-vec3_t Aimbot::targetAngles;
-bool Aimbot::gotTarget;
-
-bool ExecuteAimbot()
+bool Aimbot::ExecuteAimbot()
 {
     if (InGame())
     {
         int target = GetAimbotTarget();
         if (target != -1)
         {
-            AimTarget_GetTagPos(0, &cg_entitiesArray[target],
-                SL_FindString("j_head"), Aimbot::targetAngles);
+            GameData::AimTarget_GetTagPos(0,& GameData::cg_entitiesArray[target],
+                GameData::SL_FindString("j_head"), this->targetAngles);
 
-            vectoangles(Aimbot::targetAngles - cgameGlob->refdef.vieworg, 
-                Aimbot::targetAngles);
-            Aimbot::targetAngles -= cgameGlob->predictedPlayerState.delta_angles;
+            GameData::vectoangles(this->targetAngles - GameData::cgameGlob->refdef.vieworg,
+                this->targetAngles);
+            this->targetAngles -= GameData::cgameGlob->predictedPlayerState.delta_angles;
 
             return true;
         }
@@ -23,124 +21,96 @@ bool ExecuteAimbot()
     return false;
 }
 
-bool ValidTarget(centity_s *target)
+bool Aimbot::ValidTarget(GameData::centity_s* target)
 {
-    if (target->nextState.number == cgameGlob->clientNum)
+    if (target->nextState.number == GameData::cgameGlob->clientNum)
         return 0;
 
-    WORD handle = clientObjMap[target->nextState.number];
+    WORD handle = GameData::clientObjMap[target->nextState.number];
     if (!handle)
         return 0;
 
-    DWORD dobj = (DWORD)objBuf + 0x68 * handle;
+    DWORD dobj = (DWORD)GameData::objBuf + 0x68 * handle;
     if (!dobj)
         return 0;
 
     return target->alive & 2
-        && target->nextState.lerp.eFlags == 16
-        && !target->pose.isRagdoll && !target->pose.ragdollHandle;
+       && target->nextState.lerp.eFlags == 16
+       && !target->pose.isRagdoll && !target->pose.ragdollHandle;
 }
 
-int GetAimbotTarget()
+int Aimbot::GetAimbotTarget() const
 {
-    int index = -1;
     float enemyPos[3];
-    float closestDistance = static_cast<float>(INT_MAX);
-    unsigned short id = SL_FindString("j_head");
-    float *myPos = cgameGlob->predictedPlayerState.origin;
+    int index = -1;
+    float closestDistance = 999999999999.0f;
+    unsigned short id = GameData::SL_FindString("j_head");
+    float* myPos = GameData::cgameGlob->predictedPlayerState.origin;
 
     for (int i = 0; i < 1024; ++i)
     {
-        centity_s *cent = &cg_entitiesArray[i];
+        GameData::centity_s* cent = &GameData::cg_entitiesArray[i];
         if (ValidTarget(cent)
-            && AimTarget_GetTagPos(0, cent, id, enemyPos))
-            if (AimTarget_IsTargetVisible(cent, id))
-                if (float distance = Distance3D(myPos, enemyPos); 
+           && GameData::AimTarget_GetTagPos(0, cent, id, enemyPos))
+        {
+            if (GameData::AimTarget_IsTargetVisible(cent, id))
+            {
+                if (float distance = Distance3D(myPos, enemyPos);
                     distance < closestDistance)
                 {
                     index = i;
                     closestDistance = distance;
                 }
+            }
+        }
     }
     return index;
 }
 
-void SetAngles(const vec3_t& angles)
+void Aimbot::SetAngles() const
 {
-    clientActive->viewangles[0] = angles.pitch;
-    clientActive->viewangles[1] = angles.yaw;
-    clientActive->viewangles[2] = angles.roll;
+    *(vec3_t*)GameData::clientActive->viewangles = this->targetAngles;
 }
 
-void CG_BulletEndPos(int commandTime, float spread, float *start, float *end, 
-    float *dir, const float *forwardDir, const float *rightDir, const float *upDir, 
-    float maxRange)
-{
-    float right, up;
-    float aimOffset = __libm_sse2_tan(DegreesToRadians(spread)) * maxRange;
-
-    RandomBulletDir(commandTime, &right, &up);
-    right *= aimOffset;
-    up *= aimOffset;
-
-    end[0] = maxRange * forwardDir[0] + start[0];
-    end[1] = maxRange * forwardDir[1] + start[1];
-    end[2] = maxRange * forwardDir[2] + start[2];
-
-    end[0] = right * rightDir[0] + end[0];
-    end[1] = right * rightDir[1] + end[1];
-    end[2] = right * rightDir[2] + end[2];
-
-    end[0] = up * upDir[0] + end[0];
-    end[1] = up * upDir[1] + end[1];
-    end[2] = up * upDir[2] + end[2];
-
-    if (dir)
-    {
-        dir[0] = end[0] - start[0];
-        dir[1] = end[1] - start[1];
-        dir[2] = end[2] - start[2];
-        Vec3Normalize(dir);
-    }
-}
-
-void RemoveSpread(playerState_s *ps, usercmd_s *cmd)
+void Aimbot::RemoveSpread(GameData::playerState_s* ps, GameData::usercmd_s* cmd) const
 {
     float minSpread, maxSpread, finalSpread, range;
     vec3_t viewOrg, viewAxis[3], spreadEnd, spreadDir, spreadFix;
-    float cgSpread = cgameGlob->aimSpreadScale / 255.0f;
-    WeaponDef *weap = BG_GetWeaponDef(ps->weapon);
+    float cgSpread = GameData::cgameGlob->aimSpreadScale / 255.0f;
+    GameData::WeaponDef* weap = GameData::BG_GetWeaponDef(ps->weapon);
 
     if (!CG_GetPlayerViewOrigin(0, ps, viewOrg))
         return;
 
-    if (cgameGlob->renderingThirdPerson)
-        AngleVectors(cgameGlob->clients[cgameGlob->clientNum].playerAngles,
+    if (GameData::cgameGlob->renderingThirdPerson)
+    {
+        GameData::AngleVectors(
+            GameData::cgameGlob->clients[GameData::cgameGlob->clientNum].playerAngles,
             viewAxis[0], viewAxis[1], viewAxis[2]);
+    }
     else
     {
-        float tmp[3] = { cgameGlob->gunPitch, cgameGlob->gunYaw, 0.0f };
-        AngleVectors(tmp, viewAxis[0], viewAxis[1], viewAxis[2]);
+        float tmp[3] = { GameData::cgameGlob->gunPitch,GameData::cgameGlob->gunYaw, 0.0f };
+        GameData::AngleVectors(tmp, viewAxis[0], viewAxis[1], viewAxis[2]);
     }
 
-    BG_GetSpreadForWeapon(ps, weap, &minSpread, &maxSpread);
-    finalSpread = ps->fWeaponPosFrac == 1.0f 
-        ? weap->fAdsSpread : minSpread;
+    GameData::BG_GetSpreadForWeapon(ps, weap, &minSpread, &maxSpread);
+    finalSpread = ps->fWeaponPosFrac == 1.0f ? weap->fAdsSpread : minSpread;
     finalSpread = (maxSpread - finalSpread) * cgSpread + finalSpread;
 
     range = weap->weapType == 3 ? weap->fMinDamageRange : 8192.0f;
 
-    CG_BulletEndPos(ps->commandTime, finalSpread, viewOrg, spreadEnd, spreadDir,
+    GameData::CG_BulletEndPos(ps->commandTime, finalSpread, viewOrg, spreadEnd, spreadDir,
         viewAxis[0], viewAxis[1], viewAxis[2], range);
 
-    vectoangles(spreadDir, spreadFix);
+    GameData::vectoangles(spreadDir, spreadFix);
 
-    cmd->angles[0] += AngleToShort(cgameGlob->gunPitch - spreadFix[0]);
-    cmd->angles[1] += AngleToShort(cgameGlob->gunYaw - spreadFix[1]);
+    cmd->angles[0] += AngleToShort(GameData::cgameGlob->gunPitch - spreadFix[0]);
+    cmd->angles[1] += AngleToShort(GameData::cgameGlob->gunYaw - spreadFix[1]);
 }
 
-void FixMovement(usercmd_s *cmd, float currentAngle, float oldAngle, 
-    float oldForwardmove, float oldRightmove)
+void Aimbot::FixMovement(GameData::usercmd_s* cmd, float currentAngle, float oldAngle,
+    float oldForwardmove, float oldRightmove) const
 {
     float deltaView = currentAngle - oldAngle, f1, f2;
 
@@ -162,37 +132,11 @@ void FixMovement(usercmd_s *cmd, float currentAngle, float oldAngle,
     deltaView = 360.0f - deltaView;
 
     cmd->forwardmove = static_cast<char>(
-        cosf(DegreesToRadians(deltaView)) * oldForwardmove 
+        cosf(DegreesToRadians(deltaView)) * oldForwardmove
         + cosf(DegreesToRadians(deltaView + 90.f)) * oldRightmove
     );
     cmd->rightmove = static_cast<char>(
-        sinf(DegreesToRadians(deltaView)) * oldForwardmove 
+        sinf(DegreesToRadians(deltaView)) * oldForwardmove
         + sinf(DegreesToRadians(deltaView + 90.f)) * oldRightmove
     );
-}
- 
-float DegreesToRadians(float deg)
-{
-    return deg * (pi() / 180.f);
-}
-
-float pi()
-{
-    float funcRet;
-    __asm
-    {
-        fldpi
-        fstp            funcRet
-    }
-    return funcRet;
-}
-
-int AngleToShort(float x)
-{
-    return ((int)(x * 65536 / 360) & 65535);
-}
-
-float ShortToAngle(int x)
-{
-    return (x * (360.0f / 65536));
 }

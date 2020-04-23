@@ -1,34 +1,37 @@
 #include "stdafx.h"
+#include "detours.h"
+#include "esp.h"
 
-usercall_ Menu_PaintAll = (usercall_)Menu_PaintAll_a;
-void(__cdecl *R_EndFrame)() = (void(*)())R_EndFrame_a;
-void(*CL_SendCmd)() = (void(*)())CL_SendCmd_a;
-LONG(__stdcall *TopLevelExceptionFilter)(
-    struct _EXCEPTION_POINTERS *ExceptionInfo)
-    = (LONG(__stdcall*)(_EXCEPTION_POINTERS*))TopLevelExceptionFilter_a;
-void(__cdecl *CL_WritePacket)() = (void(__cdecl*)())CL_WritePacket_a;
-void(__fastcall *CG_DrawNightVisionOverlay)(int localClientNum)
-    = (void(__fastcall*)(int))CG_DrawNightVisionOverlay_a;
-usercall_ AimTarget_GetTagPos_0 = (usercall_)AimTarget_GetTagPos_0_a;
-int(__cdecl *Menu_HandleMouseMove)(ScreenPlacement *scrPlace, void *menu)
-    = (int(__cdecl*)(ScreenPlacement*, void*))Menu_HandleMouseMove_a;
-void(__cdecl *CG_Draw2DInternal)() = (void(__cdecl*)())CG_Draw2DInternal_a;
-void(__cdecl *UI_Refresh)(int localClientNum) = (void(__cdecl*)(int))UI_Refresh_a;
-void(__cdecl *CL_KeyEvent)(int localClientNum, int value, int down,
-    unsigned int time) = (void(*)(int, int, int, unsigned int))CL_KeyEvent_a;
-sysEvent_t*(__cdecl *Win_GetEvent)(sysEvent_t *result, int unk)
-    = (sysEvent_t*(*)(sysEvent_t*, int))Win_GetEvent_a;
-usercall_ Cbuf_AddTextHook = (usercall_)Cbuf_AddText_a;
-void(__cdecl *CG_PredictPlayerState_Internal)(int localClientNum)
-    = (void(__cdecl*)(int))CG_PredictPlayerStateInternal_a;
-usercall_ CL_CreateCmd = (usercall_)CL_CreateCmd_a;
-void(__cdecl *CL_CreateNewCommands)()
-    = (void(__cdecl*)())CL_CreateNewCommands_a;
-void(__cdecl *IN_MouseEvent)(int mstate) = (void(__cdecl*)(int))IN_MouseEvent_a;
-usercall_ VM_Notify = (usercall_)VM_Notify_a;
-usercall_ CG_DamageFeedback = (usercall_)CG_DamageFeedback_a;
-int(*Com_Printf)(int channel, const char* format, ...) = (int(*)(int channel,
-    const char* format, ...))Com_Printf_a;
+namespace GameData
+{
+    void __usercall* Menu_PaintAll = (void __usercall*)Menu_PaintAll_a;
+    void(*CL_SendCmd)() = (void(*)())CL_SendCmd_a;
+    LONG(__stdcall* TopLevelExceptionFilter)(struct _EXCEPTION_POINTERS* ExceptionInfo)
+        = (LONG(__stdcall*)(_EXCEPTION_POINTERS*))TopLevelExceptionFilter_a;
+    void(__cdecl* CL_WritePacket)() = (void(__cdecl*)())CL_WritePacket_a;
+    void(__fastcall* CG_DrawNightVisionOverlay)(int localClientNum)
+        = (void(__fastcall*)(int))CG_DrawNightVisionOverlay_a;
+    void __usercall* AimTarget_GetTagPos_0 = (void __usercall*)AimTarget_GetTagPos_0_a;
+    int(__cdecl* Menu_HandleMouseMove)(GameData::ScreenPlacement* scrPlace, void* menu)
+        = (int(__cdecl*)(ScreenPlacement*, void*))Menu_HandleMouseMove_a;
+    void(__cdecl* CG_Draw2DInternal)() = (void(__cdecl*)())CG_Draw2DInternal_a;
+    void(__cdecl* UI_Refresh)(int localClientNum) = (void(__cdecl*)(int))UI_Refresh_a;
+    void(__cdecl* CL_KeyEvent)(int localClientNum, int value, int down,
+        unsigned int time) = (void(*)(int, int, int, unsigned int))CL_KeyEvent_a;
+    sysEvent_t*(__cdecl* Win_GetEvent)(sysEvent_t* result, int unk)
+        = (sysEvent_t*(*)(sysEvent_t*, int))Win_GetEvent_a;
+    void __usercall* Cbuf_AddTextHook = (void __usercall*)Cbuf_AddText_a;
+    void(__cdecl* CG_PredictPlayerState_Internal)(int localClientNum)
+        = (void(__cdecl*)(int))CG_PredictPlayerStateInternal_a;
+    void __usercall* CL_CreateCmd = (void __usercall*)CL_CreateCmd_a;
+    void(__cdecl* CL_CreateNewCommands)()
+        = (void(__cdecl*)())CL_CreateNewCommands_a;
+    void(__cdecl* IN_MouseEvent)(int mstate) = (void(__cdecl*)(int))IN_MouseEvent_a;
+    void __usercall* VM_Notify = (void __usercall*)VM_Notify_a;
+    void __usercall* CG_DamageFeedback = (void __usercall*)CG_DamageFeedback_a;
+    int(*Com_Printf)(int channel, const char* format, ...)
+        = (int(*)(int, const char*, ...))Com_Printf_a;
+}
 
 void DetourFunction(DWORD targetFunction, DWORD detourFunction)
 {
@@ -69,18 +72,17 @@ void DetourRemove(DWORD targetFunction, DWORD detourFunction)
 
 void RemoveDetour(QWORD bytes)
 {
-    DetourRemove((bytes & ((QWORD)UINT_MAX << 32)) >> 32,
-        (bytes & UINT_MAX));
+    DetourRemove((bytes&  ((QWORD)UINT_MAX << 32)) >> 32,
+        (bytes&  UINT_MAX));
 }
 
 void InsertDetour(LPVOID targetFunction, LPVOID detourFunction)
 {
-    GameData::detours.push_back(
-        ((QWORD)targetFunction << 32) | (QWORD)detourFunction);
+    detours.push_back(((QWORD)targetFunction << 32) | (QWORD)detourFunction);
     DetourFunction((DWORD)targetFunction, (DWORD)detourFunction);
 }
 
-void __declspec(naked) Menu_PaintAllDetourInvoke(UiContext *dc)
+void __declspec(naked) Menu_PaintAllDetourInvoke(GameData::UiContext* dc)
 {
     __asm
     {
@@ -95,130 +97,71 @@ void __declspec(naked) Menu_PaintAllDetourInvoke(UiContext *dc)
     }
 }
 
-void Menu_PaintAllDetour(UiContext *dc)
+void Menu_PaintAllDetour(GameData::UiContext* dc)
 {
-    if (!GameData::dvarsInitialized)
+    Menu& menu = Menu::Instance();
+    GameData::EnterCriticalSection(&menu.critSection);
+
+    if (!dvarsInitialized)
     {
-        Menu::Build();
-
-        if (GameData::InsertDvar("cl_ingame")
-            && GameData::InsertDvar("cg_fov")
-            && GameData::InsertDvar("perk_weapSpreadMultiplier")
-            && GameData::InsertDvar("sv_cheats")
-            && GameData::InsertDvar("player_sustainAmmo"))
+        if (InsertDvar("cl_ingame")
+            && InsertDvar("cg_fov")
+            && InsertDvar("perk_weapSpreadMultiplier")
+            && InsertDvar("sv_cheats")
+            && InsertDvar("player_sustainAmmo"))
         {
-            GameData::dvarsInitialized = true;
-            Variables::fov.integer = 65;
-
+            dvarsInitialized = true;
+            menu.GetOptionData(MISC_MENU, "FOV").data.integer = 65;
         }
         else
-            Com_Error(0, "Dvars failed to load\n");
-    }
-    
-    if (!GameData::sndsInitialized)
-    {
-       /* int len = FS_ReadFile("monkey.wav", (void**)&ptr);
-        if (ptr)
-            printf("%p size: %x\n", ptr, len);
-        else
-            printf("gonna kms\n");*/
-        
-        /*static bool notInit = 0;
-        snd_buffer *buf;
-        if (ptr)
-        {
-            if (!notInit 
-                && (buf = Snd_FindBufferOfFile("sound/Stream\\Music\\Mission\\s"
-                    "niper\\final\\mx_brave_soldat.wav")))
-            {
-                notInit = true;
-                buf->data = ptr;
-                buf->file_size = len;
-                printf("written\n");
-            }
-        }*/
-        
-        //printf("%p\n", SND_FindAlias(0, "grenade_bounce_"))
-        SndBank *bank = DB_FindXAsset(ASSET_TYPE_SOUND).header->sound.entries;
-        /*for (int i = 0; i < 0x100 && strcmp(bank->name, "heart_beat"); i++)
-        {
-            printf("%s\n", bank++->name);
-        }*/
-        
-        CopyTextToClipboard(va("%p\n", &bank->alias->head->file.primeSnd->buffer));
-
-        snd_stream_request r;
-        snd_stream *s = (snd_stream*)0x46E5648;
-        Snd_StreamGetRequest(&s[0], &r);
-        
-        GameData::sndsInitialized = true;
+            GameData::Com_Error(0, "Dvars failed to load\n");
     }
 
-    if (IN_IsForegroundWindow())
-        Menu::MonitorKeys();
+    if (GameData::IN_IsForegroundWindow())
+        menu.MonitorKeys();
 
-    if (Menu::open)
-        Menu::Execute();
+    if (menu.open)
+        menu.Execute();
 
     RenderESP();
+
+    GameData::LeaveCriticalSection(&menu.critSection);
 }
 
-void R_EndFrameDetour()
+void Cmd_ExecuteSingleCommandDetour(int localClientNum, int controllerIndex, const char* text)
 {
-    unsigned const char steadyAimBytes[] = { 0x83, 0xFF, 0x02, 0x75, 0x15 };
-
-    WriteBytes(0x46A87E, Variables::noRecoil.boolean ? "\xEB" : "\x74", 1);
-    WriteBytes(0x41DB2B, Variables::steadyAim.boolean ? "\x90\x90\x90\x90\x90"
-        : reinterpret_cast<const char*>(steadyAimBytes), 5);
-
-    if (GameData::dvarsInitialized)
-    {
-        GameData::dvars["cg_fov"]->current.value
-            = static_cast<float>(Variables::fov.integer);
-        GameData::dvars["sv_cheats"]->current.enabled
-            = Variables::cheatsEnabled.boolean;
-        GameData::dvars["player_sustainAmmo"]->current.enabled 
-            = Variables::infAmmo.boolean;
-    }
-
-    R_EndFrame();
+    return GameData::Cmd_ExecuteSingleCommand(localClientNum, controllerIndex, text);
 }
 
-void Cmd_ExecuteSingleCommandDetour(int localClientNum, int controllerIndex,
-    const char *text)
+void TopLevelExceptionFilterDetour(struct _EXCEPTION_POINTERS* ExceptionInfo)
 {
-    return Cmd_ExecuteSingleCommand(localClientNum, controllerIndex, text);
-}
+    PDWORD_PTR currESP =
+        (PDWORD_PTR)ExceptionInfo->ContextRecord->Esp;
+    PDWORD_PTR currEIP =
+        (PDWORD_PTR)ExceptionInfo->ContextRecord->Eip;
 
-void TopLevelExceptionFilterDetour(struct _EXCEPTION_POINTERS *ExceptionInfo)
-{
-    PDWORD_PTR currESP 
-        = reinterpret_cast<PDWORD_PTR>(ExceptionInfo->ContextRecord->Esp);
-    PDWORD_PTR currEIP
-        = reinterpret_cast<PDWORD_PTR>(ExceptionInfo->ContextRecord->Eip);
-
-    printf("EAX: %p\n", ExceptionInfo->ContextRecord->Eax);
-    printf("EBX: %p\n", ExceptionInfo->ContextRecord->Ebx);
-    printf("ECX: %p\n", ExceptionInfo->ContextRecord->Ecx);
-    printf("EDX: %p\n", ExceptionInfo->ContextRecord->Edx);
-    printf("EDI: %p\n", ExceptionInfo->ContextRecord->Edi);
-    printf("ESI: %p\n", ExceptionInfo->ContextRecord->Esi);
-    printf("EBP: %p\n", ExceptionInfo->ContextRecord->Ebp);
-    printf("ESP: %p\n", currESP);
-    printf("EIP: %p\n", currEIP);
+    printf("EAX: %p\n", (void*)ExceptionInfo->ContextRecord->Eax);
+    printf("EBX: %p\n", (void*)ExceptionInfo->ContextRecord->Ebx);
+    printf("ECX: %p\n", (void*)ExceptionInfo->ContextRecord->Ecx);
+    printf("EDX: %p\n", (void*)ExceptionInfo->ContextRecord->Edx);
+    printf("EDI: %p\n", (void*)ExceptionInfo->ContextRecord->Edi);
+    printf("ESI: %p\n", (void*)ExceptionInfo->ContextRecord->Esi);
+    printf("EBP: %p\n", (void*)ExceptionInfo->ContextRecord->Ebp);
+    printf("ESP: %p\n", (void*)currESP);
+    printf("EIP: %p\n", (void*)currEIP);
 
     printf("\nSTACK VIEW:\n");
     for (int i = 0; i < 8; i++)
     {
         if (i)
             ++currESP;
-        printf("%p: %p ", (unsigned int)currESP, *currESP);
+        printf("%p: %p ", (void*)currESP, (void*)*currESP);
         for (int j = 0; j < 3; j++)
-            printf("%p ", *(++currESP));
+            printf("%p ", (void*)*(++currESP));
         printf("\n");
     }
 
-    if (CopyTextToClipboard(va("%p", currEIP)))
+    if (CopyTextToClipboard(GameData::va("%p", currEIP)))
         printf("\nInstruction pointer copied to clipboard\n");
     else
         printf("\nProblem copying instruction pointer to clipboard\n");
@@ -226,21 +169,21 @@ void TopLevelExceptionFilterDetour(struct _EXCEPTION_POINTERS *ExceptionInfo)
 
 void CL_WritePacketDetour()
 {
-    CL_WritePacket();
+    GameData::CL_WritePacket();
 }
 
 void CL_SendCmdDetour()
 {
-    CL_SendCmd();
+    GameData::CL_SendCmd();
 }
 
 void CG_DrawNightVisionOverlayDetour(int localClientNum)
 {
-    CG_DrawNightVisionOverlay(localClientNum);
+    GameData::CG_DrawNightVisionOverlay(localClientNum);
 }
 
-void __declspec(naked) AimTarget_GetTagPos_0DetourInvoke(centity_s *cent,
-    unsigned __int16 bone, float *out)
+void __declspec(naked) AimTarget_GetTagPos_0DetourInvoke(GameData::centity_s* cent,
+    unsigned short bone, float* out)
 {
     __asm
     {
@@ -249,42 +192,58 @@ void __declspec(naked) AimTarget_GetTagPos_0DetourInvoke(centity_s *cent,
         push        esi
         push        ecx
         push        0
-        call        AimTarget_GetTagPos
+        call        GameData::AimTarget_GetTagPos
         add         esp, 10h
         ret
     }
 }
 
-int Menu_HandleMouseMoveDetour(ScreenPlacement *scrPlace, void *item)
+int Menu_HandleMouseMoveDetour(GameData::ScreenPlacement* scrPlace, void* item)
 {
-    if (!Menu::open)
-        return Menu_HandleMouseMove(scrPlace, item);
+    Menu& menu = Menu::Instance();
+    GameData::EnterCriticalSection(&menu.critSection);
 
+    if (!menu.open)
+    { 
+        GameData::LeaveCriticalSection(&menu.critSection);
+        return GameData::Menu_HandleMouseMove(scrPlace, item);
+    }
+    
+    GameData::LeaveCriticalSection(&menu.critSection);
     return 0;
 }
 
 void CG_Draw2DInternalDetour()
 {
-    return CG_Draw2DInternal();
+    return GameData::CG_Draw2DInternal();
 }
 
 void UI_RefreshDetour(int localClientNum)
 {
-    return UI_Refresh(localClientNum);
+    return GameData::UI_Refresh(localClientNum);
 }
 
 void CL_KeyEventDetour(int localClientNum, int key, int down, int time)
 {
-    if (InGame() && keys[key].binding 
+    Menu& menu = Menu::Instance();
+
+    GameData::EnterCriticalSection(&menu.critSection);
+
+    OptionData& aimKey = menu.GetOptionData(AIMBOT_MENU, "Aim Key");
+    OptionData& autoShoot = menu.GetOptionData(AIMBOT_MENU, "Auto Shoot");
+
+    if (InGame() && GameData::keys[key].binding
         && !*(int*)0x208E938
-        && (Variables::aimKey.integer != 1 || !strcmp(keys[key].binding, "+attack"))
-        && Variables::autoShoot.boolean)
+        && (aimKey.data.integer != 1 || !strcmp(GameData::keys[key].binding, "+attack"))
+        && autoShoot.data.boolean)
         return;
 
-    return CL_KeyEvent(localClientNum, key, down, time);
+    GameData::LeaveCriticalSection(&menu.critSection);
+
+    return GameData::CL_KeyEvent(localClientNum, key, down, time);
 }
 
-void __declspec(naked) Cbuf_AddTextDetourInvoke(const char *text,
+void __declspec(naked) Cbuf_AddTextDetourInvoke(const char* text,
     int localClientNum)
 {
     __asm
@@ -311,14 +270,14 @@ LABEL_1:
     }
 }
 
-bool Cbuf_AddTextDetour(const char *text, int localClientNum)
+bool Cbuf_AddTextDetour(const char* text, int localClientNum)
 {
     return true;
 }
 
 void CG_PredictPlayerState_InternalDetour(int localClientNum)
 {
-    CG_PredictPlayerState_Internal(localClientNum);
+    GameData::CG_PredictPlayerState_Internal(localClientNum);
 }
 
 void __declspec(naked) CL_CreateNewCommandsDetourInvoke()
@@ -338,41 +297,56 @@ void __declspec(naked) CL_CreateNewCommandsDetourInvoke()
 
 void CL_CreateNewCommandsDetour()
 {
-    usercmd_s *ncmd = &clientActive->cmds[clientActive->cmdNumber + 1 & 0x7F],
-        *ccmd = &clientActive->cmds[clientActive->cmdNumber & 0x7F],
-        *ocmd = &clientActive->cmds[clientActive->cmdNumber - 1 & 0x7F];
+    Menu& menu = Menu::Instance();
+    Aimbot& aimbot = Aimbot::Instance();
+
+    GameData::EnterCriticalSection(&menu.critSection);
+
+    GameData::usercmd_s* ncmd = &GameData::clientActive->cmds[GameData::clientActive->cmdNumber + 1 & 0x7F];
+    GameData::usercmd_s* ccmd = &GameData::clientActive->cmds[GameData::clientActive->cmdNumber & 0x7F];
+    GameData::usercmd_s* ocmd = &GameData::clientActive->cmds[GameData::clientActive->cmdNumber - 1 & 0x7F];
 
     ocmd->serverTime++;
 
     bool aimbotRun = false;
-    bool isShooting = Key_IsDown("+attack");
-    if (Variables::enableAimbot.boolean)
+    bool isShooting = GameData::Key_IsDown("+attack");
+    if (aimbot.enableAimbot.data.boolean)
     {
-        if ((Variables::aimKey.integer == 1 && isShooting)
-            || (Variables::aimKey.integer == 2 && Key_IsDown("+speed_throw"))
-            || !Variables::aimKey.integer)
+        if ((aimbot.aimKey.data.integer == 1 && isShooting)
+            || (aimbot.aimKey.data.integer == 2 && GameData::Key_IsDown("+speed_throw"))
+            || !aimbot.aimKey.data.integer)
         {
-            aimbotRun = ExecuteAimbot();
+            aimbotRun = aimbot.ExecuteAimbot();
             if (aimbotRun)
-                SetAngles(Aimbot::targetAngles);
+                aimbot.SetAngles();
         }
     }
 
-    if (Variables::autoShoot.boolean && (aimbotRun || isShooting))
+    if (aimbot.autoShoot.data.boolean && (aimbotRun || isShooting))
     {
         ccmd->button_bits &= ~1;
         ocmd->button_bits |= 1;
     }
+
+    GameData::LeaveCriticalSection(&menu.critSection);
 }
 
 void IN_MouseEventDetour(int mstate)
 {
-    if (!Menu::open)
-        return IN_MouseEvent(mstate);
+    Menu& menu = Menu::Instance();
+    GameData::EnterCriticalSection(&menu.critSection);
+
+    if (!menu.open)
+    {
+        GameData::LeaveCriticalSection(&menu.critSection);
+        return GameData::IN_MouseEvent(mstate);
+    }
+
+    GameData::LeaveCriticalSection(&menu.critSection);
 }
 
-void __declspec(naked) VM_NotifyDetourInvoke(scriptInstance_t inst,
-    int notifyListOwnerId, int stringValue, VariableValue *top)
+void __declspec(naked) VM_NotifyDetourInvoke(GameData::scriptInstance_t inst,
+    int notifyListOwnerId, int stringValue, GameData::VariableValue* top)
 {
     __asm
     {
@@ -392,14 +366,14 @@ void __declspec(naked) VM_NotifyDetourInvoke(scriptInstance_t inst,
     }
 }
 
-void VM_NotifyDetour(scriptInstance_t inst, int notifyListOwnerId,
-    int stringValue, VariableValue *top)
+void VM_NotifyDetour(GameData::scriptInstance_t inst, int notifyListOwnerId,
+    int stringValue, GameData::VariableValue* top)
 {
-    LPCSTR notifyString = SL_ConvertToString(stringValue);
+    LPCSTR notifyString = GameData::SL_ConvertToString(stringValue);
     if (!strcmp(notifyString, "spawned_player"))
         printf("born\n");
     if (!strcmp(notifyString, "weapon_fired"))
-        SND_Play("grenade_bounce_glass", 0, 50.0f);
+        GameData::UI_PlaySound(0, "grenade_bounce_glass");
 
     //DWORD notifyListId = FindVariable(inst, notifyListOwnerId, 0x15FFE);
     //if (!notifyListId)
@@ -416,10 +390,10 @@ void VM_NotifyDetour(scriptInstance_t inst, int notifyListOwnerId,
     //    return;
 
     //DWORD threadId = GetVariableKeyObject(inst, notifyListIndex);
-    int self = Scr_GetSelf(inst, notifyListOwnerId);
+    int self = GameData::Scr_GetSelf(inst, notifyListOwnerId);
 }
 
-void __declspec(naked) CG_DamageFeedbackDetourInvoke(int localClientNum, 
+void __declspec(naked) CG_DamageFeedbackDetourInvoke(int localClientNum,
     int yawByte, int pitchByte, int damage)
 {
     __asm
@@ -427,9 +401,9 @@ void __declspec(naked) CG_DamageFeedbackDetourInvoke(int localClientNum,
         push        ecx
         push        ebp
         mov         ebp, esp
-        push        [ebp + 0Ch]                     ;damage
-        push        eax                             ;pitchByte
-        push        edx                             ;yawByte
+        push        [ebp + 0Ch]; damage
+        push        eax; pitchByte
+        push        edx; yawByte
         push        [ebp + 8]
         call        CG_DamageFeedbackDetour
         add         esp, 10h
@@ -438,25 +412,32 @@ void __declspec(naked) CG_DamageFeedbackDetourInvoke(int localClientNum,
         test        al, al
         jnz         CONTINUE_FLOW
         ret
-CONTINUE_FLOW:
+        CONTINUE_FLOW :
         sub         esp, 28h
-        mov         ecx, dword ptr [8F435Ch]
+        mov         ecx, dword ptr[8F435Ch]
         push        00455379h
         ret
     }
 }
 
-bool CG_DamageFeedbackDetour(int localClientNum, int yawByte, int pitchByte, 
+bool CG_DamageFeedbackDetour(int localClientNum, int yawByte, int pitchByte,
     int damage)
 {
-    return !Variables::noFlinch.boolean;
+    Menu& menu = Menu::Instance();
+    GameData::EnterCriticalSection(&menu.critSection);
+
+    bool result = !Menu::Instance().GetOptionData(MISC_MENU, "No Flinch").data.boolean;
+    
+    GameData::LeaveCriticalSection(&menu.critSection);
+
+    return result;
 }
 
 int Com_PrintfDetour(int channel, const char* format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    
+
     char printBuffer[1024];
     vsnprintf(printBuffer, 1024, format, ap);
     printf("%s\n", printBuffer);

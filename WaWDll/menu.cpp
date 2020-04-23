@@ -1,162 +1,251 @@
 #include "stdafx.h"
+#include "menu.h"
 
-std::vector<std::vector<Option>> Menu::options;
-int Menu::open;
-int Menu::toggled;
-int Menu::currentSub;
-int Menu::timer;
-
-OptionData Variables::enableAimbot;
-OptionData Variables::aimKey;
-OptionData Variables::aimType;
-OptionData Variables::autoAim;
-OptionData Variables::autoShoot;
-OptionData Variables::noSpread;
-OptionData Variables::noRecoil;
-
-OptionData Variables::enemyESP;
-OptionData Variables::friendlyESP;
-
-OptionData Variables::serverInfo;
-OptionData Variables::healthBar;
-
-OptionData Variables::steadyAim;
-OptionData Variables::cheatsEnabled;
-OptionData Variables::godMode;
-OptionData Variables::infAmmo;
-OptionData Variables::noFlinch;
-OptionData Variables::fov;
-
-void Menu::Build()
+OptionData::OptionData(OptionType type) : type(type)
 {
-    using namespace Variables;
+    switch (type)
+    {
+        case TYPE_INT:
+            this->data = Data(0);
+        break;
+        case TYPE_BOOL:
+            this->data = Data(false);
+        break;
+        case TYPE_FLOAT:
+            this->data = Data(0.0f);
+        break;
+        default:
+            this->data = Data(0);
+        break;
+    }
+}
+
+Menu::Menu() :
+    open(false), 
+    toggled(false),
+    currentSub(MAIN_MENU),
+    timer(0)
+{
+    GameData::InitializeCriticalSection(&this->critSection);
 
     for (int sub = MAIN_MENU; sub <= HUD_MENU; sub++)
-        options.push_back(std::vector<Option>());
+        this->options.push_back(std::unordered_map<std::string, Option>());
 
-    Insert(MAIN_MENU, "Aimbot Menu", nullptr,
-        TYPE_SUB, std::bind(LoadSub, AIMBOT_MENU));
-    Insert(MAIN_MENU, "ESP Menu", nullptr,
-        TYPE_SUB, std::bind(LoadSub, ESP_MENU));
-    Insert(MAIN_MENU, "HUD Menu", nullptr,
-        TYPE_SUB, std::bind(LoadSub, HUD_MENU));
-    Insert(MAIN_MENU, "Misc Menu", nullptr,
-        TYPE_SUB, std::bind(LoadSub, MISC_MENU));
+    // Main menu options
+    Insert(MAIN_MENU, "Aimbot Menu", TYPE_SUB, 
+        []() 
+        { 
+            Menu::Instance().LoadSub(AIMBOT_MENU); 
+        });
+    Insert(MAIN_MENU, "ESP Menu", TYPE_SUB, 
+        []() 
+        { 
+            Menu::Instance().LoadSub(ESP_MENU); 
+        });
+    Insert(MAIN_MENU, "HUD Menu", TYPE_SUB, 
+        []() 
+        { 
+            Menu::Instance().LoadSub(HUD_MENU); 
+        });
+    Insert(MAIN_MENU, "Misc Menu", TYPE_SUB, 
+        []() 
+        { 
+            Menu::Instance().LoadSub(MISC_MENU); 
+        });
 
-    Insert(ESP_MENU, "Enemy ESP", &enemyESP,
-        TYPE_BOOL, std::bind(BoolModify, &enemyESP));
-    Insert(ESP_MENU, "Friendly ESP", &friendlyESP,
-        TYPE_BOOL, std::bind(BoolModify, &friendlyESP));
+    // ESP menu options
+    Insert(ESP_MENU, "Enemy ESP", TYPE_BOOL, 
+        []() 
+        { 
+            Menu::Instance().BoolModify("Enemy ESP"); 
+        });
+    Insert(ESP_MENU, "Friendly ESP", TYPE_BOOL, 
+        []() 
+        { 
+            Menu::Instance().BoolModify("Friendly ESP"); 
+        });
 
-    Insert(HUD_MENU, "Server Info", &serverInfo,
-        TYPE_BOOL, std::bind(BoolModify, &serverInfo));
+    // HUD menu options
+    Insert(HUD_MENU, "Server Info", TYPE_BOOL, 
+        []() 
+        { 
+            Menu::Instance().BoolModify("Server Info"); 
+        });
 
-    Insert(AIMBOT_MENU, "Enable Aimbot", &enableAimbot,
-        TYPE_BOOL, std::bind(BoolModify, &enableAimbot));
-    Insert(AIMBOT_MENU, "Aim Key", &aimKey,
-        TYPE_INT, std::bind(IntModify, &aimKey, TYPE_INT, 0, 2));
-    Insert(AIMBOT_MENU, "Aim Type", &aimType,
-        TYPE_INT, std::bind(IntModify, &aimType, TYPE_INT, 0, 2));
-    Insert(AIMBOT_MENU, "Auto Aim", &autoAim,
-        TYPE_BOOL, std::bind(BoolModify, &autoAim));
-    Insert(AIMBOT_MENU, "Auto Shoot", &autoShoot,
-        TYPE_BOOL, std::bind(BoolModify, &autoShoot));
-    Insert(AIMBOT_MENU, "No Recoil", &noRecoil,
-        TYPE_BOOL, std::bind(BoolModify, &noRecoil));
-    Insert(AIMBOT_MENU, "No Spread", &noSpread,
-        TYPE_BOOL, std::bind(BoolModify, &noSpread));
+    // Aimbot menu options
+    Insert(AIMBOT_MENU, "Enable Aimbot", TYPE_BOOL, 
+        []() 
+        { 
+            Menu::Instance().BoolModify("Enable Aimbot"); 
+        });
+    Insert(AIMBOT_MENU, "Aim Key",  TYPE_INT, 
+        []() 
+        { 
+            Menu::Instance().IntModify("Aim Key", TYPE_INT, 0, 2); 
+        });
+    Insert(AIMBOT_MENU, "Aim Type",  TYPE_INT, 
+        []() 
+        { 
+            Menu::Instance().IntModify("Aim Type", TYPE_INT, 0, 2); 
+        });
+    Insert(AIMBOT_MENU, "Auto Aim", TYPE_BOOL, 
+        []() 
+        { 
+            Menu::Instance().BoolModify("Auto Aim"); 
+        });
+    Insert(AIMBOT_MENU, "Auto Shoot", TYPE_BOOL, 
+        []() 
+        { 
+            Menu::Instance().BoolModify("Auto Shoot"); 
+        });
+    Insert(AIMBOT_MENU, "No Recoil", TYPE_BOOL, 
+        []() 
+        {
+            WriteBytes(0x46A87E,
+                Menu::Instance().BoolModify("No Recoil") ? "\xEB" : "\x74", 1);
+        });
+    Insert(AIMBOT_MENU, "No Spread", TYPE_BOOL, 
+        []() { Menu::Instance().BoolModify("No Spread"); });
 
-    Insert(MISC_MENU, "FOV", &fov,
-        TYPE_INT, std::bind(IntModify, &fov, TYPE_INT, 65, 125));
-    Insert(MISC_MENU, "Super Steady Aim", &steadyAim,
-        TYPE_BOOL, std::bind(BoolModify, &steadyAim));
-    Insert(MISC_MENU, "Enable Cheats", &cheatsEnabled,
-        TYPE_BOOL, std::bind(BoolModify, &cheatsEnabled));
-    Insert(MISC_MENU, "God Mode", nullptr,
-        TYPE_VOID, std::bind(Cbuf_AddText, "god"));
-    Insert(MISC_MENU, "No Clip", nullptr,
-        TYPE_VOID, std::bind(Cbuf_AddText, "noclip"));
-    Insert(MISC_MENU, "Give All Weapons", nullptr,
-        TYPE_VOID, std::bind(Cbuf_AddText, "give all"));
-    Insert(MISC_MENU, "No Target", nullptr,
-        TYPE_VOID, std::bind(Cbuf_AddText, "notarget"));
-    Insert(MISC_MENU, "Infinite Ammo", &infAmmo,
-        TYPE_BOOL, std::bind(BoolModify, &infAmmo));
-    Insert(MISC_MENU, "No Flinch", &noFlinch,
-        TYPE_BOOL, std::bind(BoolModify, &noFlinch));
+    // Miscellaneous menu options
+    Insert(MISC_MENU, "FOV",  TYPE_INT, 
+        []() 
+        {
+            dvars["cg_fov"]->current.value 
+                = static_cast<float>(Menu::Instance().IntModify("FOV", TYPE_INT, 65, 125));
+        });
+    Insert(MISC_MENU, "Super Steady Aim", TYPE_BOOL, 
+        []() 
+        { 
+            WriteBytes(0x41DB2B,
+                Menu::Instance().BoolModify("Super Steady Aim")
+                ? "\x90\x90\x90\x90\x90"
+                : "\x83\xFF\x02\x75\x15", 5);
+        });
+    Insert(MISC_MENU, "Enable Cheats", TYPE_BOOL, 
+        []() 
+        { 
+            dvars["sv_cheats"]->current.enabled 
+                = Menu::Instance().BoolModify("Enable Cheats");
+        });
+    Insert(MISC_MENU, "God Mode", TYPE_VOID, 
+        []() 
+        { 
+            GameData::Cbuf_AddText("god"); 
+        });
+    Insert(MISC_MENU, "No Clip", TYPE_VOID, 
+        []() 
+        { 
+            GameData::Cbuf_AddText("noclip"); 
+        });
+    Insert(MISC_MENU, "Give All Weapons", TYPE_VOID, 
+        []() 
+        { 
+            GameData::Cbuf_AddText("give all"); 
+        });
+    Insert(MISC_MENU, "No Target", TYPE_VOID, 
+        []() 
+        { 
+            GameData::Cbuf_AddText("notarget"); 
+        });
+    Insert(MISC_MENU, "Infinite Ammo", TYPE_BOOL, 
+        []() 
+        {
+            dvars["player_sustainAmmo"]->current.enabled 
+                = Menu::Instance().BoolModify("Infinite Ammo");
+        });
+    Insert(MISC_MENU, "No Flinch", TYPE_BOOL, 
+        []() 
+        { 
+            Menu::Instance().BoolModify("No Flinch"); 
+        });
 }
 
-void Menu::Insert(int sub, const char *option, OptionData *data,
-    OptionType type, const std::function<void()> &callback)
+void Menu::Insert(int sub, const char* option, OptionType type, 
+    std::function<void()>&& callback)
 {
-    options.at(sub).push_back(Option(option, data, type, callback));
+    this->options.at(sub).insert(
+        std::pair<std::string, Option>(
+            option, Option(option, type, std::forward<std::function<void()>>(callback))
+        )
+    );
 }
 
-void Menu::LoadSub(int sub)
+void Menu::LoadSub(Submenu sub)
 {
-    currentSub = sub;
+    this->currentSub = sub;
 }
 
 void Menu::CloseSub()
 {
-    switch (currentSub)
+    switch (this->currentSub)
     {
     case MAIN_MENU:
-        open = false;
+        this->open = false;
         break;
     case AIMBOT_MENU:
     case ESP_MENU:
     case HUD_MENU:
     case MISC_MENU:
-        currentSub = MAIN_MENU;
+        this->currentSub = MAIN_MENU;
         break;
     default:
-        open = false;
+        this->open = false;
         break;
     }
 }
 
-void Menu::BoolModify(OptionData *var)
+bool Menu::BoolModify(const std::string& varName)
 {
-    var->boolean = !var->boolean;
+    OptionData& var = this->GetOptionData(this->currentSub, varName);
+    return var.data.boolean = !var.data.boolean;
 }
 
-void Menu::IntModify(OptionData *var, OptionType type, int min, int max)
-{;
-    if (toggled)
-        var->integer++;
-    else
-        var->integer--;
+int Menu::IntModify(const std::string& varName, OptionType type, int min, int max)
+{
+    OptionData& var = this->GetOptionData(this->currentSub, varName);
 
-    if (var->integer > max)
-        var->integer = min;
-    if (var->integer < min)
-        var->integer = max;
+    if (this->toggled)
+        var.data.integer++;
+    else
+        var.data.integer--;
+
+    if (var.data.integer > max)
+        return var.data.integer = min;
+    if (var.data.integer < min)
+        return var.data.integer = max;
+}
+
+OptionData& Menu::GetOptionData(Submenu sub, const std::string& key)
+{
+    return this->options.at(sub).at(key).var;
 }
 
 bool Menu::Ready()
 {
-    return Sys_Milliseconds() > timer;
+    return GameData::Sys_Milliseconds() > timer;
 }
 
 void Menu::Wait(int ms)
 {
-    timer = Sys_Milliseconds() + ms;
+    timer = GameData::Sys_Milliseconds() + ms;
 }
 
 void Menu::Execute()
 {
-    const char *title = "WaW Zombies DLL By E7ite";
-    float menuCenterX = dc->screenDimensions[0] / 2
-        / scrPlace->scaleVirtualToFull[0];
-    float menuCenterY = dc->screenDimensions[1] / 2
-        / scrPlace->scaleVirtualToFull[1];
+    const char* title = "WaW Zombies DLL By E7ite";
+    float menuCenterX = GameData::dc->screenDimensions[0] / 2
+        / GameData::scrPlace->scaleVirtualToFull[0];
+    float menuCenterY = GameData::dc->screenDimensions[1] / 2
+        / GameData::scrPlace->scaleVirtualToFull[1];
 
+    // Get x position of text aligned with a background and scaled for all resolutions
     float textWidth, textHeight;
-    Font_s *fontPointer;
-    float xAligned = AlignText(title, GameData::normalFont, 0.3f,
+    GameData::Font_s* fontPointer;
+    float xAligned = AlignText(title, Fonts::normalFont, 0.3f,
         menuCenterX, ALIGN_CENTER, 1, 1, &fontPointer, &textWidth, &textHeight);
 
+    // Get position and dimensions of all border and options
     float borderW = menuCenterX - 20;
     float borderH = textHeight * options[currentSub].size();
     float borderX = menuCenterX - borderW / 2;
@@ -165,62 +254,69 @@ void Menu::Execute()
     float optionY = menuCenterY - 100;
     float optionH = UI_TextHeight(fontPointer, 0.3f);
 
+    // Draw the title and the menu base
     optionY += RenderUITextWithBackground(title, xAligned, optionY, textWidth, 
         textHeight, Colors::blue, Colors::white, fontPointer, 0.3f);
-    UI_FillRect(scrPlace, borderX, borderY, borderW, borderH, 0, 0,
+    GameData::UI_FillRect(GameData::scrPlace, borderX, borderY, borderW, borderH, 0, 0,
         Colors::transparentBlack);
-    UI_DrawRect(scrPlace, borderX, borderY, borderW, borderH, 
+    GameData::UI_DrawRect(GameData::scrPlace, borderX, borderY, borderW, borderH,
         0, 0, 2, Colors::blue);
 
-    for (const auto &i : options[currentSub])
+    // Draw all the options in the current sub menu
+    for (auto& i : options[currentSub])
     {
         Colors::Color color = Colors::white;
-        if (MonitorMouse(i, borderX, optionY - 2, borderW, optionH + 2))
+        const Option& option = i.second;
+
+        // Adjust options in menu based on mouse position and execute any callbacks
+        if (this->MonitorMouse(i.second, borderX, optionY - 2, borderW, optionH + 2))
             color = Colors::blue;
 
-        switch (i.type)
+        // Draw the additional visuals for array and boolean options
+        switch (option.var.type)
         {
-        case TYPE_BOOL:
-            UI_FillRect(scrPlace, borderX + borderW - 12,
-                optionY - optionH + 2, 8, 8, 0, 0,
-                i.data->boolean ? Colors::blue : Colors::transparentBlack);
+            case TYPE_BOOL:
+                GameData::UI_FillRect(GameData::scrPlace, borderX + borderW - 12,
+                    optionY - optionH + 2, 8, 8, 0, 0,
+                    option.var.data.boolean ? Colors::blue : Colors::transparentBlack);
             break;
-        case TYPE_INT:
-            std::string data = std::to_string(i.data->integer);
-            RenderUIText(data.data(),
-                AlignText(data.data(), GameData::normalFont,
-                    0.3f, borderX + borderW - 3, ALIGN_RIGHT, 1, 0),
-                optionY, 0.3f, color, fontPointer);
+            case TYPE_INT:
+                std::string data = std::to_string(option.var.data.integer);
+                RenderUIText(data.data(),
+                    AlignText(data.data(), Fonts::normalFont,
+                        0.3f, borderX + borderW - 3, ALIGN_RIGHT, 1, 0),
+                    optionY, 0.3f, color, fontPointer);
             break;
         }
 
-        optionY += RenderUIText(i.option, optionX, optionY,
+        // Draw the text of the menu
+        optionY += RenderUIText(i.first, optionX, optionY,
             0.3f, color, fontPointer);
     }
 }
 
-bool Menu::MonitorMouse(const Option &opt, float optionX, float optionY,
+bool Menu::MonitorMouse(Option& opt, float optionX, float optionY,
     float optionW, float optionH)
 {
-    if (dc->cursorPos[0] > optionX
-        && dc->cursorPos[0] < optionX + optionW
-        && dc->cursorPos[1] > optionY - optionH
-        && dc->cursorPos[1] < optionY)
+    if (GameData::dc->cursorPos[0] > optionX
+        && GameData::dc->cursorPos[0] < optionX + optionW
+        && GameData::dc->cursorPos[1] > optionY - optionH
+        && GameData::dc->cursorPos[1] < optionY)
     {
-        if (Ready())
+        if (this->Ready())
         {
-            int delay = opt.type == TYPE_INT ? 100 : 200;
+            int delay = opt.var.type == TYPE_INT ? 100 : 200;
             if (GetAsyncKeyState(VK_LBUTTON) & 0x10000)
             {
                 toggled = true;
                 opt.callback();
                 toggled = false;
-                Wait(delay);
+                this->Wait(delay);
             }
             else if (GetAsyncKeyState(VK_RBUTTON) & 0x10000)
             {
                 opt.callback();
-                Wait(delay);
+                this->Wait(delay);
             }
         }
         return true;
@@ -230,37 +326,37 @@ bool Menu::MonitorMouse(const Option &opt, float optionX, float optionY,
 
 void Menu::MonitorKeys()
 {
-    if (Ready())
+    if (this->Ready())
     {
-        if (GetAsyncKeyState(VK_HOME) && !open)
+        if (GetAsyncKeyState(VK_HOME) && !this->open)
         {
-            open = true;
-            currentSub = MAIN_MENU;
-            Wait(200);
+            this->open = true;
+            this->currentSub = MAIN_MENU;
+            this->Wait(200);
         }
         if (GetAsyncKeyState(VK_BACK) & 0x10000)
         {
-            CloseSub();
-            Wait(200);
+            this->CloseSub();
+            this->Wait(200);
         }
     }
 }
 
 void RenderShader(float x, float y, float width, float height, float angle,
-    const float *color, const char *material, int type)
+    const float* color, const char* material, int type)
 {
-    CG_DrawRotatedPicPhysical(scrPlace, x, y, width, height, angle, color,
-        Material_RegisterHandle(material, type));
+    GameData::CG_DrawRotatedPicPhysical(GameData::scrPlace, x, y, width, height,
+        angle, color, GameData::Material_RegisterHandle(material, type));
 }
 
 void DrawFillRect(float x, float y, float width, float height,
-    const float *color, float rotation, int type)
+    const Colors::Color& color, float rotation, int type)
 {
     RenderShader(x, y, width, height, rotation, color, "white", type);
 }
 
 void DrawEmptyRect(float x, float y, float width, float height, float size,
-    const float *color, int type)
+    const Colors::Color& color, int type)
 {
     RenderShader(x, y, width, size, 0, color, "white", type); //up
     RenderShader(x, y + height, width + (size - 1), size, 0,  //down
@@ -271,51 +367,54 @@ void DrawEmptyRect(float x, float y, float width, float height, float size,
         "white", type);
 }
 
-float AlignText(const char *text, const GameData::Font &font, float scale, float initX,
-    ScreenAlignment align, bool ui, bool bg, Font_s **fOut, float *wOut, float *hOut)
+float AlignText(const char* text, const Fonts::Font& font, float scale, float initX,
+    ScreenAlignment align, bool ui, bool bg, GameData::Font_s** fOut,
+    float* wOut, float* hOut)
 {
-    Font_s *fontPointer;
+    GameData::Font_s* fontPointer;
     float width, height;
     float xAligned;
 
+    // Align text based on if callee requested text alignment for background (bool bg)
+    // and wants text aligned using routines for all screen resolutions (bool ui)
     if (bg && ui)
     {
-        fontPointer = UI_GetFontHandle(scrPlace, font.index);
+        fontPointer = GameData::UI_GetFontHandle(GameData::scrPlace, font.index);
         width = UI_TextWidth(text, INT_MAX, fontPointer, scale) + 12.0f;
         height = UI_TextHeight(fontPointer, scale) + 2.0f;
     }
     else if (!bg && ui)
     {
-        fontPointer = UI_GetFontHandle(scrPlace, font.index);
+        fontPointer = GameData::UI_GetFontHandle(GameData::scrPlace, font.index);
         width = UI_TextWidth(text, INT_MAX, fontPointer, scale);
         height = UI_TextHeight(fontPointer, scale) + 2.0f;
     }
     else if (bg && !ui)
     {
-        fontPointer = R_RegisterFont(font.dir, 0);
+        fontPointer = GameData::R_RegisterFont(font.dir, 0);
         width = R_TextWidth(text, INT_MAX, fontPointer) * scale + 14.0f;
         height = R_TextHeight(fontPointer) * scale + 2.0f;
     }
     else
     {
-        fontPointer = R_RegisterFont(font.dir, 0);
+        fontPointer = GameData::R_RegisterFont(font.dir, 0);
         width = R_TextWidth(text, INT_MAX, fontPointer) * scale;
         height = R_TextHeight(fontPointer) * scale + 2.0f;
     }
 
     switch (align)
     {
-    case ALIGN_LEFT:
-        xAligned = initX;
+        case ALIGN_LEFT:
+            xAligned = initX;
         break;
-    case ALIGN_CENTER:
-        xAligned = initX - width / 2;
+        case ALIGN_CENTER:
+            xAligned = initX - width / 2;
         break;
-    case ALIGN_RIGHT:
-        xAligned = initX - width;
+        case ALIGN_RIGHT:
+            xAligned = initX - width;
         break;
-    default:
-        xAligned = initX;
+        default:
+            xAligned = initX;
         break;
     }
 
@@ -328,18 +427,18 @@ float AlignText(const char *text, const GameData::Font &font, float scale, float
     return xAligned;
 }
 
-float RenderGameText(const char *text, float x, float y, float scale,
-    const float *color, Font_s *font, float rotation)
+float RenderGameText(const char* text, float x, float y, float scale,
+    const Colors::Color& color, GameData::Font_s* font, float rotation)
 {
-    CL_DrawTextPhysical(text, INT_MAX, font, x, y,
+    GameData::CL_DrawTextPhysical(text, INT_MAX, font, x, y,
         scale, scale, rotation, color, 0);
 
-    return R_TextHeight(font) * scale;
+    return GameData::R_TextHeight(font) * scale;
 }
 
-float RenderGameTextWithBackground(const char *text, float x, float y,
-    float textW, float textH, const float *borderColor, const float *textColor,
-    Font_s *font, float scale)
+float RenderGameTextWithBackground(const char* text, float x, float y,
+    float textW, float textH, const Colors::Color& borderColor, 
+    const Colors::Color& textColor, GameData::Font_s* font, float scale)
 {
     DrawFillRect(x, y - textH, textW - 2, textH + 2,
         Colors::transparentBlack, 0);
@@ -350,43 +449,56 @@ float RenderGameTextWithBackground(const char *text, float x, float y,
     return textH + 2;
 }
 
-float RenderUIText(const char *text, float x, float y, float scale,
-    const float *color, Font_s *font)
+float RenderUIText(const std::string& text, float x, float y, float scale,
+    const Colors::Color& color, GameData::Font_s* font)
 {
-    UI_DrawText(scrPlace, text, INT_MAX, font, x, y,
+    UI_DrawText(GameData::scrPlace, text.data(), INT_MAX, font, x, y,
         scale, 0.0f, color, 0);
 
     return UI_TextHeight(font, scale) + 2.0f;
 }
 
-float RenderUITextWithBackground(const char *text, float x, float y,
-    float textW, float textH, const float *borderColor, const float *textColor,
-    Font_s *font, float scale)
+float RenderUITextWithBackground(const char* text, float x, float y,
+    float textW, float textH, const Colors::Color& borderColor, 
+    const Colors::Color& textColor, GameData::Font_s* font, float scale)
 {
-    UI_FillRect(scrPlace, x, y - textH, textW - 2, textH + 2,
+    GameData::UI_FillRect(GameData::scrPlace, x, y - textH, textW - 2, textH + 2,
         0, 0, Colors::transparentBlack);
-    UI_DrawRect(scrPlace, x, y - textH, textW - 2, textH + 2, 0, 0, 2, borderColor);
+    GameData::UI_DrawRect(GameData::scrPlace, x, y - textH, textW - 2, textH + 2, 0, 0, 2, borderColor);
     RenderUIText(text, x + 6, y, scale, textColor, font);
 
     return textH + 2;
 }
 
-void WriteBytes(DWORD addr, const char *bytes, size_t len)
+void WriteBytes(DWORD addr, const char* bytes, size_t len)
 {
     DWORD curProtection;
+    HANDLE curProcess = GetCurrentProcess();
+    
+    // Make virtual page address have read/write/exec privledges
+    // and save old privledges to temporary
     VirtualProtect((LPVOID)addr, len, PAGE_EXECUTE_READWRITE, &curProtection);
 
-    WriteProcessMemory(GetCurrentProcess(), (LPVOID)addr, bytes, len, 0);
-
+    WriteProcessMemory(curProcess, (LPVOID)addr, bytes, len, 0);
+    
+    // Restore old privledges from temporary to virtual page address
     VirtualProtect((LPVOID)addr, len, curProtection, 0);
+
+    // Run this to ensure instruction cache doesn't contain the instruction
+    // from the address you just modified, therefore running the same instruction
+    // you just removed
+    FlushInstructionCache(curProcess, (void*)addr, len);
 }
 
-void ReadBytes(DWORD addr, char *buf, size_t len)
+void ReadBytes(DWORD addr, char* buf, size_t len)
 {
+    // Make virtual page address have read/write/exec privledges
+    // and save old privledges to temporary
     DWORD curProtection;
     VirtualProtect((LPVOID)addr, len, PAGE_EXECUTE_READWRITE, &curProtection);
 
     ReadProcessMemory(GetCurrentProcess(), (LPCVOID)addr, buf, len, 0);
 
+    // Restore old privledges from temporary to virtual page address
     VirtualProtect((LPVOID)addr, len, curProtection, 0);
 } 
