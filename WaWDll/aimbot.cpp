@@ -8,9 +8,11 @@ bool Aimbot::ExecuteAimbot()
         int target = GetAimbotTarget();
         if (target != -1)
         {
-            GameData::AimTarget_GetTagPos(0,& GameData::cg_entitiesArray[target],
+            // Get entity tag position in world 
+            GameData::AimTarget_GetTagPos(0, &GameData::cg_entitiesArray[target],
                 GameData::SL_FindString("j_head"), this->targetAngles);
 
+            // Convert from 3D vector to angles and subtract the delta angles
             GameData::vectoangles(this->targetAngles - GameData::cgameGlob->refdef.vieworg,
                 this->targetAngles);
             this->targetAngles -= GameData::cgameGlob->predictedPlayerState.delta_angles;
@@ -23,17 +25,16 @@ bool Aimbot::ExecuteAimbot()
 
 bool Aimbot::ValidTarget(GameData::centity_s* target)
 {
+    // Check if same entity index as me
     if (target->nextState.number == GameData::cgameGlob->clientNum)
         return 0;
 
+    // Check if they have a valid object map
     WORD handle = GameData::clientObjMap[target->nextState.number];
     if (!handle)
         return 0;
 
-    DWORD dobj = (DWORD)GameData::objBuf + 0x68 * handle;
-    if (!dobj)
-        return 0;
-
+    // Check for correct flags and not ragdoll
     return target->alive & 2
        && target->nextState.lerp.eFlags == 16
        && !target->pose.isRagdoll && !target->pose.ragdollHandle;
@@ -47,12 +48,14 @@ int Aimbot::GetAimbotTarget() const
     unsigned short id = GameData::SL_FindString("j_head");
     float* myPos = GameData::cgameGlob->predictedPlayerState.origin;
 
-    for (int i = 0; i < 1024; ++i)
+    // Loop through all entities and find zombie entities
+    for (int i = 0; i < 1024; i++)
     {
         GameData::centity_s* cent = &GameData::cg_entitiesArray[i];
         if (ValidTarget(cent)
            && GameData::AimTarget_GetTagPos(0, cent, id, enemyPos))
         {
+            // Find closest visible zombie and get their index
             if (GameData::AimTarget_IsTargetVisible(cent, id))
             {
                 if (float distance = Distance3D(myPos, enemyPos);
@@ -64,6 +67,7 @@ int Aimbot::GetAimbotTarget() const
             }
         }
     }
+
     return index;
 }
 
@@ -79,9 +83,11 @@ void Aimbot::RemoveSpread(GameData::playerState_s* ps, GameData::usercmd_s* cmd)
     float cgSpread = GameData::cgameGlob->aimSpreadScale / 255.0f;
     GameData::WeaponDef* weap = GameData::BG_GetWeaponDef(ps->weapon);
 
+    // Get my view origin
     if (!CG_GetPlayerViewOrigin(0, ps, viewOrg))
         return;
 
+    // Convert my angles into vectors
     if (GameData::cgameGlob->renderingThirdPerson)
     {
         GameData::AngleVectors(
@@ -94,17 +100,22 @@ void Aimbot::RemoveSpread(GameData::playerState_s* ps, GameData::usercmd_s* cmd)
         GameData::AngleVectors(tmp, viewAxis[0], viewAxis[1], viewAxis[2]);
     }
 
+    // Get current weapon spread
     GameData::BG_GetSpreadForWeapon(ps, weap, &minSpread, &maxSpread);
     finalSpread = ps->fWeaponPosFrac == 1.0f ? weap->fAdsSpread : minSpread;
     finalSpread = (maxSpread - finalSpread) * cgSpread + finalSpread;
 
+    // Get current weapon max range
     range = weap->weapType == 3 ? weap->fMinDamageRange : 8192.0f;
 
+    // Get the final position of the bullet 
     GameData::CG_BulletEndPos(ps->commandTime, finalSpread, viewOrg, spreadEnd, spreadDir,
         viewAxis[0], viewAxis[1], viewAxis[2], range);
 
+    // Convert the bullet position into an angle
     GameData::vectoangles(spreadDir, spreadFix);
 
+    // Correct my current angles to counteract the spread
     cmd->angles[0] += AngleToShort(GameData::cgameGlob->gunPitch - spreadFix[0]);
     cmd->angles[1] += AngleToShort(GameData::cgameGlob->gunYaw - spreadFix[1]);
 }
@@ -114,7 +125,7 @@ void Aimbot::FixMovement(GameData::usercmd_s* cmd, float currentAngle, float old
 {
     float deltaView = currentAngle - oldAngle, f1, f2;
 
-    if (oldAngle < 0.f)
+    if (oldAngle < 0.0f)
         f1 = 360.0f + oldAngle;
     else
         f1 = oldAngle;

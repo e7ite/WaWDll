@@ -92,7 +92,7 @@ struct Menu
     static Menu& Instance() { static Menu menu; return menu; }
 
     /**
-    *   @brief Displays the menu and monitors for input
+     *  @brief Displays the menu and monitors for input
     **/
     void Execute();
 
@@ -137,34 +137,34 @@ struct Menu
         float optionW, float optionH);
 
     /**
-     * @brief Monitors keyboard input and adjusts menu accordingly to it
+     *  @brief Monitors keyboard input and adjusts menu accordingly to it
     **/
     void MonitorKeys();
 
     /**
-     * @brief Switches the submenu currently being displayed
-     * @param sub The submenu to change to from enum Submenu
+     *  @brief Switches the submenu currently being displayed
+     *  @param sub The submenu to change to from enum Submenu
     **/
     void LoadSub(Submenu sub);
 
     /**
-     * @brief Inverts the value of a varName boolean variable 
-     * @param varName The name of the variable being changed
-     * @return The result of the variable after the change
+     *  @brief Inverts the value of a varName boolean variable 
+     *  @param varName The name of the variable being changed
+     *  @return The result of the variable after the change
     **/
     bool BoolModify(const std::string& varName);
 
     /**
-    * @brief Increments/Decrements the value of a varName integer variable
-    * @param varName The name of the variable being changed
-    * @return The result of the variable after the change
-   **/
+     *  @brief Increments/Decrements the value of a varName integer variable
+     *  @param varName The name of the variable being changed
+     *  @return The result of the variable after the change
+    **/
     int IntModify(const std::string& varName, OptionType type, int min, int max);
 
     /**
-     * @brief Returns a reference to an option stored in Menu::options
-     * @param sub The submenu to get the variable from
-     * @param varName The name of the variable to get
+     *  @brief Returns a reference to an option stored in Menu::options
+     *  @param sub The submenu to get the variable from
+     *  @param varName The name of the variable to get
     **/
     OptionData& GetOptionData(Submenu sub, const std::string& varName);
 };

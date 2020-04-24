@@ -900,7 +900,7 @@ bool InsertDvar(const char *dvarName, GameData::dvar_s *dvar)
 bool InGame()
 {
     return dvarsInitialized &&
-        dvars["cl_ingame"]->current.enabled
+        dvars.at("cl_ingame")->current.enabled
         && *GameData::cl_connectionState >= 9;
 }
 

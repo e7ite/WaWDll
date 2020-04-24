@@ -111,7 +111,7 @@ Menu::Menu() :
     Insert(MISC_MENU, "FOV",  TYPE_INT, 
         []() 
         {
-            dvars["cg_fov"]->current.value 
+            dvars.at("cg_fov")->current.value 
                 = static_cast<float>(Menu::Instance().IntModify("FOV", TYPE_INT, 65, 125));
         });
     Insert(MISC_MENU, "Super Steady Aim", TYPE_BOOL, 
@@ -125,7 +125,7 @@ Menu::Menu() :
     Insert(MISC_MENU, "Enable Cheats", TYPE_BOOL, 
         []() 
         { 
-            dvars["sv_cheats"]->current.enabled 
+            dvars.at("sv_cheats")->current.enabled 
                 = Menu::Instance().BoolModify("Enable Cheats");
         });
     Insert(MISC_MENU, "God Mode", TYPE_VOID, 
@@ -151,7 +151,7 @@ Menu::Menu() :
     Insert(MISC_MENU, "Infinite Ammo", TYPE_BOOL, 
         []() 
         {
-            dvars["player_sustainAmmo"]->current.enabled 
+            dvars.at("player_sustainAmmo")->current.enabled 
                 = Menu::Instance().BoolModify("Infinite Ammo");
         });
     Insert(MISC_MENU, "No Flinch", TYPE_BOOL, 
