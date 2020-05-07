@@ -105,7 +105,10 @@ Menu::Menu() :
                 Menu::Instance().BoolModify("No Recoil") ? "\xEB" : "\x74", 1);
         });
     Insert(AIMBOT_MENU, "No Spread", TYPE_BOOL, 
-        []() { Menu::Instance().BoolModify("No Spread"); });
+        []() 
+        {
+            Menu::Instance().BoolModify("No Spread"); 
+        });
 
     // Miscellaneous menu options
     Insert(MISC_MENU, "FOV",  TYPE_INT, 
