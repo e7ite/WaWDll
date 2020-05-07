@@ -28,7 +28,7 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
         case DLL_PROCESS_DETACH:
             FreeConsole();
 
-            for (const auto& i : detours)
+            for (const auto &i : detours)
                 RemoveDetour(i);
             detours.clear();
         break;

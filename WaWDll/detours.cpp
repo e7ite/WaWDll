@@ -72,8 +72,8 @@ void DetourRemove(DWORD targetFunction, DWORD detourFunction)
 
 void RemoveDetour(QWORD bytes)
 {
-    DetourRemove((bytes&  ((QWORD)UINT_MAX << 32)) >> 32,
-        (bytes&  UINT_MAX));
+    DetourRemove((bytes & ((QWORD)UINT_MAX << 32)) >> 32,
+        (bytes & UINT_MAX));
 }
 
 void InsertDetour(LPVOID targetFunction, LPVOID detourFunction)
@@ -99,7 +99,7 @@ void __declspec(naked) Menu_PaintAllDetourInvoke(GameData::UiContext* dc)
 
 void Menu_PaintAllDetour(GameData::UiContext* dc)
 {
-    Menu& menu = Menu::Instance();
+    Menu &menu = Menu::Instance();
     GameData::EnterCriticalSection(&menu.critSection);
 
     if (!dvarsInitialized)
@@ -200,7 +200,7 @@ void __declspec(naked) AimTarget_GetTagPos_0DetourInvoke(GameData::centity_s* ce
 
 int Menu_HandleMouseMoveDetour(GameData::ScreenPlacement* scrPlace, void* item)
 {
-    Menu& menu = Menu::Instance();
+    Menu &menu = Menu::Instance();
     GameData::EnterCriticalSection(&menu.critSection);
 
     if (!menu.open)
@@ -225,12 +225,12 @@ void UI_RefreshDetour(int localClientNum)
 
 void CL_KeyEventDetour(int localClientNum, int key, int down, int time)
 {
-    Menu& menu = Menu::Instance();
+    Menu &menu = Menu::Instance();
 
     GameData::EnterCriticalSection(&menu.critSection);
 
-    OptionData& aimKey = menu.GetOptionData(AIMBOT_MENU, "Aim Key");
-    OptionData& autoShoot = menu.GetOptionData(AIMBOT_MENU, "Auto Shoot");
+    OptionData &aimKey = menu.GetOptionData(AIMBOT_MENU, "Aim Key");
+    OptionData &autoShoot = menu.GetOptionData(AIMBOT_MENU, "Auto Shoot");
 
     if (InGame() && GameData::keys[key].binding
         && !*(int*)0x208E938
@@ -297,8 +297,8 @@ void __declspec(naked) CL_CreateNewCommandsDetourInvoke()
 
 void CL_CreateNewCommandsDetour()
 {
-    Menu& menu = Menu::Instance();
-    Aimbot& aimbot = Aimbot::Instance();
+    Menu &menu = Menu::Instance();
+    Aimbot &aimbot = Aimbot::Instance();
 
     GameData::EnterCriticalSection(&menu.critSection);
 
@@ -333,7 +333,7 @@ void CL_CreateNewCommandsDetour()
 
 void IN_MouseEventDetour(int mstate)
 {
-    Menu& menu = Menu::Instance();
+    Menu &menu = Menu::Instance();
     GameData::EnterCriticalSection(&menu.critSection);
 
     if (!menu.open)
@@ -423,7 +423,7 @@ void __declspec(naked) CG_DamageFeedbackDetourInvoke(int localClientNum,
 bool CG_DamageFeedbackDetour(int localClientNum, int yawByte, int pitchByte,
     int damage)
 {
-    Menu& menu = Menu::Instance();
+    Menu &menu = Menu::Instance();
     GameData::EnterCriticalSection(&menu.critSection);
 
     bool result = !Menu::Instance().GetOptionData(MISC_MENU, "No Flinch").data.boolean;

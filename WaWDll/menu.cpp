@@ -161,8 +161,8 @@ Menu::Menu() :
         });
 }
 
-void Menu::Insert(int sub, const char* option, OptionType type, 
-    std::function<void()>&& callback)
+void Menu::Insert(int sub, const char *option, OptionType type, 
+    std::function<void()> &&callback)
 {
     this->options.at(sub).insert(
         std::pair<std::string, Option>(
@@ -195,15 +195,15 @@ void Menu::CloseSub()
     }
 }
 
-bool Menu::BoolModify(const std::string& varName)
+bool Menu::BoolModify(const std::string &varName)
 {
-    OptionData& var = this->GetOptionData(this->currentSub, varName);
+    OptionData &var = this->GetOptionData(this->currentSub, varName);
     return var.data.boolean = !var.data.boolean;
 }
 
-int Menu::IntModify(const std::string& varName, OptionType type, int min, int max)
+int Menu::IntModify(const std::string &varName, OptionType type, int min, int max)
 {
-    OptionData& var = this->GetOptionData(this->currentSub, varName);
+    OptionData &var = this->GetOptionData(this->currentSub, varName);
 
     if (this->toggled)
         var.data.integer++;
@@ -216,7 +216,7 @@ int Menu::IntModify(const std::string& varName, OptionType type, int min, int ma
         return var.data.integer = max;
 }
 
-OptionData& Menu::GetOptionData(Submenu sub, const std::string& key)
+OptionData &Menu::GetOptionData(Submenu sub, const std::string &key)
 {
     return this->options.at(sub).at(key).var;
 }
@@ -233,7 +233,7 @@ void Menu::Wait(int ms)
 
 void Menu::Execute()
 {
-    const char* title = "WaW Zombies DLL By E7ite";
+    const char *title = "WaW Zombies DLL By E7ite";
     float menuCenterX = GameData::dc->screenDimensions[0] / 2
         / GameData::scrPlace->scaleVirtualToFull[0];
     float menuCenterY = GameData::dc->screenDimensions[1] / 2
@@ -241,7 +241,7 @@ void Menu::Execute()
 
     // Get x position of text aligned with a background and scaled for all resolutions
     float textWidth, textHeight;
-    GameData::Font_s* fontPointer;
+    GameData::Font_s *fontPointer;
     float xAligned = AlignText(title, Fonts::normalFont, 0.3f,
         menuCenterX, ALIGN_CENTER, 1, 1, &fontPointer, &textWidth, &textHeight);
 
@@ -263,10 +263,10 @@ void Menu::Execute()
         0, 0, 2, Colors::blue);
 
     // Draw all the options in the current sub menu
-    for (auto& i : options[currentSub])
+    for (auto &i : options[currentSub])
     {
         Colors::Color color = Colors::white;
-        const Option& option = i.second;
+        const Option &option = i.second;
 
         // Adjust options in menu based on mouse position and execute any callbacks
         if (this->MonitorMouse(i.second, borderX, optionY - 2, borderW, optionH + 2))
@@ -295,7 +295,7 @@ void Menu::Execute()
     }
 }
 
-bool Menu::MonitorMouse(Option& opt, float optionX, float optionY,
+bool Menu::MonitorMouse(Option &opt, float optionX, float optionY,
     float optionW, float optionH)
 {
     if (GameData::dc->cursorPos[0] > optionX
@@ -343,20 +343,20 @@ void Menu::MonitorKeys()
 }
 
 void RenderShader(float x, float y, float width, float height, float angle,
-    const float* color, const char* material, int type)
+    const float *color, const char *material, int type)
 {
     GameData::CG_DrawRotatedPicPhysical(GameData::scrPlace, x, y, width, height,
         angle, color, GameData::Material_RegisterHandle(material, type));
 }
 
 void DrawFillRect(float x, float y, float width, float height,
-    const Colors::Color& color, float rotation, int type)
+    const Colors::Color &color, float rotation, int type)
 {
     RenderShader(x, y, width, height, rotation, color, "white", type);
 }
 
 void DrawEmptyRect(float x, float y, float width, float height, float size,
-    const Colors::Color& color, int type)
+    const Colors::Color &color, int type)
 {
     RenderShader(x, y, width, size, 0, color, "white", type); //up
     RenderShader(x, y + height, width + (size - 1), size, 0,  //down
@@ -367,11 +367,11 @@ void DrawEmptyRect(float x, float y, float width, float height, float size,
         "white", type);
 }
 
-float AlignText(const char* text, const Fonts::Font& font, float scale, float initX,
-    ScreenAlignment align, bool ui, bool bg, GameData::Font_s** fOut,
-    float* wOut, float* hOut)
+float AlignText(const char *text, const Fonts::Font &font, float scale, float initX,
+    ScreenAlignment align, bool ui, bool bg, GameData::Font_s **fOut,
+    float *wOut, float *hOut)
 {
-    GameData::Font_s* fontPointer;
+    GameData::Font_s *fontPointer;
     float width, height;
     float xAligned;
 
@@ -427,8 +427,8 @@ float AlignText(const char* text, const Fonts::Font& font, float scale, float in
     return xAligned;
 }
 
-float RenderGameText(const char* text, float x, float y, float scale,
-    const Colors::Color& color, GameData::Font_s* font, float rotation)
+float RenderGameText(const char *text, float x, float y, float scale,
+    const Colors::Color &color, GameData::Font_s *font, float rotation)
 {
     GameData::CL_DrawTextPhysical(text, INT_MAX, font, x, y,
         scale, scale, rotation, color, 0);
@@ -436,9 +436,9 @@ float RenderGameText(const char* text, float x, float y, float scale,
     return GameData::R_TextHeight(font) * scale;
 }
 
-float RenderGameTextWithBackground(const char* text, float x, float y,
-    float textW, float textH, const Colors::Color& borderColor, 
-    const Colors::Color& textColor, GameData::Font_s* font, float scale)
+float RenderGameTextWithBackground(const char *text, float x, float y,
+    float textW, float textH, const Colors::Color &borderColor, 
+    const Colors::Color &textColor, GameData::Font_s *font, float scale)
 {
     DrawFillRect(x, y - textH, textW - 2, textH + 2,
         Colors::transparentBlack, 0);
@@ -449,8 +449,8 @@ float RenderGameTextWithBackground(const char* text, float x, float y,
     return textH + 2;
 }
 
-float RenderUIText(const std::string& text, float x, float y, float scale,
-    const Colors::Color& color, GameData::Font_s* font)
+float RenderUIText(const std::string &text, float x, float y, float scale,
+    const Colors::Color &color, GameData::Font_s *font)
 {
     UI_DrawText(GameData::scrPlace, text.data(), INT_MAX, font, x, y,
         scale, 0.0f, color, 0);
@@ -458,9 +458,9 @@ float RenderUIText(const std::string& text, float x, float y, float scale,
     return UI_TextHeight(font, scale) + 2.0f;
 }
 
-float RenderUITextWithBackground(const char* text, float x, float y,
-    float textW, float textH, const Colors::Color& borderColor, 
-    const Colors::Color& textColor, GameData::Font_s* font, float scale)
+float RenderUITextWithBackground(const char *text, float x, float y,
+    float textW, float textH, const Colors::Color &borderColor, 
+    const Colors::Color &textColor, GameData::Font_s *font, float scale)
 {
     GameData::UI_FillRect(GameData::scrPlace, x, y - textH, textW - 2, textH + 2,
         0, 0, Colors::transparentBlack);
@@ -470,7 +470,7 @@ float RenderUITextWithBackground(const char* text, float x, float y,
     return textH + 2;
 }
 
-void WriteBytes(DWORD addr, const char* bytes, size_t len)
+void WriteBytes(DWORD addr, const char *bytes, size_t len)
 {
     DWORD curProtection;
     HANDLE curProcess = GetCurrentProcess();
@@ -490,7 +490,7 @@ void WriteBytes(DWORD addr, const char* bytes, size_t len)
     FlushInstructionCache(curProcess, (void*)addr, len);
 }
 
-void ReadBytes(DWORD addr, char* buf, size_t len)
+void ReadBytes(DWORD addr, char *buf, size_t len)
 {
     // Make virtual page address have read/write/exec privledges
     // and save old privledges to temporary

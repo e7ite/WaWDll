@@ -28,12 +28,12 @@ namespace GameData
 
     struct Font_s
     {
-        const char*      fontName;                      // 0x00
+        const char      *fontName;                      // 0x00
         int              pixelHeight;                   // 0x04
         int              glyphCount;                    // 0x08
-        struct Material* material;                      // 0x0C
-        struct Material* glowMaterial;                  // 0x10
-        struct Glyph*    glyphs;                        // 0x14
+        struct Material *material;                      // 0x0C
+        struct Material *glowMaterial;                  // 0x10
+        struct Glyph    *glyphs;                        // 0x14
     }; // Size = 0x18
 
     struct ScreenPlacement
@@ -59,8 +59,8 @@ namespace GameData
     {
         int         down;                               // 0x00
         int         repeats;                            // 0x04
-        const char* binding;                            // 0x08
-        const char* binding2;                           // 0x0C
+        const char *binding;                            // 0x08
+        const char *binding2;                           // 0x0C
     }; // Size = 0x10
 
     struct LerpEntityState
@@ -190,8 +190,8 @@ namespace GameData
     {
         int           clientNum;                        // 0x000000
         char          pad00[0x20];                      // 0x000004
-        snapshot_s*   snap;                             // 0x000024
-        snapshot_s*   nextSnap;                         // 0x000028
+        snapshot_s   *snap;                             // 0x000024
+        snapshot_s   *nextSnap;                         // 0x000028
         char          pad01[0xAAC50];                   // 0x00002C
         int           time;                             // 0x0AAC7C
         int           oldTime;                          // 0x0AAC80
@@ -279,8 +279,8 @@ namespace GameData
 
     struct WeaponDef
     {
-        const char*      szInternalName;                // 0x000
-        const char*      szOverlayName;                 // 0x004
+        const char      *szInternalName;                // 0x000
+        const char      *szOverlayName;                 // 0x004
         char             pad00[0x13C];                  // 0x008
         int              weapType;                      // 0x144
         int              weapClass;                     // 0x148
@@ -291,11 +291,11 @@ namespace GameData
         int              clipType;                      // 0x15C
         int              itemIndex;                     // 0x160
         char             pad01[0x13C];                  // 0x164
-        struct Material* reticleSlide;                  // 0x2A0
+        struct Material *reticleSlide;                  // 0x2A0
         char             pad02[0x134];                  // 0x2A4
-        struct Material* hudIcon;                       // 0x3D8
+        struct Material *hudIcon;                       // 0x3D8
         int              hudIconRatio;                  // 0x3DC
-        struct Material* ammoCounterIcon;               // 0x3E0
+        struct Material *ammoCounterIcon;               // 0x3E0
         int              ammoCounterIconRatio;          // 0x3E4
         char             pad03[0x24];                   // 0x3E8
         int              shotCount;                     // 0x40C
@@ -314,14 +314,14 @@ namespace GameData
         unsigned __int64 unsignedInt64;                 // 0x08
         float            value;                         // 0x04
         float            vector[4];                     // 0x10
-        const char*      string;                        // 0x04
+        const char      *string;                        // 0x04
         char             color[4];                      // 0x04
     }; // Size = 0x10
 
     struct dvar_s
     {
-        const char*  name;                              // 0x00
-        const char*  description;                       // 0x04
+        const char  *name;                              // 0x00
+        const char  *description;                       // 0x04
         unsigned int flags;                             // 0x08
         char         pad00[0x4];                        // 0x0C
         DvarValue    current;                           // 0x10
@@ -329,7 +329,7 @@ namespace GameData
         DvarValue    reset;                             // 0x30
         DvarValue    saved;                             // 0x40
         char         pad01[0x8];                        // 0x50
-        dvar_s*      next;                              // 0x58
+        dvar_s      *next;                              // 0x58
     }; // Size = 0x5C
 
     enum scriptInstance_t : int
@@ -346,10 +346,10 @@ namespace GameData
             int                         intValue;
             float                       floatValue;
             unsigned int                stringValue;
-            const float*                vectorValue;
-            const char*                 codePosValue;
+            const float                *vectorValue;
+            const char                 *codePosValue;
             unsigned int                pointerValue;
-            struct VariableStackBuffer* stackValue;
+            struct VariableStackBuffer *stackValue;
             unsigned int                entityOffset;
         };
         VariableUnion u;                                // 0x00
@@ -358,11 +358,11 @@ namespace GameData
 
     struct function_stack_t
     {
-        const char*    pos;                             // 0x00
+        const char    *pos;                             // 0x00
         unsigned int   localId;                         // 0x04
         unsigned int   localVarCount;                   // 0x08
-        VariableValue* top;                             // 0x0C
-        VariableValue* startTop;                        // 0x10
+        VariableValue *top;                             // 0x0C
+        VariableValue *startTop;                        // 0x10
     }; // Size = 0x14
 
     struct function_frame_t
@@ -373,11 +373,11 @@ namespace GameData
 
     struct scrVmPub_t
     {
-        unsigned int*     localVars;                    // 0x0000
-        VariableValue*    maxstack;                     // 0x0004
+        unsigned int     *localVars;                    // 0x0000
+        VariableValue    *maxstack;                     // 0x0004
         int               function_count;               // 0x0008
-        function_frame_t* function_frame;               // 0x000C
-        VariableValue*    top;                          // 0x0010
+        function_frame_t *function_frame;               // 0x000C
+        VariableValue    *top;                          // 0x0010
         bool              debugCode;                    // 0x0014
         bool              abort_on_error;               // 0x0015
         bool              terminal_error;               // 0x0016
@@ -454,17 +454,17 @@ namespace GameData
 
     struct actor_s
     {
-        struct gentity_s*  gent;
-        struct sentient_s* sentient;
+        struct gentity_s  *gent;
+        struct sentient_s *sentient;
     }; // Size = 0x378
 
     struct gentity_s
     {
         entityState_s      s;                           // 0x000
         entityShared_t     r;                           // 0x118
-        gclient_s*         client;                      // 0x180
-        actor_s*           actor;                       // 0x184
-        struct sentient_s* sentient;                    // 0x188
+        gclient_s         *client;                      // 0x180
+        actor_s           *actor;                       // 0x184
+        struct sentient_s *sentient;                    // 0x188
         char               pad00[0xC];                  // 0x18C
         unsigned short     model;                       // 0x198
         char               pad01[0x142];                // 0x19A
@@ -475,15 +475,15 @@ namespace GameData
     {
         struct PrimedSound
         {
-            const char*  directory;                     // 0x00
-            const char*  buffer;                        // 0x04
+            const char  *directory;                     // 0x00
+            const char  *buffer;                        // 0x04
             unsigned int size;                          // 0x08
         } *primeSnd;                                    // 0x04
         struct LoadedSound
         {
             char        pad00[0x4];                     // 0x00
-            const char* directory;                      // 0x04
-            const char* name;                           // 0x08               
+            const char *directory;                      // 0x04
+            const char *name;                           // 0x08               
         } loadSnd;                                      // 0x0C
     }; // Size = 0x0C
 
@@ -495,12 +495,12 @@ namespace GameData
 
     struct snd_alias_t
     {
-        const char*  name;                              // 0x00
+        const char  *name;                              // 0x00
         unsigned int id;                                // 0x04
         char         pad00[0x4];                        // 0x08
-        const char** secondaryname;                     // 0x0C
+        const char **secondaryname;                     // 0x0C
         char         pad01[0x4];                        // 0x10
-        SoundFile*   soundFile;                         // 0x14
+        SoundFile   *soundFile;                         // 0x14
         int          sequence;                          // 0x18
         char         pad02[0x1C];                       // 0x1C
         float        distReverbMax;                     // 0x38
@@ -515,13 +515,13 @@ namespace GameData
 
     struct SndStartAliasInfo
     {
-        snd_alias_t* alias;                             // 0x00
+        snd_alias_t *alias;                             // 0x00
     };
 
     struct SndBank
     {
-        const char*  name;                              // 0x00
-        snd_alias_t* head;                              // 0x04
+        const char  *name;                              // 0x00
+        snd_alias_t *head;                              // 0x04
         unsigned int aliasCount;                        // 0x08
     }; // Size = 0x0C
 
@@ -535,7 +535,7 @@ namespace GameData
         template <typename T, int N>
         struct XAssetPool
         {
-            T* freeHead;
+            T *freeHead;
             T  entries[N];
         };
         XAssetPool<SndBank, 0x3E80> sound;
@@ -543,15 +543,15 @@ namespace GameData
 
     struct XAsset
     {
-        const char*   name;                             // 0x00
+        const char   *name;                             // 0x00
         XAssetType    type;                             // 0x04
         int           assets;                           // 0x08
-        XAssetHeader* header;                           // 0x0C
+        XAssetHeader *header;                           // 0x0C
     }; // Size = 0x10
 
     struct snd_buffer
     {
-        char*        data;                              // 0x000
+        char        *data;                              // 0x000
         int          reference_count;                   // 0x004
         char         filename[0x104];                   // 0x008
         unsigned int offset_in_file;                    // 0x10C
@@ -581,7 +581,7 @@ namespace GameData
         char         pad00[0x1C];                       // 0x01C
         int          notify_context;                    // 0x038
         char         pad01[0x20];                       // 0x03C
-        snd_alias_t* aliases[2];                        // 0x05C
+        snd_alias_t *aliases[2];                        // 0x05C
         char         pad02[0x128];                      // 0x064
     }; // Size = 0x18C
 
@@ -593,18 +593,18 @@ namespace GameData
 
     extern UiContext       *dc;
     extern ScreenPlacement *scrPlace;
-    extern KeyState*        keys;
-    extern playerState_s*   ps;
-    extern centity_s*       cg_entitiesArray;
-    extern cg_s*            cgameGlob;
-    extern clientActive_t*  clientActive;
-    extern WORD*            clientObjMap;
-    extern BYTE*            objBuf;
-    extern int*             cl_connectionState;
-    extern HWND*            hwnd;
-    extern scrVmPub_t*      gScrVmPub;
-    extern gentity_s*       g_entities;
-    extern snd_voice_t*     snd_voicesArray;
+    extern KeyState        *keys;
+    extern playerState_s   *ps;
+    extern centity_s       *cg_entitiesArray;
+    extern cg_s            *cgameGlob;
+    extern clientActive_t  *clientActive;
+    extern WORD            *clientObjMap;
+    extern BYTE            *objBuf;
+    extern int             *cl_connectionState;
+    extern HWND            *hwnd;
+    extern scrVmPub_t      *gScrVmPub;
+    extern gentity_s       *g_entities;
+    extern snd_voice_t     *snd_voicesArray;
 
     enum FuncAddresses : DWORD
     {
@@ -668,129 +668,129 @@ namespace GameData
         Snd_LoadBuffer_a                    = 0x6BE530,
     };
 
-    extern int(__stdcall* MessageBoxA)(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
-    extern DWORD(__stdcall* timeGetTime)();
-    extern void(__stdcall* InitializeCriticalSection)(LPCRITICAL_SECTION lpCriticalSection);
-    extern void(__stdcall* EnterCriticalSection)(LPCRITICAL_SECTION lpCriticalSection);
-    extern void(__stdcall* LeaveCriticalSection)(LPCRITICAL_SECTION lpCriticalSection);
+    extern int(__stdcall *MessageBoxA)(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
+    extern DWORD(__stdcall *timeGetTime)();
+    extern void(__stdcall *InitializeCriticalSection)(LPCRITICAL_SECTION lpCriticalSection);
+    extern void(__stdcall *EnterCriticalSection)(LPCRITICAL_SECTION lpCriticalSection);
+    extern void(__stdcall *LeaveCriticalSection)(LPCRITICAL_SECTION lpCriticalSection);
 
     // Graphics
-    extern Font_s*(__cdecl* R_RegisterFont)(const char* font, int imageTrac);
-    extern void*(__cdecl* Material_RegisterHandle)(const char* materialName,
+    extern Font_s*(__cdecl *R_RegisterFont)(const char *font, int imageTrac);
+    extern void*(__cdecl *Material_RegisterHandle)(const char *materialName,
         int imageTrac);
-    extern void(__cdecl* CG_DrawRotatedPic)(ScreenPlacement* scrPlace, float x, float y,
-        float width, float height, float angle, const float* color, void* material);
-    extern void(__cdecl* CL_DrawTextPhysicalInternal)(const char* text, int maxChars,
-        void* font, float x, float y, float xScale, float yScale, float rotation,
+    extern void(__cdecl *CG_DrawRotatedPic)(ScreenPlacement *scrPlace, float x, float y,
+        float width, float height, float angle, const float *color, void *material);
+    extern void(__cdecl *CL_DrawTextPhysicalInternal)(const char *text, int maxChars,
+        void *font, float x, float y, float xScale, float yScale, float rotation,
         int style);
-    extern int(__cdecl* UI_TextWidthInternal)(const char* text, int maxChars,
-        void* font, float scale);
+    extern int(__cdecl *UI_TextWidthInternal)(const char *text, int maxChars,
+        void *font, float scale);
     
-    void CG_DrawRotatedPicPhysical(ScreenPlacement* scrPlace, float x, float y,
-        float width, float height, float angle, const float* color, void* material);
-    float R_NormalizedTextScale(Font_s* font, float scale);
-    void CL_DrawTextPhysical(const char* text, int maxChars,
-        void* font, float x, float y, float xScale, float yScale,
-        float rotation, const float* color, int style);
-    void ScrPlace_ApplyRect(ScreenPlacement* scrPlace,
-        float* x, float* y, float* w, float* h, int horzAlign, int vertAlign);
-    void UI_DrawText(ScreenPlacement* scrPlace, const char* text,
-        int maxChars, void* font, float x, float y, float scale,
-        float angle, const float* color, int style);
-    Font_s* UI_GetFontHandle(ScreenPlacement* scrPlace, int fontEnum);
-    float UI_TextWidth(const char* text, int maxChars,
-        Font_s* font, float scale);
-    float R_TextWidth(const char* text, int maxChars, Font_s* font);
-    float UI_TextHeight(Font_s* font, float scale);
-    float R_TextHeight(Font_s* font);
-    void UI_FillRect(ScreenPlacement* scrPlace, float x, float y, float width,
-        float height, int horzAlign, int veryAlign, const float* color);
-    void UI_DrawRect(ScreenPlacement* scrPlace, float x, float y, float width,
-        float height, int horzAlign, int vertAlign, float size, const float* color);
+    void CG_DrawRotatedPicPhysical(ScreenPlacement *scrPlace, float x, float y,
+        float width, float height, float angle, const float *color, void *material);
+    float R_NormalizedTextScale(Font_s *font, float scale);
+    void CL_DrawTextPhysical(const char *text, int maxChars,
+        void *font, float x, float y, float xScale, float yScale,
+        float rotation, const float *color, int style);
+    void ScrPlace_ApplyRect(ScreenPlacement *scrPlace,
+        float *x, float *y, float *w, float *h, int horzAlign, int vertAlign);
+    void UI_DrawText(ScreenPlacement *scrPlace, const char *text,
+        int maxChars, void *font, float x, float y, float scale,
+        float angle, const float *color, int style);
+    Font_s *UI_GetFontHandle(ScreenPlacement *scrPlace, int fontEnum);
+    float UI_TextWidth(const char *text, int maxChars,
+        Font_s *font, float scale);
+    float R_TextWidth(const char *text, int maxChars, Font_s *font);
+    float UI_TextHeight(Font_s *font, float scale);
+    float R_TextHeight(Font_s *font);
+    void UI_FillRect(ScreenPlacement *scrPlace, float x, float y, float width,
+        float height, int horzAlign, int veryAlign, const float *color);
+    void UI_DrawRect(ScreenPlacement *scrPlace, float x, float y, float width,
+        float height, int horzAlign, int vertAlign, float size, const float *color);
 
     // Interface
-    extern void(__cdecl* CG_GameMessage)(int localClientNum, const char* msg, int length);
-    void DrawSketchPicGun(ScreenPlacement* scrPlace, rectDef_s* rect,
-        const float* color, struct Material* material, int ratio);
+    extern void(__cdecl *CG_GameMessage)(int localClientNum, const char *msg, int length);
+    void DrawSketchPicGun(ScreenPlacement *scrPlace, rectDef_s *rect,
+        const float *color, struct Material *material, int ratio);
 
     // Command
-    extern void(__cdecl* Cmd_ExecuteSingleCommand)(int localClientNum,
-        int controllerIndex, const char* text);
-    void __usercall Cbuf_AddText(const char* cmd);
-    void CL_GetUserCmd(int cmdNum, usercmd_s* cmd);
-    usercmd_s* CL_GetUserCmd(int cmdNum);
+    extern void(__cdecl *Cmd_ExecuteSingleCommand)(int localClientNum,
+        int controllerIndex, const char *text);
+    void __usercall Cbuf_AddText(const char *cmd);
+    void CL_GetUserCmd(int cmdNum, usercmd_s *cmd);
+    usercmd_s *CL_GetUserCmd(int cmdNum);
 
     // Dvars 
-    extern dvar_s*(__cdecl* Dvar_FindVar)(const char* dvarName);
+    extern dvar_s*(__cdecl *Dvar_FindVar)(const char *dvarName);
 
     // Weapons
-    WeaponDef* BG_GetWeaponDef(int weapon);
-    void BG_GetSpreadForWeapon(playerState_s* ps, WeaponDef* weap, float* minSpread,
-        float* maxSpread);
+    WeaponDef *BG_GetWeaponDef(int weapon);
+    void BG_GetSpreadForWeapon(playerState_s *ps, WeaponDef *weap, float *minSpread,
+        float *maxSpread);
     
     // Aim assist functions 
-    int AimTarget_GetTagPos(int localClientNum, centity_s* cent,
-        unsigned __int16 tagname, float* pos);
-    bool AimTarget_IsTargetVisible(centity_s* cent, unsigned short bone);
-    void CG_BulletEndPos(int commandTime, float spread, float* start,
-        float* end, float* dir, const float* forwardDir, const float* rightDir,
-        const float* upDir, float maxRange);
+    int AimTarget_GetTagPos(int localClientNum, centity_s *cent,
+        unsigned __int16 tagname, float *pos);
+    bool AimTarget_IsTargetVisible(centity_s *cent, unsigned short bone);
+    void CG_BulletEndPos(int commandTime, float spread, float *start,
+        float *end, float *dir, const float *forwardDir, const float *rightDir,
+        const float *upDir, float maxRange);
 
     // Keyboard monitoring
-    int Key_StringToKeynum(const char* name);
-    bool Key_IsDown(const char* bind);
+    int Key_StringToKeynum(const char *name);
+    bool Key_IsDown(const char *bind);
 
     // Math
     float __libm_sse2_tan(float x);
-    bool CG_WorldPosToScreenPos(int localClientNum, const float* world, float pos[2]);
-    void vectoangles(const float* vec, float* pos);
-    void AngleVectors(const float* angles, float* forward, float* right, float* up);
-    void Vec3Normalize(float* x);
-    bool CG_GetPlayerViewOrigin(int localClientNum, playerState_s* ps, float out[3]);
+    bool CG_WorldPosToScreenPos(int localClientNum, const float *world, float pos[2]);
+    void vectoangles(const float *vec, float *pos);
+    void AngleVectors(const float *angles, float *forward, float *right, float *up);
+    void Vec3Normalize(float *x);
+    bool CG_GetPlayerViewOrigin(int localClientNum, playerState_s *ps, float out[3]);
 
     // GSC Script
     void Scr_SetParameters(int count);
     void Scr_AddFloat(float value);
     void Scr_AddInt(int value);
-    void Scr_AddString(const char* string);
-    void Scr_AddVector(const float* value);
+    void Scr_AddString(const char *string);
+    void Scr_AddVector(const float *value);
 
     // Player data
-    extern int(__cdecl* CG_GetPlayerWeapon)(playerState_s* ps, int localClientNum);
+    extern int(__cdecl *CG_GetPlayerWeapon)(playerState_s *ps, int localClientNum);
 
     // Sound
-    extern snd_buffer*(__cdecl* Snd_FindBuffer)(const char* filename, unsigned int offset);
-    extern SndBank*(__cdecl* SND_FindAliasBank)(const char* name);
+    extern snd_buffer*(__cdecl *Snd_FindBuffer)(const char *filename, unsigned int offset);
+    extern SndBank*(__cdecl *SND_FindAliasBank)(const char *name);
     
-    snd_alias_t* SND_PickSoundAlias(const char* name, int objectId);
+    snd_alias_t *SND_PickSoundAlias(const char *name, int objectId);
     int SND_HashToIndex(const int hash);
-    void UI_PlaySound(int context, const char* aliasname);
-    int SND_Play(const char* alias, int entIndex, float volume);
-    snd_voice_t* Snd_GetVoice(int i);
-    void* SND_GetGroup(snd_alias_t* alias);
+    void UI_PlaySound(int context, const char *aliasname);
+    int SND_Play(const char *alias, int entIndex, float volume);
+    snd_voice_t *Snd_GetVoice(int i);
+    void *SND_GetGroup(snd_alias_t *alias);
     
     // Miscellaneous
-    extern void(__cdecl* Com_Error)(int code, const char* fmt, ...);
-    extern char* (__cdecl* va)(const char* fmt, ...);
+    extern void(__cdecl *Com_Error)(int code, const char *fmt, ...);
+    extern char*(__cdecl *va)(const char *fmt, ...);
     
     bool IN_IsForegroundWindow();
     unsigned int Sys_Milliseconds();
-    const char* SL_ConvertToString(int stringValue);
+    const char *SL_ConvertToString(int stringValue);
     unsigned int FindVariable(scriptInstance_t inst,
         unsigned int parentId, unsigned int unsignedValue);
     unsigned int FindObject(scriptInstance_t inst, unsigned int id);
     unsigned int Scr_GetSelf(scriptInstance_t inst, unsigned int threadId);
     unsigned int FindLastSibling(scriptInstance_t inst, unsigned int id);
     int GetVariableKeyObject(scriptInstance_t inst, unsigned int id);
-    unsigned short SL_FindString(const char* tagname);
+    unsigned short SL_FindString(const char *tagname);
     
     // IO
-    extern FILE*(__cdecl* FileWrapper_Open)(const char* filename, const char* mode);
-    extern void(__cdecl* RandomBulletDir)(int randSeed, float* x, float* y);
+    extern FILE*(__cdecl *FileWrapper_Open)(const char *filename, const char *mode);
+    extern void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y);
 
-    int FS_WriteFile(const char* filename, const void* buffer, int size);
-    int FS_ReadFile(const char* qpath, void** buffer);
-    void FS_FreeFile(void* buffer);
+    int FS_WriteFile(const char *filename, const void *buffer, int size);
+    int FS_ReadFile(const char *qpath, void **buffer);
+    void FS_FreeFile(void *buffer);
     XAsset DB_FindXAsset(XAssetType type);
 }
 
@@ -806,19 +806,19 @@ struct vec3_t
 
     vec3_t(float x = 0.0f, float y = 0.0f, float z = 0.0f)
         : x{ x }, y{ y }, z{ z } {}
-    vec3_t(float* vec) { memcpy(this, vec, 0xC); }
-    vec3_t(const vec3_t& vec) { memcpy(this, &vec, 0xC); }
+    vec3_t(float *vec) { memcpy(this, vec, 0xC); }
+    vec3_t(const vec3_t &vec) { memcpy(this, &vec, 0xC); }
 
     operator float*() { return (float*)this; }
 
-    vec3_t operator+(const vec3_t& vec) const;
+    vec3_t operator+(const vec3_t &vec) const;
     vec3_t operator+(float vec[3]) const;
-    vec3_t operator-(const vec3_t& vec) const;
+    vec3_t operator-(const vec3_t &vec) const;
     vec3_t operator-(float vec[3]) const;
-    vec3_t& operator+=(const vec3_t& vec);
-    vec3_t& operator+=(float vec[3]);
-    vec3_t& operator-=(const vec3_t& vec);
-    vec3_t& operator-=(float vec[3]);
+    vec3_t &operator+=(const vec3_t &vec);
+    vec3_t &operator+=(float vec[3]);
+    vec3_t &operator-=(const vec3_t &vec);
+    vec3_t &operator-=(float vec[3]);
 };
 
 namespace Colors
@@ -848,7 +848,7 @@ namespace Fonts
     struct Font
     {
         int index;
-        const char* dir;
+        const char *dir;
     };
 
     extern Font normalFont;
@@ -871,22 +871,22 @@ extern std::vector<QWORD> detours;
 extern std::unordered_map<const char*, GameData::dvar_s*> dvars;
 
 /**
- *  @brief Inserts a game dvar structure pointer into local dvars map
- *  @param dvarName The dvar name to insert
- *  @param dvar A pointer to the dvar if we already have it
- *  @return If the dvar was found and inserted, return true. else false
+ * @brief Inserts a game dvar structure pointer into local dvars map
+ * @param dvarName The dvar name to insert
+ * @param dvar A pointer to the dvar if we already have it
+ * @return If the dvar was found and inserted, return true. else false
 **/
-bool InsertDvar(const char* dvarName, GameData::dvar_s* dvar = nullptr);
+bool InsertDvar(const char *dvarName, GameData::dvar_s *dvar = nullptr);
 
 /**
- *  @brief if we are currently in game
- *  @return If we are in game return true else false
+ * @brief if we are currently in game
+ * @return If we are in game return true else false
 **/
 bool InGame();
 
 /**
- *  @brief Copys a string into the clipboard
- *  @param text The string to copy
- *  @return If the text was successfully copied to clipboard return true else false
+ * @brief Copys a string into the clipboard
+ * @param text The string to copy
+ * @return If the text was successfully copied to clipboard return true else false
 **/
-bool CopyTextToClipboard(const std::string& text);
+bool CopyTextToClipboard(const std::string &text);

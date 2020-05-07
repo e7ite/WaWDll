@@ -3,78 +3,78 @@
 
 namespace GameData
 {
-    UiContext*       dc                               = (UiContext*)0x208E920;
-    ScreenPlacement* scrPlace                         = (ScreenPlacement*)0x957360;
-    KeyState*        keys                             = (KeyState*)0x951C44;
-    centity_s*       cg_entitiesArray                 = (centity_s*)0x35D39F0;
-    cg_s*            cgameGlob                        = (cg_s*)0x34732B8;
-    clientActive_t*  clientActive                     = (clientActive_t*)0x3058528;
-    WORD*            clientObjMap                     = (WORD*)0x1FE58C8;
-    BYTE*            objBuf                           = (BYTE*)0x1F978C8;
-    HWND*            hwnd                             = (HWND*)0x22C1BE4;
-    scrVmPub_t*      gScrVmPub                        = (scrVmPub_t*)0x3BD4700;
-    gentity_s*       g_entities                       = (gentity_s*)0x176C6F0;
-    WeaponDef**      bg_weaponVariantDefs             = (WeaponDef**)0x8F6770;
-    snd_voice_t*     snd_voicesArray                  = (snd_voice_t*)0x4DC32EC;
-    cgs_t*           cgs                              = (cgs_t*)0x3466578;
-    actor_s*         actors                           = (actor_s*)0x176C874;
-    int*             cl_connectionState               = (int*)0x305842C;
+    UiContext       *dc                               = (UiContext*)0x208E920;
+    ScreenPlacement *scrPlace                         = (ScreenPlacement*)0x957360;
+    KeyState        *keys                             = (KeyState*)0x951C44;
+    centity_s       *cg_entitiesArray                 = (centity_s*)0x35D39F0;
+    cg_s            *cgameGlob                        = (cg_s*)0x34732B8;
+    clientActive_t  *clientActive                     = (clientActive_t*)0x3058528;
+    WORD            *clientObjMap                     = (WORD*)0x1FE58C8;
+    BYTE            *objBuf                           = (BYTE*)0x1F978C8;
+    HWND            *hwnd                             = (HWND*)0x22C1BE4;
+    scrVmPub_t      *gScrVmPub                        = (scrVmPub_t*)0x3BD4700;
+    gentity_s       *g_entities                       = (gentity_s*)0x176C6F0;
+    WeaponDef      **bg_weaponVariantDefs             = (WeaponDef**)0x8F6770;
+    snd_voice_t     *snd_voicesArray                  = (snd_voice_t*)0x4DC32EC;
+    cgs_t           *cgs                              = (cgs_t*)0x3466578;
+    actor_s         *actors                           = (actor_s*)0x176C874;
+    int             *cl_connectionState               = (int*)0x305842C;
 
-    int(__stdcall* MessageBoxA)(HWND hWnd, LPCSTR lpText,
+    int(__stdcall *MessageBoxA)(HWND hWnd, LPCSTR lpText,
         LPCSTR lpCaption, UINT uType)
         = *(int(__stdcall**)(HWND, LPCSTR, LPCSTR, UINT))MessageBoxA_a;
-    DWORD(__stdcall* timeGetTime)() = *(DWORD(__stdcall**)())timeGetTime_a;
-    void(__stdcall* InitializeCriticalSection)(LPCRITICAL_SECTION lpCriticalSection)
+    DWORD(__stdcall *timeGetTime)() = *(DWORD(__stdcall**)())timeGetTime_a;
+    void(__stdcall *InitializeCriticalSection)(LPCRITICAL_SECTION lpCriticalSection)
         = *(void(__stdcall**)(LPCRITICAL_SECTION))InitializeCriticalSection_a;
-    void(__stdcall* EnterCriticalSection)(LPCRITICAL_SECTION lpCriticalSection)
+    void(__stdcall *EnterCriticalSection)(LPCRITICAL_SECTION lpCriticalSection)
         = *(void(__stdcall**)(LPCRITICAL_SECTION))EnterCriticalSection_a;
-    void(__stdcall* LeaveCriticalSection)(LPCRITICAL_SECTION lpCriticalSection)
+    void(__stdcall *LeaveCriticalSection)(LPCRITICAL_SECTION lpCriticalSection)
         = *(void(__stdcall**)(LPCRITICAL_SECTION))LeaveCriticalSection_a;
 
-    Font_s*(__cdecl* R_RegisterFont)(const char* font, int imageTrac)
+    Font_s*(__cdecl *R_RegisterFont)(const char *font, int imageTrac)
         = (Font_s*(*)(const char*, int))R_RegisterFont_a;
-    void*(__cdecl* Material_RegisterHandle)(const char* materialName, 
+    void*(__cdecl *Material_RegisterHandle)(const char *materialName, 
         int imageTrac)
         = (void*(*)(const char*, int))Material_RegisterHandle_a;
-    void(__cdecl* CG_DrawRotatedPic)(ScreenPlacement* scrPlace, float x, float y,
-        float width, float height, float angle, const float* color, void* material)
+    void(__cdecl *CG_DrawRotatedPic)(ScreenPlacement *scrPlace, float x, float y,
+        float width, float height, float angle, const float *color, void *material)
         = (void(*)(ScreenPlacement*, float, float,
             float, float, float, const float*, void*))CG_DrawRotatedPic_a;
-    void(__cdecl* Cmd_ExecuteSingleCommand)(int localClientNum,
-        int controllerIndex, const char* text)
+    void(__cdecl *Cmd_ExecuteSingleCommand)(int localClientNum,
+        int controllerIndex, const char *text)
         = (void(*)(int, int, const char*))Cmd_ExecuteSingleCommmand_a;
-    dvar_s*(__cdecl* Dvar_FindVar)(const char* dvarName)
+    dvar_s*(__cdecl *Dvar_FindVar)(const char *dvarName)
         = (dvar_s*(*)(const char*))Dvar_FindVar_a;
-    void(__cdecl* CL_DrawTextPhysicalInternal)(const char* text, int maxChars,
-        void* font, float x, float y, float xScale, float yScale, float rotation,
+    void(__cdecl *CL_DrawTextPhysicalInternal)(const char *text, int maxChars,
+        void *font, float x, float y, float xScale, float yScale, float rotation,
         int style) = (void(__cdecl*)(const char*, int,
             void*, float, float, float, float, float, int))CL_DrawTextPhysical_a;
-    int(__cdecl* UI_TextWidthInternal)(const char* text, int maxChars,
-        void* font, float scale)
+    int(__cdecl *UI_TextWidthInternal)(const char *text, int maxChars,
+        void *font, float scale)
         = (int(*)(const char*, int, void*, float))UI_TextWidth_a;
-    void(__cdecl* CG_GameMessage)(int localClientNum, const char* msg, int length)
+    void(__cdecl *CG_GameMessage)(int localClientNum, const char *msg, int length)
         = (void(__cdecl*)(int, const char*, int))CG_GameMessage_a;
-    int(__cdecl* CG_GetPlayerWeapon)(playerState_s* ps, int localClientNum)
+    int(__cdecl *CG_GetPlayerWeapon)(playerState_s *ps, int localClientNum)
         = (int(__cdecl*)(playerState_s*, int))CG_GetPlayerWeapon_a;
-    void(__cdecl* RandomBulletDir)(int randSeed, float* x, float* y)
+    void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y)
         = (void(__cdecl*)(int, float*, float*))RandomBulletDir_a;
-    FILE*(__cdecl* FileWrapper_Open)(const char* filename, const char* mode)
+    FILE*(__cdecl *FileWrapper_Open)(const char *filename, const char *mode)
         = (FILE*(__cdecl*)(const char*, const char*))FileWrapper_Open_a;
-    void(__cdecl* Com_Error)(int code, const char* fmt, ...)
+    void(__cdecl *Com_Error)(int code, const char *fmt, ...)
         = (void(__cdecl*)(int, const char*, ...))Com_Error_a;
-    snd_buffer*(__cdecl* Snd_FindBuffer)(const char* filename, unsigned int offset)
+    snd_buffer*(__cdecl *Snd_FindBuffer)(const char *filename, unsigned int offset)
         = (snd_buffer*(__cdecl*)(const char*, unsigned int))Snd_FindBuffer_a;
-    char*(__cdecl* va)(const char* fmt, ...) 
+    char*(__cdecl *va)(const char *fmt, ...) 
         = (char*(__cdecl*)(const char*, ...))va_a;
-    SndBank*(__cdecl* SND_FindAliasBank)(const char* name)
+    SndBank*(__cdecl *SND_FindAliasBank)(const char *name)
         = (SndBank*(__cdecl*)(const char*))SND_FindAliasBank_a;
 
-    snd_voice_t* Snd_GetVoice(int i)
+    snd_voice_t *Snd_GetVoice(int i)
     {
         return ((int*)0x4DCB4DC)[i] ? &snd_voicesArray[i] : nullptr;
     }
 
-    void Cbuf_AddText(const char* cmd)
+    void Cbuf_AddText(const char *cmd)
     {
         DWORD addr = Cbuf_AddText_a;
         __asm
@@ -85,8 +85,8 @@ namespace GameData
         }
     }
 
-    void CG_DrawRotatedPicPhysical(ScreenPlacement* scrPlace, float x, float y,
-        float width, float height, float angle, const float* color, void* material)
+    void CG_DrawRotatedPicPhysical(ScreenPlacement *scrPlace, float x, float y,
+        float width, float height, float angle, const float *color, void *material)
     {
         DWORD addr = CG_DrawRotatedPicPhysical_a;
         __asm
@@ -109,7 +109,7 @@ namespace GameData
         }
     }
 
-    int Key_StringToKeynum(const char* name)
+    int Key_StringToKeynum(const char *name)
     {
         DWORD result;
         DWORD addr = Key_StringToKeynum_a;
@@ -122,7 +122,7 @@ namespace GameData
         return result;
     }
 
-    bool Key_IsDown(const char* bind)
+    bool Key_IsDown(const char *bind)
     {
         for (__int16 i = 0; i < 256; i++)
             if (keys[i].binding)
@@ -132,24 +132,24 @@ namespace GameData
         return false;
     }
 
-    float R_NormalizedTextScale(Font_s* font, float scale)
+    float R_NormalizedTextScale(Font_s *font, float scale)
     {
         return scale * 48.0f / (float)font->pixelHeight;
     }
 
-    float UI_TextHeight(Font_s* font, float scale)
+    float UI_TextHeight(Font_s *font, float scale)
     {
         return static_cast<float>(
             floor(font->pixelHeight * R_NormalizedTextScale(font, scale) + 0.5));
     }
 
-    float R_TextHeight(Font_s* font)
+    float R_TextHeight(Font_s *font)
     {
         return static_cast<float>(font->pixelHeight);
     }
 
-    int AimTarget_GetTagPos(int localClientNum, centity_s* cent,
-        unsigned __int16 tagname, float* pos)
+    int AimTarget_GetTagPos(int localClientNum, centity_s *cent,
+        unsigned __int16 tagname, float *pos)
     {
         bool result;
         DWORD CG_DObjGetWorldTagPos = CG_DObjGetWorldTagPos_a;
@@ -176,7 +176,7 @@ namespace GameData
         return result;
     }
 
-    unsigned short SL_FindString(const char* tagname)
+    unsigned short SL_FindString(const char *tagname)
     {
         unsigned short result;
         unsigned int len = strlen(tagname) + 1;
@@ -193,7 +193,7 @@ namespace GameData
         return result;
     }
 
-    bool CG_WorldPosToScreenPos(int localClientNum, const float* world, float pos[2])
+    bool CG_WorldPosToScreenPos(int localClientNum, const float *world, float pos[2])
     {
         bool result;
         DWORD addr = CG_WorldPosToScreenPos_a;
@@ -208,7 +208,7 @@ namespace GameData
         return result;
     }
 
-    void vectoangles(const float* vec, float* pos)
+    void vectoangles(const float *vec, float *pos)
     {
         DWORD addr = vectoangles_a;
         __asm
@@ -219,7 +219,7 @@ namespace GameData
         }
     }
 
-    void CL_GetUserCmd(int cmdNum, usercmd_s* cmd)
+    void CL_GetUserCmd(int cmdNum, usercmd_s *cmd)
     {
         __asm
         {
@@ -235,9 +235,9 @@ namespace GameData
         }
     }
 
-    usercmd_s* CL_GetUserCmd(int cmdNum)
+    usercmd_s *CL_GetUserCmd(int cmdNum)
     {
-        usercmd_s* result;
+        usercmd_s *result;
         __asm
         {
             mov         esi, cmdNum
@@ -250,9 +250,9 @@ namespace GameData
         return result;
     }
 
-    void CL_DrawTextPhysical(const char* text, int maxChars,
-        void* font, float x, float y, float xScale, float yScale,
-        float rotation, const float* color, int style)
+    void CL_DrawTextPhysical(const char *text, int maxChars,
+        void *font, float x, float y, float xScale, float yScale,
+        float rotation, const float *color, int style)
     {
         __asm
         {
@@ -277,8 +277,8 @@ namespace GameData
         }
     }
 
-    void ScrPlace_ApplyRect(ScreenPlacement* scrPlace,
-        float* x, float* y, float* w, float* h, int horzAlign, int vertAlign)
+    void ScrPlace_ApplyRect(ScreenPlacement *scrPlace,
+        float *x, float *y, float *w, float *h, int horzAlign, int vertAlign)
     {
         DWORD addr = ScrPlace_ApplyRect_a;
         __asm
@@ -295,9 +295,9 @@ namespace GameData
         }
     }
 
-    void UI_DrawText(ScreenPlacement* scrPlace, const char* text,
-        int maxChars, void* font, float x, float y, float scale,
-        float angle, const float* color, int style)
+    void UI_DrawText(ScreenPlacement *scrPlace, const char *text,
+        int maxChars, void *font, float x, float y, float scale,
+        float angle, const float *color, int style)
     {
         DWORD addr = UI_DrawText_a;
         __asm
@@ -318,10 +318,10 @@ namespace GameData
         }
     }
 
-    Font_s* UI_GetFontHandle(ScreenPlacement* scrPlace, int fontEnum)
+    Font_s *UI_GetFontHandle(ScreenPlacement *scrPlace, int fontEnum)
     {
         DWORD addr = UI_GetFontHandle_a;
-        Font_s* result;
+        Font_s *result;
         __asm
         {
             mov         ecx, scrPlace
@@ -336,8 +336,8 @@ namespace GameData
         return result;
     }
 
-    float UI_TextWidth(const char* text, int maxChars,
-        Font_s* font, float scale)
+    float UI_TextWidth(const char *text, int maxChars,
+        Font_s *font, float scale)
     {
         float result;
         __asm
@@ -354,7 +354,7 @@ namespace GameData
         return result;
     }
 
-    float R_TextWidth(const char* text, int maxChars, Font_s* font)
+    float R_TextWidth(const char *text, int maxChars, Font_s *font)
     {
         DWORD addr = R_TextWidth_a;
         float result;
@@ -376,13 +376,13 @@ namespace GameData
         return GameData::timeGetTime() - *(int*)0x22BEC34;
     }
 
-    WeaponDef* BG_GetWeaponDef(int weapon)
+    WeaponDef *BG_GetWeaponDef(int weapon)
     {
         return bg_weaponVariantDefs[weapon];
     }
 
-    void BG_GetSpreadForWeapon(playerState_s* ps, WeaponDef* weap, float* minSpread,
-        float* maxSpread)
+    void BG_GetSpreadForWeapon(playerState_s *ps, WeaponDef *weap, float *minSpread,
+        float *maxSpread)
     {
         DWORD addr = BG_GetSpreadForWeapon_a;
         __asm
@@ -396,7 +396,7 @@ namespace GameData
         }
     }
 
-    void AngleVectors(const float* angles, float* forward, float* right, float* up)
+    void AngleVectors(const float *angles, float *forward, float *right, float *up)
     {
         DWORD addr = AngleVectors_a;
         __asm
@@ -410,8 +410,8 @@ namespace GameData
         }
     }
 
-    void DrawSketchPicGun(ScreenPlacement* scrPlace, rectDef_s* rect,
-        const float* color, Material* material, int ratio)
+    void DrawSketchPicGun(ScreenPlacement *scrPlace, rectDef_s *rect,
+        const float *color, Material *material, int ratio)
     {
         DWORD addr = DrawSketchPicGun_a;
         __asm
@@ -426,7 +426,7 @@ namespace GameData
         }
     }
 
-    bool CG_GetPlayerViewOrigin(int localClientNum, playerState_s* ps, float origin[3])
+    bool CG_GetPlayerViewOrigin(int localClientNum, playerState_s *ps, float origin[3])
     {
         DWORD addr = CG_GetPlayerViewOrigin_a;
         bool result;
@@ -455,7 +455,7 @@ namespace GameData
         return result;
     }
 
-    void Vec3Normalize(float* x)
+    void Vec3Normalize(float *x)
     {
         DWORD addr = Vec3Normalize_a;
         __asm
@@ -466,8 +466,8 @@ namespace GameData
         }
     }
 
-    void UI_DrawRect(ScreenPlacement* scrPlace, float x, float y, float width,
-        float height, int horzAlign, int vertAlign, float thickness, const float* color)
+    void UI_DrawRect(ScreenPlacement *scrPlace, float x, float y, float width,
+        float height, int horzAlign, int vertAlign, float thickness, const float *color)
     {
         DWORD addr = UI_DrawRect_a;
         __asm
@@ -493,8 +493,8 @@ namespace GameData
         }
     }
 
-    void UI_FillRect(ScreenPlacement* scrPlace, float x, float y, float width,
-        float height, int horzAlign, int vertAlign, const float* color)
+    void UI_FillRect(ScreenPlacement *scrPlace, float x, float y, float width,
+        float height, int horzAlign, int vertAlign, const float *color)
     {
         DWORD addr = UI_FillRect_a;
         __asm
@@ -520,7 +520,7 @@ namespace GameData
         }
     }
 
-    bool AimTarget_IsTargetVisible(centity_s* cent, unsigned short bone)
+    bool AimTarget_IsTargetVisible(centity_s *cent, unsigned short bone)
     {
         bool result;
         DWORD addr = AimTarget_IsTargetVisible_a;
@@ -540,9 +540,9 @@ namespace GameData
         return *(bool*)(0x229A0D4);
     }
 
-    const char* SL_ConvertToString(int stringValue)
+    const char *SL_ConvertToString(int stringValue)
     {
-        const char** gScrMemTreePub = (const char**)0x3702390;
+        const char **gScrMemTreePub = (const char**)0x3702390;
         return *gScrMemTreePub + ((stringValue * 2 + stringValue) * 4) + 4;
     }
 
@@ -566,7 +566,7 @@ namespace GameData
     unsigned int FindVariable(scriptInstance_t inst,
         unsigned int parentId, unsigned int unsignedValue)
     {
-        WORD* gScVarGlob = (WORD*)0x3974700;
+        WORD *gScVarGlob = (WORD*)0x3974700;
         return static_cast<DWORD>(
             *(WORD*)(
                 (int)gScVarGlob + ((FindVariableIndexInternal(inst,
@@ -578,13 +578,13 @@ namespace GameData
 
     unsigned int FindObject(scriptInstance_t inst, unsigned int id)
     {
-        WORD* gScVarGlob = (WORD*)0x3974704;
+        WORD *gScVarGlob = (WORD*)0x3974704;
         return *(unsigned int*)((int)gScVarGlob + ((id + inst * 0x16000) << 4));
     }
 
     unsigned int Scr_GetSelf(scriptInstance_t inst, unsigned int threadId)
     {
-        unsigned short* gsvgVariableList = (unsigned short*)0x3914716;
+        unsigned short *gsvgVariableList = (unsigned short*)0x3914716;
         int index = (threadId + inst * 0x16000) << 4;
 
         return static_cast<unsigned int>(
@@ -608,8 +608,8 @@ namespace GameData
 
     int GetVariableKeyObject(scriptInstance_t inst, unsigned int id)
     {
-        WORD* gsvgcVariableList = (WORD*)0x3974700;
-        int* gScrVarGlobClient = (int*)0x3974708;
+        WORD *gsvgcVariableList = (WORD*)0x3974700;
+        int *gScrVarGlobClient = (int*)0x3974708;
         DWORD index = inst * 0x16000;
 
         DWORD index2 =
@@ -650,7 +650,7 @@ namespace GameData
         }
     }
 
-    void Scr_AddString(const char* string)
+    void Scr_AddString(const char *string)
     {
         DWORD addr = Scr_AddString_a;
         scriptInstance_t inst = SCRIPTINSTANCE_CLIENT;
@@ -663,7 +663,7 @@ namespace GameData
         }
     }
 
-    void Scr_AddVector(const float* value)
+    void Scr_AddVector(const float *value)
     {
         DWORD addr = Scr_AddVector_a;
         scriptInstance_t inst = SCRIPTINSTANCE_CLIENT;
@@ -676,7 +676,7 @@ namespace GameData
         }
     }
 
-    int FS_WriteFile(const char* filename, const void* buffer, int limit)
+    int FS_WriteFile(const char *filename, const void *buffer, int limit)
     {
         int result;
         DWORD addr = FS_WriteFile_a;
@@ -692,7 +692,7 @@ namespace GameData
         return result;
     }
 
-    int FS_ReadFile(const char* qpath, void** buffer)
+    int FS_ReadFile(const char *qpath, void **buffer)
     {
         int result;
         DWORD addr = FS_ReadFile_a;
@@ -709,10 +709,10 @@ namespace GameData
 
     XAsset DB_FindXAsset(XAssetType type)
     {
-        XAssetHeader** DB_XAssetPool = (XAssetHeader**)0x8DC828;
-        int(__cdecl** DB_GetXAssetSizeHandler)() = (int(__cdecl**)())0x8DCC18;
-        const char** g_assetNames = (const char**)0x8DCA68;
-        int* g_poolSize = (int*)0x8DC5D0;
+        XAssetHeader **DB_XAssetPool = (XAssetHeader**)0x8DC828;
+        int(__cdecl **DB_GetXAssetSizeHandler)() = (int(__cdecl**)())0x8DCC18;
+        const char **g_assetNames = (const char**)0x8DCA68;
+        int *g_poolSize = (int*)0x8DC5D0;
 
         XAsset xasset;
         xasset.header = DB_XAssetPool[type];
@@ -722,10 +722,10 @@ namespace GameData
         return xasset;
     }
 
-    snd_alias_t* SND_PickSoundAlias(const char* name, int objectId)
+    snd_alias_t *SND_PickSoundAlias(const char *name, int objectId)
     {
         DWORD addr = SND_FindAlias_a;
-        snd_alias_t* funcRet;
+        snd_alias_t *funcRet;
         __asm
         {
             mov         esi, name
@@ -737,7 +737,7 @@ namespace GameData
         return funcRet;
     }
 
-    void UI_PlaySound(int context, const char* aliasname)
+    void UI_PlaySound(int context, const char *aliasname)
     {
         DWORD addr = UI_PlaySound_a;
         __asm
@@ -749,7 +749,7 @@ namespace GameData
         }
     }
 
-    int SND_Play(const char* alias, int entIndex, float volume)
+    int SND_Play(const char *alias, int entIndex, float volume)
     {
         int result;
         DWORD addr = SND_Play_a;
@@ -768,7 +768,7 @@ namespace GameData
         return result;
     }
 
-    void FS_FreeFile(void* buffer)
+    void FS_FreeFile(void *buffer)
     {
         DWORD addr = FS_FreeMem_a;
         __asm
@@ -783,13 +783,13 @@ namespace GameData
         return (hash &= 0xFF) * 3;
     }
 
-    void* SND_GetGroup(snd_alias_t* alias)
+    void *SND_GetGroup(snd_alias_t *alias)
     {
         return *(void**)(0x4DC2EE8 + (((alias->flags >> 0x16) & 0x3F) << 4));
     }
 
-    void CG_BulletEndPos(int commandTime, float spread, float* start, float* end,
-        float* dir, const float* forwardDir, const float* rightDir, const float* upDir,
+    void CG_BulletEndPos(int commandTime, float spread, float *start, float *end,
+        float *dir, const float *forwardDir, const float *rightDir, const float *upDir,
         float maxRange)
     {
         float right, up;
@@ -835,7 +835,7 @@ Colors::Color Colors::green            = {   0.0f, 255.0f,   0.0f, 255.0f };
 Colors::Color Colors::blue             = {   0.0f,   0.0f, 255.0f, 255.0f };
 Colors::Color Colors::transparentBlack = {   0.0f,   0.0f,   0.0f, 100.0f };
 
-vec3_t vec3_t::operator+(const vec3_t& vec) const
+vec3_t vec3_t::operator+(const vec3_t &vec) const
 {
     return vec3_t(this->x + vec.x, this->y + vec.y, this->z + vec.z);
 }
@@ -845,7 +845,7 @@ vec3_t vec3_t::operator+(float vec[3]) const
     return vec3_t(this->x + vec[0], this->y + vec[1], this->z + vec[2]);
 }
 
-vec3_t vec3_t::operator-(const vec3_t& vec) const
+vec3_t vec3_t::operator-(const vec3_t &vec) const
 {
     return vec3_t(this->x - vec.x, this->y - vec.y, this->z - vec.z);
 }
@@ -855,15 +855,15 @@ vec3_t vec3_t::operator-(float vec[3]) const
     return vec3_t(this->x - vec[0], this->y - vec[1], this->z - vec[2]);
 }
 
-vec3_t& vec3_t::operator+=(const vec3_t& vec)
+vec3_t &vec3_t::operator+=(const vec3_t &vec)
 {
     this->x += vec.x;
     this->y += vec.y;
     this->z += vec.z;
-    return* this;
+    return *this;
 }
 
-vec3_t& vec3_t::operator+=(float vec[3])
+vec3_t &vec3_t::operator+=(float vec[3])
 {
     this->x += vec[0];
     this->y += vec[1];
@@ -871,7 +871,7 @@ vec3_t& vec3_t::operator+=(float vec[3])
     return *this;
 }
 
-vec3_t& vec3_t::operator-=(const vec3_t& vec)
+vec3_t &vec3_t::operator-=(const vec3_t &vec)
 {
     this->x -= vec.x;
     this->y -= vec.y;
@@ -879,7 +879,7 @@ vec3_t& vec3_t::operator-=(const vec3_t& vec)
     return *this;
 }
 
-vec3_t& vec3_t::operator-=(float vec[3])
+vec3_t &vec3_t::operator-=(float vec[3])
 {
     this->x -= vec[0];
     this->y -= vec[1];
@@ -904,7 +904,7 @@ bool InGame()
         && *GameData::cl_connectionState >= 9;
 }
 
-bool CopyTextToClipboard(const std::string& text)
+bool CopyTextToClipboard(const std::string &text)
 {
     HGLOBAL hg;
     bool state = false;
@@ -937,5 +937,5 @@ float Distance3D(vec3_t c1, vec3_t c2)
     float dy = c2.y - c1.y;
     float dz = c2.z - c1.z;
 
-    return sqrtf(dx * dx + dy * dy + dz * dz);
+    return sqrtf(dx * dx + dy * dy + dz  *dz);
 }

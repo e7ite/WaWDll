@@ -23,7 +23,7 @@ bool Aimbot::ExecuteAimbot()
     return false;
 }
 
-bool Aimbot::ValidTarget(GameData::centity_s* target)
+bool Aimbot::ValidTarget(GameData::centity_s *target)
 {
     // Check if same entity index as me
     if (target->nextState.number == GameData::cgameGlob->clientNum)
@@ -46,12 +46,12 @@ int Aimbot::GetAimbotTarget() const
     int index = -1;
     float closestDistance = 999999999999.0f;
     unsigned short id = GameData::SL_FindString("j_head");
-    float* myPos = GameData::cgameGlob->predictedPlayerState.origin;
+    float *myPos = GameData::cgameGlob->predictedPlayerState.origin;
 
     // Loop through all entities and find zombie entities
     for (int i = 0; i < 1024; i++)
     {
-        GameData::centity_s* cent = &GameData::cg_entitiesArray[i];
+        GameData::centity_s *cent = &GameData::cg_entitiesArray[i];
         if (ValidTarget(cent)
            && GameData::AimTarget_GetTagPos(0, cent, id, enemyPos))
         {
@@ -76,12 +76,12 @@ void Aimbot::SetAngles() const
     *(vec3_t*)GameData::clientActive->viewangles = this->targetAngles;
 }
 
-void Aimbot::RemoveSpread(GameData::playerState_s* ps, GameData::usercmd_s* cmd) const
+void Aimbot::RemoveSpread(GameData::playerState_s *ps, GameData::usercmd_s *cmd) const
 {
     float minSpread, maxSpread, finalSpread, range;
     vec3_t viewOrg, viewAxis[3], spreadEnd, spreadDir, spreadFix;
     float cgSpread = GameData::cgameGlob->aimSpreadScale / 255.0f;
-    GameData::WeaponDef* weap = GameData::BG_GetWeaponDef(ps->weapon);
+    GameData::WeaponDef *weap = GameData::BG_GetWeaponDef(ps->weapon);
 
     // Get my view origin
     if (!CG_GetPlayerViewOrigin(0, ps, viewOrg))
@@ -120,7 +120,7 @@ void Aimbot::RemoveSpread(GameData::playerState_s* ps, GameData::usercmd_s* cmd)
     cmd->angles[1] += AngleToShort(GameData::cgameGlob->gunYaw - spreadFix[1]);
 }
 
-void Aimbot::FixMovement(GameData::usercmd_s* cmd, float currentAngle, float oldAngle,
+void Aimbot::FixMovement(GameData::usercmd_s *cmd, float currentAngle, float oldAngle,
     float oldForwardmove, float oldRightmove) const
 {
     float deltaView = currentAngle - oldAngle, f1, f2;
