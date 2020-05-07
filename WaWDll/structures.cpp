@@ -929,12 +929,3 @@ end:
     GlobalFree(hg);
     return state;
 }
-
-float Distance3D(vec3_t c1, vec3_t c2)
-{
-    float dx = c2.x - c1.x;
-    float dy = c2.y - c1.y;
-    float dz = c2.z - c1.z;
-
-    return sqrtf(dx * dx + dy * dy + dz  *dz);
-}
