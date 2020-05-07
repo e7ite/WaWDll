@@ -27,7 +27,7 @@ float ShortToAngle(int x)
     return (x * (360.0f / 65536));
 }
 
-float Distance3D(const float* c1, const float* c2)
+float Distance3D(const float *c1, const float *c2)
 {
     float dx = c2[0] - c1[0];
     float dy = c2[1] - c1[1];

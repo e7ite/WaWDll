@@ -8,7 +8,7 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
         case DLL_PROCESS_ATTACH:
             AllocConsole();
             SetConsoleTitle("WaW Hack");
-            FILE* f;
+            FILE *f;
             freopen_s(&f, "CONOUT$", "w", stdout);
 
             InsertDetour(&GameData::Menu_PaintAll, Menu_PaintAllDetourInvoke);

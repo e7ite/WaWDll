@@ -822,7 +822,6 @@ namespace GameData
 }
 
 bool dvarsInitialized;
-bool sndsInitialized;
 std::vector<QWORD> detours;
 std::unordered_map<const char*, GameData::dvar_s*> dvars;
 

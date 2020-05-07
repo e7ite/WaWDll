@@ -4,32 +4,32 @@
 
 namespace GameData
 {
-    void __usercall* Menu_PaintAll = (void __usercall*)Menu_PaintAll_a;
+    void __usercall *Menu_PaintAll = (void __usercall*)Menu_PaintAll_a;
     void(*CL_SendCmd)() = (void(*)())CL_SendCmd_a;
-    LONG(__stdcall* TopLevelExceptionFilter)(struct _EXCEPTION_POINTERS* ExceptionInfo)
+    LONG(__stdcall *TopLevelExceptionFilter)(struct _EXCEPTION_POINTERS *ExceptionInfo)
         = (LONG(__stdcall*)(_EXCEPTION_POINTERS*))TopLevelExceptionFilter_a;
-    void(__cdecl* CL_WritePacket)() = (void(__cdecl*)())CL_WritePacket_a;
-    void(__fastcall* CG_DrawNightVisionOverlay)(int localClientNum)
+    void(__cdecl *CL_WritePacket)() = (void(__cdecl*)())CL_WritePacket_a;
+    void(__fastcall *CG_DrawNightVisionOverlay)(int localClientNum)
         = (void(__fastcall*)(int))CG_DrawNightVisionOverlay_a;
-    void __usercall* AimTarget_GetTagPos_0 = (void __usercall*)AimTarget_GetTagPos_0_a;
-    int(__cdecl* Menu_HandleMouseMove)(GameData::ScreenPlacement* scrPlace, void* menu)
+    void __usercall *AimTarget_GetTagPos_0 = (void __usercall*)AimTarget_GetTagPos_0_a;
+    int(__cdecl *Menu_HandleMouseMove)(GameData::ScreenPlacement *scrPlace, void *menu)
         = (int(__cdecl*)(ScreenPlacement*, void*))Menu_HandleMouseMove_a;
-    void(__cdecl* CG_Draw2DInternal)() = (void(__cdecl*)())CG_Draw2DInternal_a;
-    void(__cdecl* UI_Refresh)(int localClientNum) = (void(__cdecl*)(int))UI_Refresh_a;
-    void(__cdecl* CL_KeyEvent)(int localClientNum, int value, int down,
+    void(__cdecl *CG_Draw2DInternal)() = (void(__cdecl*)())CG_Draw2DInternal_a;
+    void(__cdecl *UI_Refresh)(int localClientNum) = (void(__cdecl*)(int))UI_Refresh_a;
+    void(__cdecl *CL_KeyEvent)(int localClientNum, int value, int down,
         unsigned int time) = (void(*)(int, int, int, unsigned int))CL_KeyEvent_a;
-    sysEvent_t*(__cdecl* Win_GetEvent)(sysEvent_t* result, int unk)
+    sysEvent_t*(__cdecl *Win_GetEvent)(sysEvent_t *result, int unk)
         = (sysEvent_t*(*)(sysEvent_t*, int))Win_GetEvent_a;
-    void __usercall* Cbuf_AddTextHook = (void __usercall*)Cbuf_AddText_a;
-    void(__cdecl* CG_PredictPlayerState_Internal)(int localClientNum)
+    void __usercall *Cbuf_AddTextHook = (void __usercall*)Cbuf_AddText_a;
+    void(__cdecl *CG_PredictPlayerState_Internal)(int localClientNum)
         = (void(__cdecl*)(int))CG_PredictPlayerStateInternal_a;
-    void __usercall* CL_CreateCmd = (void __usercall*)CL_CreateCmd_a;
-    void(__cdecl* CL_CreateNewCommands)()
+    void __usercall *CL_CreateCmd = (void __usercall*)CL_CreateCmd_a;
+    void(__cdecl *CL_CreateNewCommands)()
         = (void(__cdecl*)())CL_CreateNewCommands_a;
-    void(__cdecl* IN_MouseEvent)(int mstate) = (void(__cdecl*)(int))IN_MouseEvent_a;
-    void __usercall* VM_Notify = (void __usercall*)VM_Notify_a;
-    void __usercall* CG_DamageFeedback = (void __usercall*)CG_DamageFeedback_a;
-    int(*Com_Printf)(int channel, const char* format, ...)
+    void(__cdecl *IN_MouseEvent)(int mstate) = (void(__cdecl*)(int))IN_MouseEvent_a;
+    void __usercall *VM_Notify = (void __usercall*)VM_Notify_a;
+    void __usercall *CG_DamageFeedback = (void __usercall*)CG_DamageFeedback_a;
+    int(*Com_Printf)(int channel, const char *format, ...)
         = (int(*)(int, const char*, ...))Com_Printf_a;
 }
 
@@ -82,7 +82,7 @@ void InsertDetour(LPVOID targetFunction, LPVOID detourFunction)
     DetourFunction((DWORD)targetFunction, (DWORD)detourFunction);
 }
 
-void __declspec(naked) Menu_PaintAllDetourInvoke(GameData::UiContext* dc)
+void __declspec(naked) Menu_PaintAllDetourInvoke(GameData::UiContext *dc)
 {
     __asm
     {
@@ -97,7 +97,7 @@ void __declspec(naked) Menu_PaintAllDetourInvoke(GameData::UiContext* dc)
     }
 }
 
-void Menu_PaintAllDetour(GameData::UiContext* dc)
+void Menu_PaintAllDetour(GameData::UiContext *dc)
 {
     Menu &menu = Menu::Instance();
     GameData::EnterCriticalSection(&menu.critSection);
@@ -128,12 +128,12 @@ void Menu_PaintAllDetour(GameData::UiContext* dc)
     GameData::LeaveCriticalSection(&menu.critSection);
 }
 
-void Cmd_ExecuteSingleCommandDetour(int localClientNum, int controllerIndex, const char* text)
+void Cmd_ExecuteSingleCommandDetour(int localClientNum, int controllerIndex, const char *text)
 {
     return GameData::Cmd_ExecuteSingleCommand(localClientNum, controllerIndex, text);
 }
 
-void TopLevelExceptionFilterDetour(struct _EXCEPTION_POINTERS* ExceptionInfo)
+void TopLevelExceptionFilterDetour(struct _EXCEPTION_POINTERS *ExceptionInfo)
 {
     PDWORD_PTR currESP =
         (PDWORD_PTR)ExceptionInfo->ContextRecord->Esp;
@@ -182,8 +182,8 @@ void CG_DrawNightVisionOverlayDetour(int localClientNum)
     GameData::CG_DrawNightVisionOverlay(localClientNum);
 }
 
-void __declspec(naked) AimTarget_GetTagPos_0DetourInvoke(GameData::centity_s* cent,
-    unsigned short bone, float* out)
+void __declspec(naked) AimTarget_GetTagPos_0DetourInvoke(GameData::centity_s *cent,
+    unsigned short bone, float *out)
 {
     __asm
     {
@@ -198,7 +198,7 @@ void __declspec(naked) AimTarget_GetTagPos_0DetourInvoke(GameData::centity_s* ce
     }
 }
 
-int Menu_HandleMouseMoveDetour(GameData::ScreenPlacement* scrPlace, void* item)
+int Menu_HandleMouseMoveDetour(GameData::ScreenPlacement *scrPlace, void *item)
 {
     Menu &menu = Menu::Instance();
     GameData::EnterCriticalSection(&menu.critSection);
@@ -226,7 +226,6 @@ void UI_RefreshDetour(int localClientNum)
 void CL_KeyEventDetour(int localClientNum, int key, int down, int time)
 {
     Menu &menu = Menu::Instance();
-
     GameData::EnterCriticalSection(&menu.critSection);
 
     OptionData &aimKey = menu.GetOptionData(AIMBOT_MENU, "Aim Key");
@@ -239,11 +238,10 @@ void CL_KeyEventDetour(int localClientNum, int key, int down, int time)
         return;
 
     GameData::LeaveCriticalSection(&menu.critSection);
-
     return GameData::CL_KeyEvent(localClientNum, key, down, time);
 }
 
-void __declspec(naked) Cbuf_AddTextDetourInvoke(const char* text,
+void __declspec(naked) Cbuf_AddTextDetourInvoke(const char *text,
     int localClientNum)
 {
     __asm
@@ -270,7 +268,7 @@ LABEL_1:
     }
 }
 
-bool Cbuf_AddTextDetour(const char* text, int localClientNum)
+bool Cbuf_AddTextDetour(const char *text, int localClientNum)
 {
     return true;
 }
@@ -299,12 +297,11 @@ void CL_CreateNewCommandsDetour()
 {
     Menu &menu = Menu::Instance();
     Aimbot &aimbot = Aimbot::Instance();
-
     GameData::EnterCriticalSection(&menu.critSection);
 
-    GameData::usercmd_s* ncmd = &GameData::clientActive->cmds[GameData::clientActive->cmdNumber + 1 & 0x7F];
-    GameData::usercmd_s* ccmd = &GameData::clientActive->cmds[GameData::clientActive->cmdNumber & 0x7F];
-    GameData::usercmd_s* ocmd = &GameData::clientActive->cmds[GameData::clientActive->cmdNumber - 1 & 0x7F];
+    GameData::usercmd_s *ncmd = &GameData::clientActive->cmds[GameData::clientActive->cmdNumber + 1 & 0x7F];
+    GameData::usercmd_s *ccmd = &GameData::clientActive->cmds[GameData::clientActive->cmdNumber & 0x7F];
+    GameData::usercmd_s *ocmd = &GameData::clientActive->cmds[GameData::clientActive->cmdNumber - 1 & 0x7F];
 
     ocmd->serverTime++;
 
@@ -346,7 +343,7 @@ void IN_MouseEventDetour(int mstate)
 }
 
 void __declspec(naked) VM_NotifyDetourInvoke(GameData::scriptInstance_t inst,
-    int notifyListOwnerId, int stringValue, GameData::VariableValue* top)
+    int notifyListOwnerId, int stringValue, GameData::VariableValue *top)
 {
     __asm
     {
@@ -367,7 +364,7 @@ void __declspec(naked) VM_NotifyDetourInvoke(GameData::scriptInstance_t inst,
 }
 
 void VM_NotifyDetour(GameData::scriptInstance_t inst, int notifyListOwnerId,
-    int stringValue, GameData::VariableValue* top)
+    int stringValue, GameData::VariableValue *top)
 {
     LPCSTR notifyString = GameData::SL_ConvertToString(stringValue);
     if (!strcmp(notifyString, "spawned_player"))
@@ -401,9 +398,9 @@ void __declspec(naked) CG_DamageFeedbackDetourInvoke(int localClientNum,
         push        ecx
         push        ebp
         mov         ebp, esp
-        push        [ebp + 0Ch]; damage
-        push        eax; pitchByte
-        push        edx; yawByte
+        push        [ebp + 0Ch] ; damage
+        push        eax         ; pitchByte
+        push        edx         ; yawByte
         push        [ebp + 8]
         call        CG_DamageFeedbackDetour
         add         esp, 10h
@@ -412,7 +409,7 @@ void __declspec(naked) CG_DamageFeedbackDetourInvoke(int localClientNum,
         test        al, al
         jnz         CONTINUE_FLOW
         ret
-        CONTINUE_FLOW :
+CONTINUE_FLOW:
         sub         esp, 28h
         mov         ecx, dword ptr[8F435Ch]
         push        00455379h
@@ -429,11 +426,10 @@ bool CG_DamageFeedbackDetour(int localClientNum, int yawByte, int pitchByte,
     bool result = !Menu::Instance().GetOptionData(MISC_MENU, "No Flinch").data.boolean;
     
     GameData::LeaveCriticalSection(&menu.critSection);
-
     return result;
 }
 
-int Com_PrintfDetour(int channel, const char* format, ...)
+int Com_PrintfDetour(int channel, const char *format, ...)
 {
     va_list ap;
     va_start(ap, format);
