@@ -334,9 +334,9 @@ namespace GameData
 
     enum scriptInstance_t : int
     {
-        SCRIPTINSTANCE_SERVER                   = 0x0,
-        SCRIPTINSTANCE_CLIENT                   = 0x1,
-        SCRIPT_INSTANCE_MAX                     = 0x2,
+        SCRIPTINSTANCE_SERVER = 0x0,
+        SCRIPTINSTANCE_CLIENT = 0x1,
+        SCRIPT_INSTANCE_MAX   = 0x2,
     };
 
     struct VariableValue
