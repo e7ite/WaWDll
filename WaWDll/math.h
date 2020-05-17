@@ -1,5 +1,6 @@
 #pragma once
 
+
 /**
  * @brief Converts an angle in degrees to radians
  * @param The angle in degrees
