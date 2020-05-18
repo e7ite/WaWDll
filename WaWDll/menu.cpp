@@ -1,5 +1,285 @@
-#include "stdafx.h"
-#include "menu.h"
+#include "stdafx.hpp"
+#include "menu.hpp"
+
+namespace GameData
+{
+    UiContext       *dc                           = (UiContext*)0x208E920;
+    ScreenPlacement *scrPlace                     = (ScreenPlacement*)0x957360;
+    KeyState        *keys                         = (KeyState*)0x951C44;
+
+    Font_s *(__cdecl *R_RegisterFont)(const char *font, int imageTrac)
+        = (Font_s*(*)(const char*, int))R_RegisterFont_a;
+    void *(__cdecl *Material_RegisterHandle)(const char *materialName,
+        int imageTrac)
+        = (void*(*)(const char*, int))Material_RegisterHandle_a;
+    void (__cdecl *CG_DrawRotatedPic)(ScreenPlacement *scrPlace, float x, float y,
+        float width, float height, float angle, const float *color, void *material)
+        = (void(*)(ScreenPlacement*, float, float,
+            float, float, float, const float*, void*))CG_DrawRotatedPic_a;
+    void (__cdecl *CL_DrawTextPhysicalInternal)(const char *text, int maxChars,
+        void *font, float x, float y, float xScale, float yScale, float rotation,
+        int style) = (void (__cdecl*)(const char*, int,
+            void*, float, float, float, float, float, int))CL_DrawTextPhysical_a;
+    int (__cdecl *UI_TextWidthInternal)(const char *text, int maxChars,
+        void *font, float scale)
+        = (int(*)(const char*, int, void*, float))UI_TextWidth_a;
+    void (__cdecl *CG_GameMessage)(int localClientNum, const char *msg, int length)
+        = (void (__cdecl*)(int, const char*, int))CG_GameMessage_a;
+
+    Font_s *UI_GetFontHandle(ScreenPlacement *scrPlace, int fontEnum)
+    {
+        DWORD addr = UI_GetFontHandle_a;
+        Font_s *result;
+        __asm
+        {
+            mov         ecx, scrPlace
+            mov         eax, fontEnum
+            fldz
+            sub         esp, 4
+            fstp        [esp]
+            call        addr
+            add         esp, 4
+            mov         result, eax
+        }
+        return result;
+    }
+
+    float UI_TextWidth(const char *text, int maxChars,
+        Font_s *font, float scale)
+    {
+        float result;
+        __asm
+        {
+            push        maxChars
+            push        text
+            mov         eax, font
+            movss       xmm0, scale
+            call        UI_TextWidthInternal
+            add         esp, 8
+            cvtsi2ss    xmm0, eax
+            movss       result, xmm0
+        }
+        return result;
+    }
+
+    float UI_TextHeight(Font_s *font, float scale)
+    {
+        return static_cast<float>(
+            floor(font->pixelHeight * R_NormalizedTextScale(font, scale) + 0.5));
+    }
+
+    void UI_DrawRect(ScreenPlacement *scrPlace, float x, float y, float width,
+        float height, int horzAlign, int vertAlign, float thickness, const float *color)
+    {
+        DWORD addr = UI_DrawRect_a;
+        __asm
+        {
+            mov         eax, color
+            mov         ecx, horzAlign
+            sub         esp, 4
+            fld         thickness
+            fstp        dword ptr [esp]
+            push        vertAlign
+            sub         esp, 10h
+            fld         height
+            fstp        dword ptr [esp + 0Ch]
+            fld         width
+            fstp        dword ptr [esp + 8]
+            fld         y
+            fstp        dword ptr [esp + 4]
+            fld         x
+            fstp        dword ptr [esp]
+            push        scrPlace
+            call        addr
+            add         esp, 1Ch
+        }
+    }
+
+    void UI_FillRect(ScreenPlacement *scrPlace, float x, float y, float width,
+        float height, int horzAlign, int vertAlign, const float *color)
+    {
+        DWORD addr = UI_FillRect_a;
+        __asm
+        {
+            sub         esp, 1Ch
+            mov         ecx, scrPlace
+            mov         edx, color
+            mov         dword ptr [esp + 18h], edx
+            mov         edx, vertAlign
+            mov         dword ptr [esp + 14h], edx
+            mov         edx, horzAlign
+            mov         dword ptr [esp + 10h], edx
+            fld         height
+            fstp        dword ptr [esp + 0Ch]
+            fld         width
+            fstp        dword ptr [esp + 8]
+            fld         y
+            fstp        dword ptr [esp + 4]
+            fld         x
+            fstp        dword ptr [esp]
+            call        addr
+            add         esp, 1Ch
+        }
+    }
+
+    void UI_DrawText(ScreenPlacement *scrPlace, const char *text,
+        int maxChars, void *font, float x, float y, float scale,
+        float angle, const float *color, int style)
+    {
+        DWORD addr = UI_DrawText_a;
+        __asm
+        {
+            mov         eax, 0
+            mov         ecx, 0
+            push        style
+            push        color
+            push        scale
+            push        y
+            push        x
+            push        font
+            push        maxChars
+            push        text
+            push        scrPlace
+            call        addr
+            add         esp, 24h
+        }
+    }
+
+    void CL_DrawTextPhysical(const char *text, int maxChars,
+        void *font, float x, float y, float xScale, float yScale,
+        float rotation, const float *color, int style)
+    {
+        __asm
+        {
+            push        style
+            sub         esp, 14h
+            fld         rotation
+            fstp        [esp + 10h]
+            fld         yScale
+            fstp        [esp + 0Ch]
+            fld         xScale
+            fstp        [esp + 08h]
+            fld         y
+            fstp        [esp + 04h]
+            fld         x
+            fstp        [esp]
+            push        font
+            push        maxChars
+            push        text
+            mov         ecx, color
+            call        CL_DrawTextPhysicalInternal
+            add         esp, 24h
+        }
+    }
+
+    void ScrPlace_ApplyRect(ScreenPlacement *scrPlace,
+        float *x, float *y, float *w, float *h, int horzAlign, int vertAlign)
+    {
+        DWORD addr = ScrPlace_ApplyRect_a;
+        __asm
+        {
+            mov         edx, x
+            mov         ecx, w
+            mov         edi, y
+            mov         esi, h
+            push        vertAlign
+            push        horzAlign
+            push        scrPlace
+            call        addr
+            add         esp, 0Ch
+        }
+    }
+
+    void CG_DrawRotatedPicPhysical(ScreenPlacement *scrPlace, float x, float y,
+        float width, float height, float angle, const float *color, void *material)
+    {
+        DWORD addr = CG_DrawRotatedPicPhysical_a;
+        __asm
+        {
+            push        material
+            push        color
+            sub         esp, 10h
+            fld         x
+            fstp        [esp]
+            fld         y
+            fstp        [esp + 4]
+            fld         width
+            fstp        [esp + 8]
+            fld         height
+            fstp        [esp + 0Ch]
+            movss       xmm0, angle
+            mov         edx, scrPlace
+            call        addr
+            add         esp, 18h
+        }
+    }
+
+    int Key_StringToKeynum(const char *name)
+    {
+        DWORD result;
+        DWORD addr = Key_StringToKeynum_a;
+        __asm
+        {
+            mov         edi, name
+            call        addr
+            mov         result, eax
+        }
+        return result;
+    }
+
+    bool Key_IsDown(const char *bind)
+    {
+        for (__int16 i = 0; i < 256; i++)
+            if (keys[i].binding)
+                if (!strcmp(keys[i].binding, bind))
+                    if (keys[i].down)
+                        return true;
+        return false;
+    }
+
+    float R_NormalizedTextScale(Font_s *font, float scale)
+    {
+        return scale * 48.0f / (float)font->pixelHeight;
+    }
+
+    float R_TextHeight(Font_s *font)
+    {
+        return static_cast<float>(font->pixelHeight);
+    }
+
+    float R_TextWidth(const char *text, int maxChars, Font_s *font)
+    {
+        DWORD addr = R_TextWidth_a;
+        float result;
+        __asm
+        {
+            mov         eax, text
+            push        font
+            push        maxChars
+            call        addr
+            add         esp, 8
+            cvtsi2ss    xmm0, eax
+            movss       result, xmm0
+        }
+        return result;
+    }
+
+    void DrawSketchPicGun(ScreenPlacement *scrPlace, rectDef_s *rect,
+        const float *color, Material *material, int ratio)
+    {
+        DWORD addr = DrawSketchPicGun_a;
+        __asm
+        {
+            mov         eax, rect
+            push        ratio
+            push        material
+            push        color
+            push        scrPlace
+            call        addr
+            add         esp, 10h
+        }
+    }
+}
 
 OptionData::OptionData(OptionType type) : type(type)
 {
@@ -214,9 +494,11 @@ int Menu::IntModify(const std::string &varName, OptionType type, int min, int ma
         var.data.integer--;
 
     if (var.data.integer > max)
-        return var.data.integer = min;
+        var.data.integer = min;
     if (var.data.integer < min)
-        return var.data.integer = max;
+        var.data.integer = max;
+
+    return var.data.integer;
 }
 
 OptionData &Menu::GetOptionData(Submenu sub, const std::string &key)

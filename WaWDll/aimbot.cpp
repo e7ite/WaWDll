@@ -1,5 +1,55 @@
-#include "stdafx.h"
-#include "aimbot.h"
+#include "stdafx.hpp"
+#include "aimbot.hpp"
+
+namespace GameData
+{
+    void BG_GetSpreadForWeapon(playerState_s *ps, WeaponDef *weap, float *minSpread,
+        float *maxSpread)
+    {
+        DWORD addr = BG_GetSpreadForWeapon_a;
+        __asm
+        {
+            mov         esi, ps
+            mov         edx, minSpread
+            mov         ecx, maxSpread
+            push        weap
+            call        addr
+            add         esp, 4
+        }
+    }
+
+    void CG_BulletEndPos(int commandTime, float spread, float *start, float *end,
+        float *dir, const float *forwardDir, const float *rightDir, const float *upDir,
+        float maxRange)
+    {
+        float right, up;
+        float aimOffset = __libm_sse2_tan(DegreesToRadians(spread)) * maxRange;
+
+        RandomBulletDir(commandTime, &right, &up);
+        right *= aimOffset;
+        up *= aimOffset;
+
+        end[0] = maxRange * forwardDir[0] + start[0];
+        end[1] = maxRange * forwardDir[1] + start[1];
+        end[2] = maxRange * forwardDir[2] + start[2];
+
+        end[0] = right * rightDir[0] + end[0];
+        end[1] = right * rightDir[1] + end[1];
+        end[2] = right * rightDir[2] + end[2];
+
+        end[0] = up * upDir[0] + end[0];
+        end[1] = up * upDir[1] + end[1];
+        end[2] = up * upDir[2] + end[2];
+
+        if (dir)
+        {
+            dir[0] = end[0] - start[0];
+            dir[1] = end[1] - start[1];
+            dir[2] = end[2] - start[2];
+            Vec3Normalize(dir);
+        }
+    }
+}
 
 bool Aimbot::ExecuteAimbot()
 {
@@ -73,7 +123,7 @@ int Aimbot::GetAimbotTarget() const
 
 void Aimbot::SetAngles() const
 {
-    *(vec3_t*)GameData::clientActive->viewangles = this->targetAngles;
+    *(vec3_t *)GameData::clientActive->viewangles = this->targetAngles;
 }
 
 void Aimbot::RemoveSpread(GameData::playerState_s *ps, GameData::usercmd_s *cmd) const

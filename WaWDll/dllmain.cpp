@@ -1,14 +1,14 @@
-#include "stdafx.h"
-#include "detours.h"
+#include "stdafx.hpp"
+#include "detours.hpp"
 
 BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
 {
     switch (Reason)
     {
         case DLL_PROCESS_ATTACH:
+            FILE *f;
             AllocConsole();
             SetConsoleTitle("WaW Hack");
-            FILE *f;
             freopen_s(&f, "CONOUT$", "w", stdout);
 
             InsertDetour(&GameData::Menu_PaintAll, Menu_PaintAllDetourInvoke);

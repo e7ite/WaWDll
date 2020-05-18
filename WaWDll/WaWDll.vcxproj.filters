@@ -41,25 +41,25 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="detours.h">
+    <ClInclude Include="aimbot.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="menu.h">
+    <ClInclude Include="detours.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="aimbot.h">
+    <ClInclude Include="esp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="esp.h">
+    <ClInclude Include="math.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="structures.h">
+    <ClInclude Include="menu.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="stdafx.h">
+    <ClInclude Include="stdafx.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="math.h">
+    <ClInclude Include="structures.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,72 +1,72 @@
-#include "stdafx.h"
-#include "detours.h"
-#include "esp.h"
+#include "stdafx.hpp"
+#include "detours.hpp"
+#include "esp.hpp"
 
 namespace GameData
 {
-    void __usercall *Menu_PaintAll = (void __usercall*)Menu_PaintAll_a;
-    void(*CL_SendCmd)() = (void(*)())CL_SendCmd_a;
-    LONG(__stdcall *TopLevelExceptionFilter)(struct _EXCEPTION_POINTERS *ExceptionInfo)
-        = (LONG(__stdcall*)(_EXCEPTION_POINTERS*))TopLevelExceptionFilter_a;
-    void(__cdecl *CL_WritePacket)() = (void(__cdecl*)())CL_WritePacket_a;
-    void(__fastcall *CG_DrawNightVisionOverlay)(int localClientNum)
-        = (void(__fastcall*)(int))CG_DrawNightVisionOverlay_a;
-    void __usercall *AimTarget_GetTagPos_0 = (void __usercall*)AimTarget_GetTagPos_0_a;
-    int(__cdecl *Menu_HandleMouseMove)(GameData::ScreenPlacement *scrPlace, void *menu)
-        = (int(__cdecl*)(ScreenPlacement*, void*))Menu_HandleMouseMove_a;
-    void(__cdecl *CG_Draw2DInternal)() = (void(__cdecl*)())CG_Draw2DInternal_a;
-    void(__cdecl *UI_Refresh)(int localClientNum) = (void(__cdecl*)(int))UI_Refresh_a;
-    void(__cdecl *CL_KeyEvent)(int localClientNum, int value, int down,
+    void __usercall *Menu_PaintAll = (void __usercall *)Menu_PaintAll_a;
+    void (__cdecl *CL_SendCmd)() = (void (*)())CL_SendCmd_a;
+    LONG (__stdcall *TopLevelExceptionFilter)(struct _EXCEPTION_POINTERS *ExceptionInfo)
+        = (LONG (__stdcall *)(_EXCEPTION_POINTERS *))TopLevelExceptionFilter_a;
+    void (__cdecl *CL_WritePacket)() = (void (__cdecl *)())CL_WritePacket_a;
+    void (__fastcall *CG_DrawNightVisionOverlay)(int localClientNum)
+        = (void (__fastcall*)(int))CG_DrawNightVisionOverlay_a;
+    void __usercall *AimTarget_GetTagPos_0 = (void __usercall *)AimTarget_GetTagPos_0_a;
+    int (__cdecl *Menu_HandleMouseMove)(GameData::ScreenPlacement *scrPlace, void *menu)
+        = (int (__cdecl *)(ScreenPlacement *, void *))Menu_HandleMouseMove_a;
+    void (__cdecl *CG_Draw2DInternal)() = (void (__cdecl *)())CG_Draw2DInternal_a;
+    void (__cdecl *UI_Refresh)(int localClientNum) = (void (__cdecl *)(int))UI_Refresh_a;
+    void (__cdecl *CL_KeyEvent)(int localClientNum, int value, int down,
         unsigned int time) = (void(*)(int, int, int, unsigned int))CL_KeyEvent_a;
-    sysEvent_t*(__cdecl *Win_GetEvent)(sysEvent_t *result, int unk)
-        = (sysEvent_t*(*)(sysEvent_t*, int))Win_GetEvent_a;
-    void __usercall *Cbuf_AddTextHook = (void __usercall*)Cbuf_AddText_a;
-    void(__cdecl *CG_PredictPlayerState_Internal)(int localClientNum)
-        = (void(__cdecl*)(int))CG_PredictPlayerStateInternal_a;
-    void __usercall *CL_CreateCmd = (void __usercall*)CL_CreateCmd_a;
-    void(__cdecl *CL_CreateNewCommands)()
-        = (void(__cdecl*)())CL_CreateNewCommands_a;
-    void(__cdecl *IN_MouseEvent)(int mstate) = (void(__cdecl*)(int))IN_MouseEvent_a;
-    void __usercall *VM_Notify = (void __usercall*)VM_Notify_a;
-    void __usercall *CG_DamageFeedback = (void __usercall*)CG_DamageFeedback_a;
-    int(*Com_Printf)(int channel, const char *format, ...)
-        = (int(*)(int, const char*, ...))Com_Printf_a;
+    sysEvent_t *(__cdecl *Win_GetEvent)(sysEvent_t *result, int unk)
+        = (sysEvent_t *(*)(sysEvent_t *, int))Win_GetEvent_a;
+    void __usercall *Cbuf_AddTextHook = (void __usercall *)Cbuf_AddText_a;
+    void (__cdecl *CG_PredictPlayerState_Internal)(int localClientNum)
+        = (void (__cdecl *)(int))CG_PredictPlayerStateInternal_a;
+    void __usercall *CL_CreateCmd = (void __usercall *)CL_CreateCmd_a;
+    void (__cdecl *CL_CreateNewCommands)()
+        = (void (__cdecl *)())CL_CreateNewCommands_a;
+    void (__cdecl *IN_MouseEvent)(int mstate) = (void (__cdecl *)(int))IN_MouseEvent_a;
+    void __usercall *VM_Notify = (void __usercall *)VM_Notify_a;
+    void __usercall *CG_DamageFeedback = (void __usercall *)CG_DamageFeedback_a;
+    int (__cdecl *Com_Printf)(int channel, const char *format, ...)
+        = (int (__cdecl *)(int, const char *, ...))Com_Printf_a;
 }
 
 void DetourFunction(DWORD targetFunction, DWORD detourFunction)
 {
-    /*Initiate Detour Transcation API*/
+    // Initiate Detour Transcation API
     DetourTransactionBegin();
 
-    /*Enlists Current Thread in Transaction to Appropriately Update
-      Instruction Pointers for That Thread*/
+    // Enlists Current Thread in Transaction to Appropriately Update
+    // Instruction Pointers for That Thread
     DetourUpdateThread(GetCurrentThread());
 
-    /*Allocates the Detour for the Target Function*/
-    DetourAttach(reinterpret_cast<PVOID*>(targetFunction),
-        reinterpret_cast<PVOID*>(detourFunction));
+    // Allocates the Detour for the Target Function
+    DetourAttach(reinterpret_cast<PVOID *>(targetFunction),
+        reinterpret_cast<PVOID *>(detourFunction));
 
-    /*Overwrites the first instruction in the target function to jmp
-      to Detour before returning to target function to restore program flow*/
+    // Overwrites the first instruction in the target function to jmp
+    // to Detour before returning to target function to restore program flow
     DetourTransactionCommit();
 }
 
 void DetourRemove(DWORD targetFunction, DWORD detourFunction)
 {
-    /*Initiate Detour Transcation API*/
+    // Initiate Detour Transcation API 
     DetourTransactionBegin();
 
-    /*Enlists Current Thread in Transaction to Appropriately Update
-      Instruction Pointers for That Thread*/
+    // Enlists Current Thread in Transaction to Appropriately Update
+    // Instruction Pointers for That Thread
     DetourUpdateThread(GetCurrentThread());
 
-    /*Deallocates the Detour for the Target Function*/
-    DetourDetach(reinterpret_cast<PVOID*>(targetFunction),
-        reinterpret_cast<PVOID*>(detourFunction));
+    // Deallocates the Detour for the Target Function
+    DetourDetach(reinterpret_cast<PVOID *>(targetFunction),
+        reinterpret_cast<PVOID *>(detourFunction));
 
-    /*Restores overwritten instructions of Target Function
-      and restores Target Function Pointer to point to original
-      function*/
+    // Restores overwritten instructions of Target Function
+    // and restores Target Function Pointer to point to original
+    // function
     DetourTransactionCommit();
 }
 
@@ -140,24 +140,24 @@ void TopLevelExceptionFilterDetour(struct _EXCEPTION_POINTERS *ExceptionInfo)
     PDWORD_PTR currEIP =
         (PDWORD_PTR)ExceptionInfo->ContextRecord->Eip;
 
-    printf("EAX: %p\n", (void*)ExceptionInfo->ContextRecord->Eax);
-    printf("EBX: %p\n", (void*)ExceptionInfo->ContextRecord->Ebx);
-    printf("ECX: %p\n", (void*)ExceptionInfo->ContextRecord->Ecx);
-    printf("EDX: %p\n", (void*)ExceptionInfo->ContextRecord->Edx);
-    printf("EDI: %p\n", (void*)ExceptionInfo->ContextRecord->Edi);
-    printf("ESI: %p\n", (void*)ExceptionInfo->ContextRecord->Esi);
-    printf("EBP: %p\n", (void*)ExceptionInfo->ContextRecord->Ebp);
-    printf("ESP: %p\n", (void*)currESP);
-    printf("EIP: %p\n", (void*)currEIP);
+    printf("EAX: %p\n", (void *)ExceptionInfo->ContextRecord->Eax);
+    printf("EBX: %p\n", (void *)ExceptionInfo->ContextRecord->Ebx);
+    printf("ECX: %p\n", (void *)ExceptionInfo->ContextRecord->Ecx);
+    printf("EDX: %p\n", (void *)ExceptionInfo->ContextRecord->Edx);
+    printf("EDI: %p\n", (void *)ExceptionInfo->ContextRecord->Edi);
+    printf("ESI: %p\n", (void *)ExceptionInfo->ContextRecord->Esi);
+    printf("EBP: %p\n", (void *)ExceptionInfo->ContextRecord->Ebp);
+    printf("ESP: %p\n", (void *)currESP);
+    printf("EIP: %p\n", (void *)currEIP);
 
     printf("\nSTACK VIEW:\n");
     for (int i = 0; i < 8; i++)
     {
         if (i)
             ++currESP;
-        printf("%p: %p ", (void*)currESP, (void*)*currESP);
+        printf("%p: %p ", (void *)currESP, (void *)*currESP);
         for (int j = 0; j < 3; j++)
-            printf("%p ", (void*)*(++currESP));
+            printf("%p ", (void *)*(++currESP));
         printf("\n");
     }
 
@@ -232,7 +232,7 @@ void CL_KeyEventDetour(int localClientNum, int key, int down, int time)
     OptionData &autoShoot = menu.GetOptionData(AIMBOT_MENU, "Auto Shoot");
 
     if (InGame() && GameData::keys[key].binding
-        && !*(int*)0x208E938
+        && !*(int *)0x208E938
         && (aimKey.data.integer != 1 || !strcmp(GameData::keys[key].binding, "+attack"))
         && autoShoot.data.boolean)
         return;
@@ -302,6 +302,8 @@ void CL_CreateNewCommandsDetour()
     GameData::usercmd_s *ncmd = &GameData::clientActive->cmds[GameData::clientActive->cmdNumber + 1 & 0x7F];
     GameData::usercmd_s *ccmd = &GameData::clientActive->cmds[GameData::clientActive->cmdNumber & 0x7F];
     GameData::usercmd_s *ocmd = &GameData::clientActive->cmds[GameData::clientActive->cmdNumber - 1 & 0x7F];
+
+    std::cout << std::hex << offsetof(GameData::gclient_s, spectatorClient) << std::endl;
 
     ocmd->serverTime++;
 

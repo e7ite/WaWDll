@@ -95,6 +95,7 @@
       <AdditionalOptions />
       <BufferSecurityCheck>
       </BufferSecurityCheck>
+      <PrecompiledHeaderFile>stdafx.hpp</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -171,17 +172,18 @@ call "load.cmd"</Command>
     <ClCompile Include="menu.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdafx.hpp</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="structures.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="aimbot.h" />
-    <ClInclude Include="detours.h" />
-    <ClInclude Include="esp.h" />
-    <ClInclude Include="math.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="structures.h" />
-    <ClInclude Include="menu.h" />
+    <ClInclude Include="aimbot.hpp" />
+    <ClInclude Include="detours.hpp" />
+    <ClInclude Include="esp.hpp" />
+    <ClInclude Include="math.hpp" />
+    <ClInclude Include="menu.hpp" />
+    <ClInclude Include="stdafx.hpp" />
+    <ClInclude Include="structures.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
