@@ -181,7 +181,8 @@ struct Menu
      * @param callback The function to perform to when the option is clicked in
      *                 by the mouse throguh Menu::MonitorMouse
     **/
-    void Insert(int sub, const char *option, OptionType type, std::function<void()> &&callback);
+    void Insert(int sub, const char *option, OptionType type, 
+        std::function<void()> &&callback);
 
     /**
      * @brief Handles where to go when user exits a submenu

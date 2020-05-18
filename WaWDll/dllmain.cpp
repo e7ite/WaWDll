@@ -24,7 +24,7 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
             InsertDetour(&GameData::VM_Notify, VM_NotifyDetourInvoke);
             InsertDetour(&GameData::CG_DamageFeedback, CG_DamageFeedbackDetourInvoke);
             InsertDetour(&GameData::Com_Printf, Com_PrintfDetour);
-            break;
+        break;
         case DLL_PROCESS_DETACH:
             FreeConsole();
 

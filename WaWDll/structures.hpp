@@ -764,8 +764,6 @@ namespace Fonts
     extern Font normalFont;
 }
 
-// Set when all the dvars we are going to use have been inserted successfuly
-extern bool dvarsInitialized;
 // All the functions to detour and where to detour to inserted into an 8 byte digit
 extern std::vector<QWORD> detours;
 // Local storage of the used game dvar structure

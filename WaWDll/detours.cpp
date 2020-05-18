@@ -102,21 +102,6 @@ void Menu_PaintAllDetour(GameData::UiContext *dc)
     Menu &menu = Menu::Instance();
     GameData::EnterCriticalSection(&menu.critSection);
 
-    if (!dvarsInitialized)
-    {
-        if (InsertDvar("cl_ingame")
-            && InsertDvar("cg_fov")
-            && InsertDvar("perk_weapSpreadMultiplier")
-            && InsertDvar("sv_cheats")
-            && InsertDvar("player_sustainAmmo"))
-        {
-            dvarsInitialized = true;
-            menu.GetOptionData(MISC_MENU, "FOV").data.integer = 65;
-        }
-        else
-            GameData::Com_Error(0, "Dvars failed to load\n");
-    }
-
     if (GameData::IN_IsForegroundWindow())
         menu.MonitorKeys();
 

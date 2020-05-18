@@ -435,7 +435,6 @@ namespace GameData
     }
 }
 
-bool dvarsInitialized;
 std::vector<QWORD> detours;
 std::unordered_map<const char *, GameData::dvar_s *> dvars;
 
@@ -512,8 +511,7 @@ bool InsertDvar(const char *dvarName, GameData::dvar_s *dvar)
 
 bool InGame()
 {
-    return dvarsInitialized &&
-        dvars.at("cl_ingame")->current.enabled
+    return dvars.at("cl_ingame")->current.enabled
         && *GameData::cl_connectionState >= 9;
 }
 

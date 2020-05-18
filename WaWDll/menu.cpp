@@ -415,6 +415,7 @@ Menu::Menu() :
         []() 
         { 
             GameData::Cbuf_AddText("god"); 
+            dvars.at("god");
         });
     Insert(MISC_MENU, "No Clip", TYPE_VOID, 
         []() 
@@ -442,6 +443,15 @@ Menu::Menu() :
         { 
             Menu::Instance().BoolModify("No Flinch"); 
         });
+
+    if (InsertDvar("cl_ingame")
+        && InsertDvar("cg_fov")
+        && InsertDvar("perk_weapSpreadMultiplier")
+        && InsertDvar("sv_cheats")
+        && InsertDvar("player_sustainAmmo"))
+        this->GetOptionData(MISC_MENU, "FOV").data.integer = 65;
+    else
+        GameData::Com_Error(0, "Dvars failed to load\n");
 }
 
 void Menu::Insert(int sub, const char *option, OptionType type, 
@@ -508,12 +518,12 @@ OptionData &Menu::GetOptionData(Submenu sub, const std::string &key)
 
 bool Menu::Ready()
 {
-    return GameData::Sys_Milliseconds() > timer;
+    return GameData::Sys_Milliseconds() > this->timer;
 }
 
 void Menu::Wait(int ms)
 {
-    timer = GameData::Sys_Milliseconds() + ms;
+    this->timer = GameData::Sys_Milliseconds() + ms;
 }
 
 void Menu::Execute()
@@ -593,9 +603,9 @@ bool Menu::MonitorMouse(Option &opt, float optionX, float optionY,
             int delay = opt.var.type == TYPE_INT ? 100 : 200;
             if (GetAsyncKeyState(VK_LBUTTON) & 0x10000)
             {
-                toggled = true;
+                this->toggled = true;
                 opt.callback();
-                toggled = false;
+                this->toggled = false;
                 this->Wait(delay);
             }
             else if (GetAsyncKeyState(VK_RBUTTON) & 0x10000)
