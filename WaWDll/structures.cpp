@@ -517,26 +517,21 @@ bool InGame()
 
 bool CopyTextToClipboard(const std::string &text)
 {
-    HGLOBAL hg;
-    bool state = false;
-    size_t len = text.size();
-
     if (!OpenClipboard(*GameData::hwnd))
         return false;
     if (!EmptyClipboard())
         return false;
 
-    hg = GlobalAlloc(GMEM_MOVEABLE, text.size() + 1);
-    if (!hg)
+    size_t len = text.size() + 1;
+    bool state = false;
+    HGLOBAL hg = GlobalAlloc(GMEM_MOVEABLE, len);
+    if (hg)
     {
-        state = false;
-        goto end;
+        memcpy(static_cast<LPSTR>(GlobalLock(hg)), text.c_str(), len);
+        GlobalUnlock(hg);
+        state = SetClipboardData(CF_TEXT, hg);
     }
-    memcpy(static_cast<LPSTR>(GlobalLock(hg)), text.c_str(), len + 1);
-    GlobalUnlock(hg);
-    state = SetClipboardData(CF_TEXT, hg);
 
-end:
     CloseClipboard();
     GlobalFree(hg);
     return state;

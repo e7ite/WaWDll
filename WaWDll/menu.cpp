@@ -287,16 +287,16 @@ OptionData::OptionData(OptionType type) : type(type)
     {
         case TYPE_INT:
             this->data = Data(0);
-        break;
+            break;
         case TYPE_BOOL:
             this->data = Data(false);
-        break;
+            break;
         case TYPE_FLOAT:
             this->data = Data(0.0f);
-        break;
+            break;
         default:
             this->data = Data(0);
-        break;
+            break;
     }
 }
 
@@ -460,7 +460,7 @@ void Menu::Insert(int sub, const char *option, OptionType type,
     this->options.at(sub).insert(
         std::pair<std::string, Option>(
             option, Option(option, type, std::forward<std::function<void()>>(callback))
-        )
+            )
     );
 }
 
@@ -473,18 +473,18 @@ void Menu::CloseSub()
 {
     switch (this->currentSub)
     {
-    case MAIN_MENU:
-        this->open = false;
-        break;
-    case AIMBOT_MENU:
-    case ESP_MENU:
-    case HUD_MENU:
-    case MISC_MENU:
-        this->currentSub = MAIN_MENU;
-        break;
-    default:
-        this->open = false;
-        break;
+        case MAIN_MENU:
+            this->open = false;
+            break;
+        case AIMBOT_MENU:
+        case ESP_MENU:
+        case HUD_MENU:
+        case MISC_MENU:
+            this->currentSub = MAIN_MENU;
+            break;
+        default:
+            this->open = false;
+            break;
     }
 }
 
@@ -574,14 +574,14 @@ void Menu::Execute()
                 GameData::UI_FillRect(GameData::scrPlace, borderX + borderW - 12,
                     optionY - optionH + 2, 8, 8, 0, 0,
                     option.var.data.boolean ? Colors::blue : Colors::transparentBlack);
-            break;
+                break;
             case TYPE_INT:
                 std::string data = std::to_string(option.var.data.integer);
                 RenderUIText(data.data(),
                     AlignText(data.data(), Fonts::normalFont,
                         0.3f, borderX + borderW - 3, ALIGN_RIGHT, 1, 0),
                     optionY, 0.3f, color, fontPointer);
-            break;
+                break;
         }
 
         // Draw the text of the menu
@@ -701,16 +701,16 @@ float AlignText(const char *text, const Fonts::Font &font, float scale, float in
     {
         case ALIGN_LEFT:
             xAligned = initX;
-        break;
+            break;
         case ALIGN_CENTER:
             xAligned = initX - width / 2;
-        break;
+            break;
         case ALIGN_RIGHT:
             xAligned = initX - width;
-        break;
+            break;
         default:
             xAligned = initX;
-        break;
+            break;
     }
 
     if (wOut)
@@ -769,13 +769,13 @@ void WriteBytes(DWORD addr, const char *bytes, size_t len)
 {
     DWORD curProtection;
     HANDLE curProcess = GetCurrentProcess();
-    
+
     // Make virtual page address have read/write/exec privledges
     // and save old privledges to temporary
     VirtualProtect((LPVOID)addr, len, PAGE_EXECUTE_READWRITE, &curProtection);
 
     WriteProcessMemory(curProcess, (LPVOID)addr, bytes, len, 0);
-    
+
     // Restore old privledges from temporary to virtual page address
     VirtualProtect((LPVOID)addr, len, curProtection, 0);
 
@@ -796,4 +796,4 @@ void ReadBytes(DWORD addr, char *buf, size_t len)
 
     // Restore old privledges from temporary to virtual page address
     VirtualProtect((LPVOID)addr, len, curProtection, 0);
-} 
+}
