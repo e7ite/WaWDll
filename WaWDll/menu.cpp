@@ -8,23 +8,22 @@ namespace GameData
     KeyState        *keys                         = (KeyState*)0x951C44;
 
     Font_s *(__cdecl *R_RegisterFont)(const char *font, int imageTrac)
-        = (Font_s*(*)(const char*, int))R_RegisterFont_a;
-    void *(__cdecl *Material_RegisterHandle)(const char *materialName,
-        int imageTrac)
-        = (void*(*)(const char*, int))Material_RegisterHandle_a;
+        = (Font_s *(*)(const char *, int))R_RegisterFont_a;
+    void *(__cdecl *Material_RegisterHandle)(const char *materialName, int imageTrac)
+        = (void *(*)(const char *, int))Material_RegisterHandle_a;
     void (__cdecl *CG_DrawRotatedPic)(ScreenPlacement *scrPlace, float x, float y,
         float width, float height, float angle, const float *color, void *material)
-        = (void(*)(ScreenPlacement*, float, float,
+        = (void (*)(ScreenPlacement *, float, float,
             float, float, float, const float*, void*))CG_DrawRotatedPic_a;
     void (__cdecl *CL_DrawTextPhysicalInternal)(const char *text, int maxChars,
-        void *font, float x, float y, float xScale, float yScale, float rotation,
-        int style) = (void (__cdecl*)(const char*, int,
-            void*, float, float, float, float, float, int))CL_DrawTextPhysical_a;
+        void *font, float x, float y, float xScale, float yScale, float rotation, int style)
+        = (void (__cdecl *)(const char *, int, void *, float, float, 
+            float, float, float, int))CL_DrawTextPhysical_a;
     int (__cdecl *UI_TextWidthInternal)(const char *text, int maxChars,
         void *font, float scale)
-        = (int(*)(const char*, int, void*, float))UI_TextWidth_a;
+        = (int(*)(const char *, int, void *, float))UI_TextWidth_a;
     void (__cdecl *CG_GameMessage)(int localClientNum, const char *msg, int length)
-        = (void (__cdecl*)(int, const char*, int))CG_GameMessage_a;
+        = (void (__cdecl *)(int, const char *, int))CG_GameMessage_a;
 
     Font_s *UI_GetFontHandle(ScreenPlacement *scrPlace, int fontEnum)
     {
@@ -279,6 +278,73 @@ namespace GameData
             add         esp, 10h
         }
     }
+
+    LONG (__stdcall *TopLevelExceptionFilter)(struct _EXCEPTION_POINTERS *ExceptionInfo)
+        = (LONG (__stdcall *)(_EXCEPTION_POINTERS *))TopLevelExceptionFilter_a;
+    void TopLevelExceptionFilterDetour(struct _EXCEPTION_POINTERS *ExceptionInfo)
+    {
+        PDWORD_PTR currESP =
+            (PDWORD_PTR)ExceptionInfo->ContextRecord->Esp;
+        PDWORD_PTR currEIP =
+            (PDWORD_PTR)ExceptionInfo->ContextRecord->Eip;
+
+        printf("EAX: %p\n", (void *)ExceptionInfo->ContextRecord->Eax);
+        printf("EBX: %p\n", (void *)ExceptionInfo->ContextRecord->Ebx);
+        printf("ECX: %p\n", (void *)ExceptionInfo->ContextRecord->Ecx);
+        printf("EDX: %p\n", (void *)ExceptionInfo->ContextRecord->Edx);
+        printf("EDI: %p\n", (void *)ExceptionInfo->ContextRecord->Edi);
+        printf("ESI: %p\n", (void *)ExceptionInfo->ContextRecord->Esi);
+        printf("EBP: %p\n", (void *)ExceptionInfo->ContextRecord->Ebp);
+        printf("ESP: %p\n", (void *)currESP);
+        printf("EIP: %p\n", (void *)currEIP);
+
+        printf("\nSTACK VIEW:\n");
+        for (int i = 0; i < 8; i++)
+        {
+            if (i)
+                ++currESP;
+            printf("%p: %p ", (void *)currESP, (void *)*currESP);
+            for (int j = 0; j < 3; j++)
+                printf("%p ", (void *)*(++currESP));
+            printf("\n");
+        }
+
+        if (CopyTextToClipboard(GameData::va("%p", currEIP)))
+            printf("\nInstruction pointer copied to clipboard\n");
+        else
+            printf("\nProblem copying instruction pointer to clipboard\n");
+    }
+
+    void __usercall *Menu_PaintAll = (void __usercall *)Menu_PaintAll_a;
+    void __declspec(naked) Menu_PaintAllDetourInvoke(UiContext *dc)
+    {
+        __asm
+        {
+            push        esi
+            call        Menu_PaintAllDetour
+            add         esp, 4
+            pop         edi
+            pop         ebp
+            pop         ebx
+            add         esp, 410h
+            ret
+        }
+    }
+    void Menu_PaintAllDetour(UiContext *dc)
+    {
+        Menu &menu = Menu::Instance();
+        EnterCriticalSection(&menu.critSection);
+
+        if (IN_IsForegroundWindow())
+            menu.MonitorKeys();
+
+        if (menu.open)
+            menu.Execute();
+
+        RenderESP();
+
+        LeaveCriticalSection(&menu.critSection);
+    }
 }
 
 OptionData::OptionData(OptionType type) : type(type)
@@ -415,7 +481,6 @@ Menu::Menu() :
         []() 
         { 
             GameData::Cbuf_AddText("god"); 
-            dvars.at("god");
         });
     Insert(MISC_MENU, "No Clip", TYPE_VOID, 
         []() 
@@ -797,3 +862,4 @@ void ReadBytes(DWORD addr, char *buf, size_t len)
     // Restore old privledges from temporary to virtual page address
     VirtualProtect((LPVOID)addr, len, curProtection, 0);
 }
+

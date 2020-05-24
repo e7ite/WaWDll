@@ -1,9 +1,12 @@
 #pragma once
 
 #include "structures.hpp"
+#include "esp.hpp"
+
 
 namespace GameData
 {
+#pragma pack(push, 1)
     struct UiContext
     {
         int   contentIndex;                             // 0x00
@@ -34,7 +37,19 @@ namespace GameData
         const char *binding;                            // 0x08
         const char *binding2;                           // 0x0C
     }; // Size = 0x10
+#pragma pack(pop)
 
+    enum
+    {
+        Menu_PaintAll_a                     = 0x5CA9A2,
+        TopLevelExceptionFilter_a           = 0x5FF510,
+    };
+
+    extern UiContext       *dc;
+    extern ScreenPlacement *scrPlace;
+    extern KeyState        *keys;
+
+    // Rendering functions
     extern Font_s *(__cdecl *R_RegisterFont)(const char *font, int imageTrac);
     extern void *(__cdecl *Material_RegisterHandle)(const char *materialName,
         int imageTrac);
@@ -73,19 +88,20 @@ namespace GameData
     int Key_StringToKeynum(const char *name);
     bool Key_IsDown(const char *bind);
 
-    extern UiContext       *dc;
-    extern ScreenPlacement *scrPlace;
-    extern KeyState        *keys;
+    // Detours for menu drawing 
+    extern void __usercall* Menu_PaintAll;
+    void Menu_PaintAllDetourInvoke(UiContext *dc);
+    void Menu_PaintAllDetour(UiContext *dc);
 }
 
-enum ScreenAlignment
+enum ScreenAlignment : char
 {
     ALIGN_LEFT,
     ALIGN_CENTER,
     ALIGN_RIGHT
 };
 
-enum Submenu
+enum Submenu : char
 {
     MAIN_MENU,
     MISC_MENU,
@@ -94,13 +110,13 @@ enum Submenu
     HUD_MENU
 };
 
-enum OptionType
+enum OptionType : char
 {
-    TYPE_SUB   = 0,
-    TYPE_INT   = 1,
-    TYPE_FLOAT = 2,
-    TYPE_BOOL  = 4,
-    TYPE_VOID  = 8
+    TYPE_SUB,
+    TYPE_INT,
+    TYPE_FLOAT,
+    TYPE_BOOL,
+    TYPE_VOID
 };
 
 // The data stored inside each option
@@ -379,4 +395,4 @@ void WriteBytes(DWORD addr, const char *bytes, size_t len);
  * @param buf Where to store the memory read from the address
  * @param len The amount of bytes to read from the address
 **/
-void ReadBytes(DWORD addr, char *buf, size_t len); 
+void ReadBytes(DWORD addr, char *buf, size_t len);

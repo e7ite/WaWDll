@@ -49,6 +49,25 @@ namespace GameData
             Vec3Normalize(dir);
         }
     }
+
+    // Do not let the game run its usual tag position function as it has error checks which
+    // close the game. 
+    void __usercall *AimTarget_GetTagPos_0 = (void __usercall *)AimTarget_GetTagPos_0_a;
+    void __declspec(naked) AimTarget_GetTagPos_0DetourInvoke(centity_s *cent,
+        unsigned short bone, float *out)
+    {
+        __asm
+        {
+            mov         eax, [esp + 4]
+            push        eax
+            push        esi
+            push        ecx
+            push        0
+            call        AimTarget_GetTagPos
+            add         esp, 10h
+            ret
+        }
+    }
 }
 
 bool Aimbot::ExecuteAimbot()

@@ -6,13 +6,9 @@
 
 namespace GameData
 {
-    enum DetourAddresses : DWORD
+    enum
     {
-        Win_GetEvent_a                      = 0x5FEC60,
         UI_Refresh_a                        = 0x5B6810,
-        TopLevelExceptionFilter_a           = 0x5FF510,
-        AimTarget_GetTagPos_0_a             = 0x4039C0,
-        Menu_PaintAll_a                     = 0x5CA9A2,
         Menu_HandleMouseMove_a              = 0x5C9B10,
         CL_WritePacket_a                    = 0x63EA80,
         CL_KeyEvent_a                       = 0x4780F0,
@@ -29,61 +25,62 @@ namespace GameData
         Com_Printf_a                        = 0x59A2C0,
     };
 
-    extern void __usercall *Menu_PaintAll;
-    extern LONG (__stdcall *TopLevelExceptionFilter)(
-        struct _EXCEPTION_POINTERS *ExceptionInfo);
-    extern void(*CL_SendCmd)();
+    extern LONG (__stdcall *TopLevelExceptionFilter)(struct _EXCEPTION_POINTERS *ExceptionInfo);
+    void TopLevelExceptionFilterDetour(struct _EXCEPTION_POINTERS *ExceptionInfo);
+    
     extern void (__cdecl *CL_WritePacket)();
+    void CL_WritePacketDetour();
+
+    extern void (__cdecl *CL_SendCmd)();
+    void CL_SendCmdDetour();
+    
     extern void (__fastcall *CG_DrawNightVisionOverlay)(int localClientNum);
-    extern void __usercall *AimTarget_GetTagPos_0;
+    void CG_DrawNightVisionOverlayDetour(int localClientNum);
+    
     extern int (__cdecl *Menu_HandleMouseMove)(ScreenPlacement *scrPlace, void *menu);
+    int Menu_HandleMouseMoveDetour(GameData::ScreenPlacement *scrPlace, void *item);
+
     extern void (__cdecl *CG_Draw2DInternal)();
+    void CG_Draw2DInternalDetour();
+    
     extern void (__cdecl *UI_Refresh)(int localClientNum);
+    void UI_RefreshDetour(int localClientNum);
+    
     extern void (__cdecl *CL_KeyEvent)(int localClientNum, int value,
         int down, unsigned int time);
-    extern struct sysEvent_t *(__cdecl *Win_GetEvent)(sysEvent_t *result, int unk);
+    void CL_KeyEventDetour(int localClientNum, int key, int down, int time);
+    
     extern void __usercall *Cbuf_AddTextHook;
+    void Cbuf_AddTextDetourInvoke(const char *text, int localClientNum);    
+    bool Cbuf_AddTextDetour(const char *text, int localClientNum);
+    
     extern void (__cdecl *CG_PredictPlayerState_Internal)(int localClientNum);
-    extern void __usercall *CL_CreateCmd;
+    void CG_PredictPlayerState_InternalDetour(int localClientNum);
+    
     extern void (__cdecl *CL_CreateNewCommands)();
+    void CL_CreateNewCommandsDetourInvoke();
+    void CL_CreateNewCommandsDetour();
+    
     extern void (__cdecl *IN_MouseEvent)(int mstate);
+    void IN_MouseEventDetour(int mstate);
+    
     extern void __usercall *VM_Notify;
+    void VM_NotifyDetourInvoke(scriptInstance_t inst, int notifyListOwnerId,
+        int stringValue, VariableValue *top);
+    void VM_NotifyDetour(scriptInstance_t inst, int notifyListOwnerId,
+        int stringValue, VariableValue *top);
+    
     extern void __usercall *CG_DamageFeedback;
-    extern int(*Com_Printf)(int channel, const char *format, ...);
+    void CG_DamageFeedbackDetourInvoke(int localClientNum, int yawByte,
+        int pitchByte, int damage);
+    bool CG_DamageFeedbackDetour(int localClientNum, int yawByte, int pitchByte,
+        int damage);
+    
+    extern int( __cdecl *Com_Printf)(int channel, const char *format, ...);
+    int Com_PrintfDetour(int channel, const char *format, ...);
  }
 
 void DetourFunction(DWORD targetFunction, DWORD detourFunction);
 void DetourRemove(DWORD targetFunction, DWORD detourFunction);
 void RemoveDetour(QWORD bytes);
 void InsertDetour(LPVOID targetFunction, LPVOID detourFunction);
-
-void Menu_PaintAllDetourInvoke(GameData::UiContext *dc);
-void Menu_PaintAllDetour(GameData::UiContext *dc);
-void Cmd_ExecuteSingleCommandDetour(int localClientNum, int controllerIndex,
-    const char *text);
-void TopLevelExceptionFilterDetour(struct _EXCEPTION_POINTERS *ExceptionInfo);
-void CL_WritePacketDetour();
-void CL_SendCmdDetour();
-void CG_DrawNightVisionOverlayDetour(int localClientNum);
-void AimTarget_GetTagPos_0DetourInvoke(GameData::centity_s *cent,
-    unsigned short bone, float *out);
-int Menu_HandleMouseMoveDetour(GameData::ScreenPlacement *scrPlace, void *item);
-void CG_Draw2DInternalDetour();
-void UI_RefreshDetour(int localClientNum);
-void CL_KeyEventDetour(int localClientNum, int key, int down, int time);
-void Cbuf_AddTextDetourInvoke(const char *text, int localClientNum);
-bool Cbuf_AddTextDetour(const char *text, int localClientNum);
-void CG_PredictPlayerState_InternalDetour(int localClientNum);
-void CL_CreateNewCommandsDetourInvoke();
-void CL_CreateNewCommandsDetour();
-void IN_MouseEventDetour(int mstate);
-void VM_NotifyDetourInvoke(GameData::scriptInstance_t inst, int notifyListOwnerId,
-    int stringValue, GameData::VariableValue *top);
-void VM_NotifyDetour(GameData::scriptInstance_t inst, int notifyListOwnerId,
-    int stringValue, GameData::VariableValue *top);
-void CG_DamageFeedbackDetourInvoke(int localClientNum, int yawByte,
-    int pitchByte, int damage);
-bool CG_DamageFeedbackDetour(int localClientNum, int yawByte, int pitchByte,
-    int damage);
-int Com_PrintfDetour(int channel, const char *format, ...);
-

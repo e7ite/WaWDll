@@ -1,12 +1,17 @@
 #pragma once
 
-#include "structures.hpp"
 #include "menu.hpp"
-#include "math.hpp"
 
 namespace GameData
 {
-    // Weapons
+    enum
+    {
+        AimTarget_GetTagPos_0_a             = 0x4039C0,
+    };
+
+    extern void __usercall *AimTarget_GetTagPos_0;
+    void AimTarget_GetTagPos_0DetourInvoke(centity_s *cent, unsigned short bone, float *out);
+
     WeaponDef *BG_GetWeaponDef(int weapon);
     void BG_GetSpreadForWeapon(playerState_s *ps, WeaponDef *weap, float *minSpread,
         float *maxSpread);
@@ -21,19 +26,19 @@ struct Aimbot
     vec3_t      targetAngles;
     // The index in the cg_entitiesArray structure to access this target
     int         target;
-    // Refereence to the menu variable; used to tell if aimbot should be used
-    OptionData &enableAimbot;
-    // Refereence to the menu variable; used to trigger aimbot if set
-    OptionData &aimKey;
-    // Refereence to the menu variable; used to tell if the aimbot should fire the 
-    // gun automatically when a target it found
-    OptionData &autoShoot;
+    //// Refereence to the menu variable; used to tell if aimbot should be used
+    //OptionData &enableAimbot;
+    //// Refereence to the menu variable; used to trigger aimbot if set
+    //OptionData &aimKey;
+    //// Refereence to the menu variable; used to tell if the aimbot should fire the 
+    //// gun automatically when a target it found
+    //OptionData &autoShoot;
 
     Aimbot() : 
-        target(-1),
-        enableAimbot(Menu::Instance().GetOptionData(AIMBOT_MENU, "Enable Aimbot")),
+        target(-1)
+       /* enableAimbot(Menu::Instance().GetOptionData(AIMBOT_MENU, "Enable Aimbot")),
         aimKey(Menu::Instance().GetOptionData(AIMBOT_MENU, "Aim Key")),
-        autoShoot(Menu::Instance().GetOptionData(AIMBOT_MENU, "Auto Shoot")) {}
+        autoShoot(Menu::Instance().GetOptionData(AIMBOT_MENU, "Auto Shoot"))*/ {}
 
     static Aimbot &Instance() { static Aimbot aimbot; return aimbot; }
 
@@ -68,7 +73,7 @@ struct Aimbot
      * @param currentAngle The yaw after aimbot is set
      * @param oldAngle The yaw before aimbot is set
      * @param oldForwardMove The last forward move specified in cmd movement before
-     * @param oldForwardMove The last forward move specified in cmd movement after
+     * @param oldRightMove The last right move specified in cmd movement before
      *
      * For some reason, after a player uses silent aimbot through passing in the 
      * custom angles, the player's movement isn't tracked correctly anymore. This

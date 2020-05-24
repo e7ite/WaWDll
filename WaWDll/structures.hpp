@@ -4,15 +4,26 @@
 #include "math.hpp"
 
 // Use when game function is using non-standard calling convention caused by 
-// compiler optimization.
+// compiler optimization. Caller cleans the stack frame
+// Detours using __usercall must have target function invocation and return manually written.
+// Microsoft detours know how to correctly invoke a method with a standard 
+// calling convention such as __cdecl, __fastcall, etc. All these detours must do is
+// invoke the function pointer afterward to resume program flow.
 #define __usercall
+
+// Use when game function is using non-standard calling convention caused by 
+// compiler optimization. Callee cleans the stack frame
+// Detours using __userpurge must have target function invocation and return manually written.
+// Microsoft detours know how to correctly invoke a method with a standard 
+// calling convention such as __cdecl, __fastcall, etc. All these detours must do is
+// invoke the function pointer afterward to resume program flow.
+#define __userpurge
 
 using QWORD = unsigned __int64;
 
-#pragma pack(push, 1)
-
 namespace GameData
 {
+#pragma pack(push, 1)
     struct ScreenPlacement
     {
         float scaleVirtualToReal[2];                    // 0x00
@@ -425,6 +436,13 @@ namespace GameData
         clientSession_t sess;                           // 0x20AC
         int             spectatorClient;                // 0x2238
         int             flags;                          // 0x223C
+        char            pad00[0xC];                     // 0x2240
+        int             button_bits;                    // 0x224C
+        int             oldbutton_bits;                 // 0x2250
+        char            pad01[0x8];                     // 0x2254
+        float           fGunPitch;                      // 0x225C
+        float           fGunYaw;                        // 0x2260
+        char            pad02[0xE4];                    // 0x2264
     }; // Size = 0x2348
 
     struct actor_s
@@ -440,7 +458,7 @@ namespace GameData
         gclient_s         *client;                      // 0x180
         actor_s           *actor;                       // 0x184
         struct sentient_s *sentient;                    // 0x188
-        char               pad00[0xC];                  // 0x18C
+        char               pad00[0xC];                  // 0x18C 
         unsigned short     model;                       // 0x198
         char               pad01[0x142];                // 0x19A
         unsigned short     attachModelNames[0x13];      // 0x2DC
@@ -565,6 +583,7 @@ namespace GameData
         int index;                                      // 0x00
         int flags;                                      // 0x04
     };
+#pragma pack(pop)
 
     extern centity_s      *cg_entitiesArray;
     extern cg_s           *cgameGlob;
@@ -704,8 +723,6 @@ namespace GameData
     XAsset __usercall DB_FindXAsset(XAssetType type);
 }
 
-#pragma pack(pop)
-
 struct vec3_t
 {
     union
@@ -789,3 +806,12 @@ bool InGame();
  * @return If the text was successfully copied to clipboard return true else false
 **/
 bool CopyTextToClipboard(const std::string &text);
+
+/**
+ * @brief Outputs an error message and exits the program
+ * @return A formatted string with the error code
+ *
+ * Call when a Win32 API function fails. This will get the error it wrote in a 
+ * formatted string and output it using the game's error function
+**/
+std::string FormatError(DWORD lastError);

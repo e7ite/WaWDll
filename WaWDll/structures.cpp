@@ -536,3 +536,12 @@ bool CopyTextToClipboard(const std::string &text)
     GlobalFree(hg);
     return state;
 }
+
+std::string FormatError(DWORD lastError)
+{
+    LPSTR message;
+    FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL, lastError, SUBLANG_DEFAULT, (LPSTR)&message, 0, NULL);
+    return message;
+}

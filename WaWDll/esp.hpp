@@ -3,8 +3,6 @@
 #include "structures.hpp"
 #include "aimbot.hpp"
 
-// TODO: Implement ESP singleton class
-
 /**
  * @brief Iterates through game entities and draws a bordered box on zombies
 **/
