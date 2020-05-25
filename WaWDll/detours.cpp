@@ -111,56 +111,6 @@ namespace GameData
         GameData::CG_PredictPlayerState_Internal(localClientNum);
 }
 
-    void (__cdecl *CL_CreateNewCommands)() = (void (__cdecl *)())CL_CreateNewCommands_a;
-    void __declspec(naked) CL_CreateNewCommandsDetourInvoke()
-    {
-        __asm
-        {
-            pushad
-            call        CL_CreateNewCommandsDetour
-            popad
-            pop         edi
-            pop         esi
-            pop         ebx
-            add         esp, 78h
-            ret
-        }
-    }
-    void CL_CreateNewCommandsDetour()
-    {
-        Menu &menu = Menu::Instance();
-        Aimbot &aimbot = Aimbot::Instance();
-        GameData::EnterCriticalSection(&menu.critSection);
-
-        GameData::usercmd_s *ncmd = &GameData::clientActive->cmds[GameData::clientActive->cmdNumber + 1 & 0x7F];
-        GameData::usercmd_s *ccmd = &GameData::clientActive->cmds[GameData::clientActive->cmdNumber & 0x7F];
-        GameData::usercmd_s *ocmd = &GameData::clientActive->cmds[GameData::clientActive->cmdNumber - 1 & 0x7F];
-
-        ocmd->serverTime++;
-
-        /*bool aimbotRun = false;
-        bool isShooting = GameData::Key_IsDown("+attack");
-        if (aimbot.enableAimbot.data.boolean)
-        {
-            if ((aimbot.aimKey.data.integer == 1 && isShooting)
-                || (aimbot.aimKey.data.integer == 2 && GameData::Key_IsDown("+speed_throw"))
-                || !aimbot.aimKey.data.integer)
-            {
-                aimbotRun = aimbot.ExecuteAimbot();
-                if (aimbotRun)
-                    aimbot.SetAngles();
-            }
-        }
-
-        if (aimbot.autoShoot.data.boolean && (aimbotRun || isShooting))
-        {
-            ccmd->button_bits &= ~1;
-            ocmd->button_bits |= 1;
-        }*/
-
-        GameData::LeaveCriticalSection(&menu.critSection);
-    }
-
     void (__cdecl *IN_MouseEvent)(int mstate) = (void (__cdecl *)(int))IN_MouseEvent_a;
     void IN_MouseEventDetour(int mstate)
     {

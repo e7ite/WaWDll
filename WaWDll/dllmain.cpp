@@ -6,14 +6,20 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
     switch (Reason)
     {
         case DLL_PROCESS_ATTACH:
+        {
+#ifdef _DEBUG
+            GameData::Dvar_FindVar("r_fullbright")->current.enabled = true;
+#endif
+
             if (!AllocConsole())
                 GameData::Com_Error(0, FormatError(GetLastError()).c_str());
             if (!SetConsoleTitle("WaW Hack"))
                 GameData::Com_Error(0, FormatError(GetLastError()).c_str());
             FILE *f;
             errno_t err;
+            char errDesc[0x40] = { 0 };
             if ((err = freopen_s(&f, "CONOUT$", "w", stdout)))
-                GameData::Com_Error(0, "Failed to open stdout stream! %s", strerror(err));
+                GameData::Com_Error(0, "Failed to open stdout stream! %s", strerror_s<0x40>(errDesc, err));
 
             InsertDetour(&GameData::Menu_PaintAll, GameData::Menu_PaintAllDetourInvoke);
             InsertDetour(&GameData::TopLevelExceptionFilter, GameData::TopLevelExceptionFilterDetour);
@@ -27,10 +33,11 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
             InsertDetour(&GameData::VM_Notify, GameData::VM_NotifyDetourInvoke);
             InsertDetour(&GameData::CG_DamageFeedback, GameData::CG_DamageFeedbackDetourInvoke);
             InsertDetour(&GameData::Com_Printf, GameData::Com_PrintfDetour);
+        }
         break;
         case DLL_PROCESS_DETACH:
+        {
             std::stringstream errs;
-            int freeConsoleErr, closeStreamErr;
             bool errorOccurred = false;
             if (!FreeConsole())
             {
@@ -49,6 +56,7 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
 
             if (errorOccurred)
                 GameData::Com_Error(0, errs.str().c_str());
+        }
         break;
     }
 

@@ -29,14 +29,13 @@ void RenderESP()
     {
         vec3_t head, foot;
         float headScreen[2], feetScreen[2];
-        float closest = static_cast<float>(INT_MAX);
-        unsigned int id = GameData::SL_FindString("j_head");
+        unsigned short id = GameData::SL_FindString("j_head");
 
         // Loop through all entities and find zombie entities
         for (int i = 0; i < 1024; ++i)
         {
             // Check if a zombie entity
-            if (Aimbot::ValidTarget(&GameData::cg_entitiesArray[i]))
+            if (ValidTarget(&GameData::cg_entitiesArray[i]))
             {
                 const float *color = Colors::blue;
 

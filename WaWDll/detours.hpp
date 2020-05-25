@@ -1,7 +1,6 @@
 #pragma once
 
 #include "structures.hpp"
-#include "menu.hpp"
 #include "aimbot.hpp"
 
 namespace GameData
@@ -17,7 +16,6 @@ namespace GameData
         CG_Draw2DInternal_a                 = 0x4388A0,
         CL_SendCmd_a                        = 0x478D20,
         CL_CreateCmd_a                      = 0x63E936,
-        CL_CreateNewCommands_a              = 0x63E994,
         CL_MouseMove_a                      = 0x63DE70,
         IN_MouseEvent_a                     = 0x5FA5F0,
         VM_Notify_a                         = 0x698670,
@@ -56,10 +54,6 @@ namespace GameData
     
     extern void (__cdecl *CG_PredictPlayerState_Internal)(int localClientNum);
     void CG_PredictPlayerState_InternalDetour(int localClientNum);
-    
-    extern void (__cdecl *CL_CreateNewCommands)();
-    void CL_CreateNewCommandsDetourInvoke();
-    void CL_CreateNewCommandsDetour();
     
     extern void (__cdecl *IN_MouseEvent)(int mstate);
     void IN_MouseEventDetour(int mstate);

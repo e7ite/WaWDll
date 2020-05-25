@@ -3,90 +3,13 @@
 #include "structures.hpp"
 #include "esp.hpp"
 
-
 namespace GameData
 {
-#pragma pack(push, 1)
-    struct UiContext
-    {
-        int   contentIndex;                             // 0x00
-        float bias;                                     // 0x04
-        int   realTime;                                 // 0x08
-        int   frameTime;                                // 0x0C
-        float cursorPos[2];                             // 0x10
-        int   isCursorVisible;                          // 0x18
-        int   screenDimensions[2];                      // 0x1C
-        float screenAspect;                             // 0x24
-        float fps;                                      // 0x28
-    }; // Size = 0x2C
-
-    struct Font_s
-    {
-        const char      *fontName;                      // 0x00
-        int              pixelHeight;                   // 0x04
-        int              glyphCount;                    // 0x08
-        struct Material *material;                      // 0x0C
-        struct Material *glowMaterial;                  // 0x10
-        struct Glyph    *glyphs;                        // 0x14
-    }; // Size = 0x18
-
-    struct KeyState
-    {
-        int         down;                               // 0x00
-        int         repeats;                            // 0x04
-        const char *binding;                            // 0x08
-        const char *binding2;                           // 0x0C
-    }; // Size = 0x10
-#pragma pack(pop)
-
     enum
     {
         Menu_PaintAll_a                     = 0x5CA9A2,
         TopLevelExceptionFilter_a           = 0x5FF510,
     };
-
-    extern UiContext       *dc;
-    extern ScreenPlacement *scrPlace;
-    extern KeyState        *keys;
-
-    // Rendering functions
-    extern Font_s *(__cdecl *R_RegisterFont)(const char *font, int imageTrac);
-    extern void *(__cdecl *Material_RegisterHandle)(const char *materialName,
-        int imageTrac);
-    extern void (__cdecl *CG_DrawRotatedPic)(ScreenPlacement *scrPlace, float x, float y,
-        float width, float height, float angle, const float *color, void *material);
-    extern void (__cdecl *CL_DrawTextPhysicalInternal)(const char *text, int maxChars,
-        void *font, float x, float y, float xScale, float yScale, float rotation,
-        int style);
-    extern int (__cdecl *UI_TextWidthInternal)(const char *text, int maxChars,
-        void *font, float scale);
-    extern void (__cdecl *CG_GameMessage)(int localClientNum, const char *msg, int length);
-
-    Font_s *UI_GetFontHandle(ScreenPlacement *scrPlace, int fontEnum);
-    float UI_TextWidth(const char *text, int maxChars,
-        Font_s *font, float scale);
-    float UI_TextHeight(Font_s *font, float scale);
-    void UI_FillRect(ScreenPlacement *scrPlace, float x, float y, float width,
-        float height, int horzAlign, int veryAlign, const float *color);
-    void UI_DrawRect(ScreenPlacement *scrPlace, float x, float y, float width,
-        float height, int horzAlign, int vertAlign, float size, const float *color);
-    void UI_DrawText(ScreenPlacement *scrPlace, const char *text,
-        int maxChars, void *font, float x, float y, float scale,
-        float angle, const float *color, int style);
-    void CG_DrawRotatedPicPhysical(ScreenPlacement *scrPlace, float x, float y,
-        float width, float height, float angle, const float *color, void *material);
-    float R_NormalizedTextScale(Font_s *font, float scale);
-    void CL_DrawTextPhysical(const char *text, int maxChars,
-        void *font, float x, float y, float xScale, float yScale,
-        float rotation, const float *color, int style);
-    void ScrPlace_ApplyRect(ScreenPlacement *scrPlace,
-        float *x, float *y, float *w, float *h, int horzAlign, int vertAlign);
-    float R_TextWidth(const char *text, int maxChars, Font_s *font);
-    float R_TextHeight(Font_s *font);
-    void DrawSketchPicGun(ScreenPlacement *scrPlace, rectDef_s *rect,
-        const float *color, struct Material *material, int ratio);
-    int Key_StringToKeynum(const char *name);
-    bool Key_IsDown(const char *bind);
 
     // Detours for menu drawing 
     extern void __usercall* Menu_PaintAll;

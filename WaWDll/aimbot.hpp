@@ -7,38 +7,33 @@ namespace GameData
     enum
     {
         AimTarget_GetTagPos_0_a             = 0x4039C0,
+        CL_CreateNewCommands_a              = 0x63E994,
     };
 
     extern void __usercall *AimTarget_GetTagPos_0;
     void AimTarget_GetTagPos_0DetourInvoke(centity_s *cent, unsigned short bone, float *out);
-
-    WeaponDef *BG_GetWeaponDef(int weapon);
-    void BG_GetSpreadForWeapon(playerState_s *ps, WeaponDef *weap, float *minSpread,
-        float *maxSpread);
-    void CG_BulletEndPos(int commandTime, float spread, float *start,
-        float *end, float *dir, const float *forwardDir, const float *rightDir,
-        const float *upDir, float maxRange);
+        
+    extern void (__cdecl *CL_CreateNewCommands)();
+    void CL_CreateNewCommandsDetourInvoke();
+    void CL_CreateNewCommandsDetour();
 }
 
 struct Aimbot
 {
     // The angles needed to be set to my player to aim at target
     vec3_t      targetAngles;
-    // The index in the cg_entitiesArray structure to access this target
-    int         target;
-    //// Refereence to the menu variable; used to tell if aimbot should be used
-    //OptionData &enableAimbot;
-    //// Refereence to the menu variable; used to trigger aimbot if set
-    //OptionData &aimKey;
-    //// Refereence to the menu variable; used to tell if the aimbot should fire the 
-    //// gun automatically when a target it found
-    //OptionData &autoShoot;
+    // Refereence to the menu variable; used to tell if aimbot should be used
+    OptionData &enableAimbot;
+    // Refereence to the menu variable; used to trigger aimbot if set
+    OptionData &aimKey;
+    // Refereence to the menu variable; used to tell if the aimbot should fire the 
+    // gun automatically when a target it found
+    OptionData &autoShoot;
 
-    Aimbot() : 
-        target(-1)
-       /* enableAimbot(Menu::Instance().GetOptionData(AIMBOT_MENU, "Enable Aimbot")),
+    Aimbot() :
+        enableAimbot(Menu::Instance().GetOptionData(AIMBOT_MENU, "Enable Aimbot")),
         aimKey(Menu::Instance().GetOptionData(AIMBOT_MENU, "Aim Key")),
-        autoShoot(Menu::Instance().GetOptionData(AIMBOT_MENU, "Auto Shoot"))*/ {}
+        autoShoot(Menu::Instance().GetOptionData(AIMBOT_MENU, "Auto Shoot")) {}
 
     static Aimbot &Instance() { static Aimbot aimbot; return aimbot; }
 
@@ -47,13 +42,6 @@ struct Aimbot
      *        and sets my player angles to them.
     **/
     bool ExecuteAimbot();
-
-    /**
-     * @brief Returns if the target specified in arg is visible and targetable 
-     * @param target A pointer to game structure of the target.
-     * @return If the player is able to be targeted
-    **/
-    static bool ValidTarget(GameData::centity_s *target);
 
     /**
      * @brief Gets the closest visible player and returns their index
@@ -77,8 +65,8 @@ struct Aimbot
      *
      * For some reason, after a player uses silent aimbot through passing in the 
      * custom angles, the player's movement isn't tracked correctly anymore. This
-     * function solves this issue, but I shamefully admit I do not understand the math
-     * in how this works. Credit to Mr.Hankey in UnKnoWnCheaTs for this routine:
+     * method solves this issue, but I shamefully admit I do not understand the math
+     * in how this works. Credit to Mr.Hankey in UnKnoWnCheaTs for this method:
      * https://www.unknowncheats.me/forum/counterstrike-global-offensive/150904-le-spinbot.html
     **/
     void FixMovement(GameData::usercmd_s *cmd, float currentAngle, float oldAngle,
@@ -90,7 +78,7 @@ struct Aimbot
      * @param cmd My player's usercmd_s structure
      *
      * This also involves some math I am not too familiar with. This code is based
-     * off a post off UnKnoWnCheaTs as well. Credits to kokole:
+     * off the game's DrawBulletImpacts function and a post off UnKnoWnCheaTs by kokole:
      * https://www.unknowncheats.me/forum/call-of-duty-black-ops/99319-perfect-spread.html
     **/
     void RemoveSpread(GameData::playerState_s *ps, GameData::usercmd_s *cmd) const;

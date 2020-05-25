@@ -68,6 +68,58 @@ namespace GameData
             ret
         }
     }
+
+    // Aimbot is performed on this detour
+    void (__cdecl *CL_CreateNewCommands)() = (void (__cdecl *)())CL_CreateNewCommands_a;
+    void __declspec(naked) CL_CreateNewCommandsDetourInvoke()
+    {
+        __asm
+        {
+            pushad
+            call        CL_CreateNewCommandsDetour
+            popad
+            pop         edi
+            pop         esi
+            pop         ebx
+            add         esp, 78h
+            ret
+        }
+    }
+    void CL_CreateNewCommandsDetour()
+    {
+        Menu &menu = Menu::Instance();
+        Aimbot &aimbot = Aimbot::Instance();
+        GameData::EnterCriticalSection(&menu.critSection);
+
+        GameData::usercmd_s *ncmd = &GameData::clientActive->cmds[GameData::clientActive->cmdNumber + 1 & 0x7F];
+        GameData::usercmd_s *ccmd = &GameData::clientActive->cmds[GameData::clientActive->cmdNumber & 0x7F];
+        GameData::usercmd_s *ocmd = &GameData::clientActive->cmds[GameData::clientActive->cmdNumber - 1 & 0x7F];
+
+        ocmd->serverTime++;
+
+        bool aimbotRun = false;
+        bool isShooting = GameData::Key_IsDown("+attack");
+        if (aimbot.enableAimbot.data.boolean)
+        {
+            if ((aimbot.aimKey.data.integer == 1 && isShooting)
+                || (aimbot.aimKey.data.integer == 2 && GameData::Key_IsDown("+speed_throw"))
+                || !aimbot.aimKey.data.integer)
+            {
+                aimbotRun = aimbot.ExecuteAimbot();
+                if (aimbotRun)
+                    aimbot.SetAngles();
+            }
+        }
+
+        if (aimbot.autoShoot.data.boolean && (aimbotRun || isShooting))
+        {
+            ccmd->button_bits &= ~1;
+            ocmd->button_bits |= 1;
+        }
+
+        GameData::LeaveCriticalSection(&menu.critSection);
+    }
+
 }
 
 bool Aimbot::ExecuteAimbot()
@@ -90,23 +142,6 @@ bool Aimbot::ExecuteAimbot()
         }
     }
     return false;
-}
-
-bool Aimbot::ValidTarget(GameData::centity_s *target)
-{
-    // Check if same entity index as me
-    if (target->nextState.number == GameData::cgameGlob->clientNum)
-        return 0;
-
-    // Check if they have a valid object map
-    WORD handle = GameData::clientObjMap[target->nextState.number];
-    if (!handle)
-        return 0;
-
-    // Check for correct flags and not ragdoll
-    return target->alive & 2
-       && target->nextState.lerp.eFlags == 16
-       && !target->pose.isRagdoll && !target->pose.ragdollHandle;
 }
 
 int Aimbot::GetAimbotTarget() const

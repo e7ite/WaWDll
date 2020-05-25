@@ -24,6 +24,37 @@ using QWORD = unsigned __int64;
 namespace GameData
 {
 #pragma pack(push, 1)
+    struct UiContext
+    {
+        int   contentIndex;                             // 0x00
+        float bias;                                     // 0x04
+        int   realTime;                                 // 0x08
+        int   frameTime;                                // 0x0C
+        float cursorPos[2];                             // 0x10
+        int   isCursorVisible;                          // 0x18
+        int   screenDimensions[2];                      // 0x1C
+        float screenAspect;                             // 0x24
+        float fps;                                      // 0x28
+    }; // Size = 0x2C
+
+    struct Font_s
+    {
+        const char      *fontName;                      // 0x00
+        int              pixelHeight;                   // 0x04
+        int              glyphCount;                    // 0x08
+        struct Material *material;                      // 0x0C
+        struct Material *glowMaterial;                  // 0x10
+        struct Glyph    *glyphs;                        // 0x14
+    }; // Size = 0x18
+
+    struct KeyState
+    {
+        int         down;                               // 0x00
+        int         repeats;                            // 0x04
+        const char *binding;                            // 0x08
+        const char *binding2;                           // 0x0C
+    }; // Size = 0x10
+    
     struct ScreenPlacement
     {
         float scaleVirtualToReal[2];                    // 0x00
@@ -585,16 +616,19 @@ namespace GameData
     };
 #pragma pack(pop)
 
-    extern centity_s      *cg_entitiesArray;
-    extern cg_s           *cgameGlob;
-    extern clientActive_t *clientActive;
-    extern WORD           *clientObjMap;
-    extern BYTE           *objBuf;
-    extern int            *cl_connectionState;
-    extern HWND           *hwnd;
-    extern scrVmPub_t     *gScrVmPub;
-    extern gentity_s      *g_entities;
-    extern snd_voice_t    *snd_voicesArray;
+    extern centity_s       *cg_entitiesArray;
+    extern cg_s            *cgameGlob;
+    extern clientActive_t  *clientActive;
+    extern WORD            *clientObjMap;
+    extern BYTE            *objBuf;
+    extern int             *cl_connectionState;
+    extern HWND            *hwnd;
+    extern scrVmPub_t      *gScrVmPub;
+    extern gentity_s       *g_entities;
+    extern snd_voice_t     *snd_voicesArray;
+    extern UiContext       *dc;
+    extern ScreenPlacement *scrPlace;
+    extern KeyState        *keys;
 
     enum
     {
@@ -621,7 +655,6 @@ namespace GameData
         CG_TraceCapsule_a                   = 0x46D5B0,
         CG_DrawRotatedPicPhysical_a         = 0x43E3C0,
         AimTarget_IsTargetVisible_a         = 0x403CA0,
-        BG_GetSpreadForWeapon_a             = 0x41DB20,
         DrawSketchPicGun_a                  = 0x42CC30,
         CG_GetPlayerViewOrigin_a            = 0x468A00,
         RandomBulletDir_a                   = 0x4E54C0,
@@ -636,6 +669,7 @@ namespace GameData
         Scr_AddInt_a                        = 0x42A2B0,
         Scr_AddString_a                     = 0x69A7E0,
         Scr_AddVector_a                     = 0x69A940,
+        BG_GetSpreadForWeapon_a             = 0x41DB20,
         DB_FindXAssetEntry_a                = 0x48D760,
         FS_WriteFile_a                      = 0x5DC050,
         FS_ReadFile_a                       = 0x5DBFB0,
@@ -659,6 +693,9 @@ namespace GameData
     extern void (__stdcall *EnterCriticalSection)(LPCRITICAL_SECTION lpCriticalSection);
     extern void (__stdcall *LeaveCriticalSection)(LPCRITICAL_SECTION lpCriticalSection);
 
+    // Weapon
+    WeaponDef *BG_GetWeaponDef(int weapon);
+
     // Command
     extern void (__cdecl *Cmd_ExecuteSingleCommand)(int localClientNum,
         int controllerIndex, const char *text);
@@ -674,6 +711,46 @@ namespace GameData
     int __usercall AimTarget_GetTagPos(int localClientNum, centity_s *cent,
         unsigned __int16 tagname, float *pos);
     bool __usercall AimTarget_IsTargetVisible(centity_s *cent, unsigned short bone);
+
+    // Rendering functions
+    extern Font_s *(__cdecl *R_RegisterFont)(const char *font, int imageTrac);
+    extern void *(__cdecl *Material_RegisterHandle)(const char *materialName,
+        int imageTrac);
+    extern void (__cdecl *CG_DrawRotatedPic)(ScreenPlacement *scrPlace, float x, float y,
+        float width, float height, float angle, const float *color, void *material);
+    extern void (__cdecl *CL_DrawTextPhysicalInternal)(const char *text, int maxChars,
+        void *font, float x, float y, float xScale, float yScale, float rotation,
+        int style);
+    extern int (__cdecl *UI_TextWidthInternal)(const char *text, int maxChars,
+        void *font, float scale);
+    extern void (__cdecl *CG_GameMessage)(int localClientNum, const char *msg, int length);
+
+    Font_s *__usercall UI_GetFontHandle(ScreenPlacement *scrPlace, int fontEnum);
+    float __usercall UI_TextWidth(const char *text, int maxChars,
+        Font_s *font, float scale);
+    float __usercall UI_TextHeight(Font_s *font, float scale);
+    void __usercall UI_FillRect(ScreenPlacement *scrPlace, float x, float y, float width,
+        float height, int horzAlign, int veryAlign, const float *color);
+    void __usercall UI_DrawRect(ScreenPlacement *scrPlace, float x, float y, float width,
+        float height, int horzAlign, int vertAlign, float size, const float *color);
+    void __usercall UI_DrawText(ScreenPlacement *scrPlace, const char *text,
+        int maxChars, void *font, float x, float y, float scale,
+        float angle, const float *color, int style);
+    void __usercall CG_DrawRotatedPicPhysical(ScreenPlacement *scrPlace, float x, float y,
+        float width, float height, float angle, const float *color, void *material);
+    void __usercall CL_DrawTextPhysical(const char *text, int maxChars,
+        void *font, float x, float y, float xScale, float yScale,
+        float rotation, const float *color, int style);
+    void __usercall ScrPlace_ApplyRect(ScreenPlacement *scrPlace,
+        float *x, float *y, float *w, float *h, int horzAlign, int vertAlign);
+    float __usercall R_NormalizedTextScale(Font_s *font, float scale);
+    float __usercall R_TextWidth(const char *text, int maxChars, Font_s *font);
+    float __usercall R_TextHeight(Font_s *font);
+    void __usercall DrawSketchPicGun(ScreenPlacement *scrPlace, rectDef_s *rect,
+        const float *color, struct Material *material, int ratio);
+    int __usercall Key_StringToKeynum(const char *name);
+    bool Key_IsDown(const char *bind);
+
 
     // GSC Script
     void Scr_SetParameters(int count);
@@ -815,3 +892,10 @@ bool CopyTextToClipboard(const std::string &text);
  * formatted string and output it using the game's error function
 **/
 std::string FormatError(DWORD lastError);
+
+/**
+ * @brief Returns if the target specified in arg is visible and targetable 
+ * @param target A pointer to game structure of the target.
+ * @return If the player is able to be targeted
+**/
+bool ValidTarget(GameData::centity_s *target);

@@ -545,3 +545,20 @@ std::string FormatError(DWORD lastError)
         NULL, lastError, SUBLANG_DEFAULT, (LPSTR)&message, 0, NULL);
     return message;
 }
+
+bool ValidTarget(GameData::centity_s *target)
+{
+    // Check if same entity index as me
+    if (target->nextState.number == GameData::cgameGlob->clientNum)
+        return 0;
+
+    // Check if they have a valid object map
+    WORD handle = GameData::clientObjMap[target->nextState.number];
+    if (!handle)
+        return 0;
+
+    // Check for correct flags and not ragdoll
+    return target->alive & 2
+       && target->nextState.lerp.eFlags == 16
+       && !target->pose.isRagdoll && !target->pose.ragdollHandle;
+}
