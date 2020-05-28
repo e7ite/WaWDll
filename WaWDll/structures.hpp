@@ -19,8 +19,6 @@
 // invoke the function pointer afterward to resume program flow.
 #define __userpurge
 
-using QWORD = unsigned __int64;
-
 // Nasty test code tht runs once. Only use this when for testing and make sure
 // to remove later!
 // Credit to StackOverflow answer for the preprocessor hack for generating a random
@@ -35,8 +33,8 @@ using QWORD = unsigned __int64;
 static bool name = false;    \
 if (!name)                   \
 {                            \
-code                         \
-name = true;                 \
+    code                     \
+    name = true;             \
 }
 #define TEST(code) TESTIMPL(code, UNIQUE_NAME(a))
 #endif
@@ -714,6 +712,9 @@ namespace GameData
         Material_RegisterHandle_a           = 0x6E9C00,
         CG_DrawRotatedPic_a                 = 0x43E570,
         Cmd_ExecuteSingleCommmand_a         = 0x594ED0,
+        Scr_GetFunction_a                   = 0x66EA30,
+        CScr_GetFunction_a                  = 0x5676F0,
+        CScr_GetFunctionProjectSpecific_a   = 0x52F0B0,
         Dvar_FindVar_a                      = 0x5EDE30,
         CL_DrawTextPhysical_a               = 0x6F5F10,
         UI_TextWidth_a                      = 0x5B5EC0,
@@ -826,16 +827,21 @@ namespace GameData
     int __usercall Key_StringToKeynum(const char *name);
     bool Key_IsDown(const char *bind);
 
-
     // GSC Script
     void Scr_SetParameters(int count);
     void Scr_AddFloat(float value);
     void Scr_AddInt(int value);
     void Scr_AddString(const char *string);
     void Scr_AddVector(const float *value);
+    void (__cdecl *GetFunction(scriptInstance_t inst, const char **pName, int *type))();
+
+    extern void (__cdecl *(__cdecl *Scr_GetFunction)(const char **pName, int *type))();
+    extern void (__cdecl *(__cdecl *CScr_GetFunction)(const char **pName))();
+    extern void (__cdecl *(__cdecl *CScr_GetFunctionProjectSpecific)(const char **pName, int *type))();
 
     // Player data
     extern int (__cdecl *CG_GetPlayerWeapon)(playerState_s *ps, int localClientNum);
+    extern void (__cdecl *RandomBulletDir)(int randSeed, float *x, float *y);
 
     bool __usercall CG_GetPlayerViewOrigin(int localClientNum, playerState_s *ps, float out[3]);
 
@@ -867,12 +873,12 @@ namespace GameData
     
     // IO
     extern FILE *(__cdecl *FileWrapper_Open)(const char *filename, const char *mode);
-    extern void (__cdecl *RandomBulletDir)(int randSeed, float *x, float *y);
 
     int __usercall FS_WriteFile(const char *filename, const void *buffer, int size);
     int __usercall FS_ReadFile(const char *qpath, void **buffer);
     void __usercall FS_FreeFile(void *buffer);
     XAsset __usercall DB_FindXAsset(XAssetType type);
+
 }
 
 struct vec3_t
@@ -933,8 +939,17 @@ namespace Fonts
     extern Font normalFont;
 }
 
+struct DetourData
+{
+    PVOID *targetFunction;
+    PVOID *detourFunction;
+
+    DetourData(PVOID *targetFunction, PVOID *detourFunction)
+        : targetFunction(targetFunction), detourFunction(detourFunction) {}
+};
+
 // All the functions to detour and where to detour to inserted into an 8 byte digit
-extern std::vector<QWORD> detours;
+extern std::vector<DetourData> detours;
 // Local storage of the used game dvar structure
 extern std::unordered_map<const char *, GameData::dvar_s *> dvars;
 

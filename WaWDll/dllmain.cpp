@@ -7,6 +7,7 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
     {
         case DLL_PROCESS_ATTACH:
         {
+            // Create a debug console, set its title and redirect stdout to it
             if (!AllocConsole())
                 GameData::Com_Error(0, FormatError(GetLastError()).c_str());
             if (!SetConsoleTitle("WaW Hack"))
@@ -16,6 +17,7 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
             if (errno_t err = freopen_s(&f, "CONOUT$", "w", stdout))
                 GameData::Com_Error(0, "Failed to open stdout stream! %s", strerror_s<0x40>(errDesc, err));
 
+            // Detour all the functions designated
             InsertDetour(&GameData::Menu_PaintAll, GameData::Menu_PaintAllDetourInvoke);
             InsertDetour(&GameData::TopLevelExceptionFilter, GameData::TopLevelExceptionFilterDetour);
             InsertDetour(&GameData::CL_WritePacket, GameData::CL_WritePacketDetour);
@@ -32,25 +34,14 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
         break;
         case DLL_PROCESS_DETACH:
         {
-            std::stringstream errs;
-            bool errorOccurred = false;
+            // Free the allocated console
             if (!FreeConsole())
-            {
-                errorOccurred = true;
-                errs << FormatError(GetLastError()) << std::endl;
-            }
-            if (fclose(stdout) == EOF)
-            {
-                errorOccurred = true;
-                errs << FormatError(GetLastError()) << std::endl;
-            }
+                GameData::Com_Error(0, FormatError(GetLastError()).c_str());
 
-            for (const auto &i : detours)
-                RemoveDetour(i);
+            // Remove all the detours used
+            for (auto i : detours)
+                DetourRemove(i.targetFunction, i.detourFunction);
             detours.clear();
-
-            if (errorOccurred)
-                GameData::Com_Error(0, errs.str().c_str());
         }
         break;
     }

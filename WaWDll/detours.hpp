@@ -74,7 +74,6 @@ namespace GameData
     int Com_PrintfDetour(int channel, const char *format, ...);
  }
 
-void DetourFunction(DWORD targetFunction, DWORD detourFunction);
-void DetourRemove(DWORD targetFunction, DWORD detourFunction);
-void RemoveDetour(QWORD bytes);
+void DetourFunction(PVOID *targetFunction, PVOID *detourFunction);
+void DetourRemove(PVOID *targetFunction, PVOID *detourFunction);
 void InsertDetour(LPVOID targetFunction, LPVOID detourFunction);

@@ -35,6 +35,12 @@ namespace GameData
         = (void(*)(int, int, const char *))Cmd_ExecuteSingleCommmand_a;
     dvar_s *(__cdecl *Dvar_FindVar)(const char *dvarName)
         = (dvar_s *(*)(const char *))Dvar_FindVar_a;
+    void(__cdecl *(__cdecl *Scr_GetFunction)(const char **pName, int *type))()
+        = (void (__cdecl *(__cdecl *)(const char **, int *))())Scr_GetFunction_a;
+    void (__cdecl *(__cdecl *CScr_GetFunction)(const char **pName))()
+        = (void (__cdecl *(__cdecl *)(const char **))())CScr_GetFunction_a;
+    void(__cdecl *(__cdecl *CScr_GetFunctionProjectSpecific)(const char **, int *))()
+        = (void (__cdecl *(__cdecl *)(const char **, int *))())CScr_GetFunctionProjectSpecific_a;
     int (__cdecl *CG_GetPlayerWeapon)(playerState_s *ps, int localClientNum)
         = (int (__cdecl *)(playerState_s *, int))CG_GetPlayerWeapon_a;
     void (__cdecl *RandomBulletDir)(int randSeed, float *x, float *y)
@@ -324,6 +330,23 @@ namespace GameData
         }
     }
 
+    void (__cdecl *GetFunction(scriptInstance_t inst, const char **pName, int *type))()
+    {
+        if (inst)
+        {
+            return Scr_GetFunction(pName, type);
+        }
+        else
+        {
+            *type = 0;
+            void(__cdecl *result)();
+            result = CScr_GetFunction(pName);
+            if (!result)
+                result = CScr_GetFunctionProjectSpecific(pName, type);
+            return result;
+        }
+    }
+
     int FS_WriteFile(const char *filename, const void *buffer, int limit)
     {
         int result;
@@ -437,7 +460,7 @@ namespace GameData
     }
 }
 
-std::vector<QWORD> detours;
+std::vector<DetourData> detours;
 std::unordered_map<const char *, GameData::dvar_s *> dvars;
 
 Fonts::Font Fonts::normalFont = { 1, "fonts/normalFont" };
@@ -544,7 +567,7 @@ std::string FormatError(DWORD lastError)
     LPSTR message;
     FormatMessage(
         FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL, lastError, SUBLANG_DEFAULT, (LPSTR)&message, 0, NULL);
+        NULL, lastError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&message, 0, NULL);
     return message;
 }
 

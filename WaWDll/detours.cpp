@@ -211,7 +211,7 @@ namespace GameData
     
         GameData::LeaveCriticalSection(&menu.critSection);
         return result;
-}
+    }
 
     int (__cdecl *Com_Printf)(int channel, const char *format, ...)
         = (int (__cdecl *)(int, const char *, ...))Com_Printf_a;
@@ -226,10 +226,10 @@ namespace GameData
 
         va_end(ap);
         return 0;
-}
+    }
 }
 
-void DetourFunction(DWORD targetFunction, DWORD detourFunction)
+void DetourFunction(PVOID *targetFunction, PVOID *detourFunction)
 {
     // Initiate Detour Transcation API
     DetourTransactionBegin();
@@ -239,15 +239,14 @@ void DetourFunction(DWORD targetFunction, DWORD detourFunction)
     DetourUpdateThread(GetCurrentThread());
 
     // Allocates the Detour for the Target Function
-    DetourAttach(reinterpret_cast<PVOID *>(targetFunction),
-        reinterpret_cast<PVOID *>(detourFunction));
+    DetourAttach(targetFunction, detourFunction);
 
     // Overwrites the first instruction in the target function to jmp
     // to Detour before returning to target function to restore program flow
     DetourTransactionCommit();
 }
 
-void DetourRemove(DWORD targetFunction, DWORD detourFunction)
+void DetourRemove(PVOID *targetFunction, PVOID *detourFunction)
 {
     // Initiate Detour Transcation API 
     DetourTransactionBegin();
@@ -257,8 +256,7 @@ void DetourRemove(DWORD targetFunction, DWORD detourFunction)
     DetourUpdateThread(GetCurrentThread());
 
     // Deallocates the Detour for the Target Function
-    DetourDetach(reinterpret_cast<PVOID *>(targetFunction),
-        reinterpret_cast<PVOID *>(detourFunction));
+    DetourDetach(targetFunction, detourFunction);
 
     // Restores overwritten instructions of Target Function
     // and restores Target Function Pointer to point to original
@@ -266,14 +264,8 @@ void DetourRemove(DWORD targetFunction, DWORD detourFunction)
     DetourTransactionCommit();
 }
 
-void RemoveDetour(QWORD bytes)
-{
-    DetourRemove((bytes & ((QWORD)UINT_MAX << 32)) >> 32,
-        (bytes & UINT_MAX));
-}
-
 void InsertDetour(LPVOID targetFunction, LPVOID detourFunction)
 {
-    detours.push_back(((QWORD)targetFunction << 32) | (QWORD)detourFunction);
-    DetourFunction((DWORD)targetFunction, (DWORD)detourFunction);
+    detours.push_back(DetourData((PVOID *)targetFunction, (PVOID *)detourFunction));
+    DetourFunction((PVOID *)targetFunction, (PVOID *)detourFunction);
 }
