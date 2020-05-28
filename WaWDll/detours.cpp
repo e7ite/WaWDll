@@ -152,7 +152,7 @@ namespace GameData
     {
         LPCSTR notifyString = SL_ConvertToString(stringValue);
         if (!strcmp(notifyString, "spawned_player"))
-            printf("born\n");
+            std::cout << "born" << std::endl;
         if (!strcmp(notifyString, "weapon_fired"))
             UI_PlaySound(0, "grenade_bounce_glass");
 

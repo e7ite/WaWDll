@@ -21,6 +21,26 @@
 
 using QWORD = unsigned __int64;
 
+// Nasty test code tht runs once. Only use this when for testing and make sure
+// to remove later!
+// Credit to StackOverflow answer for the preprocessor hack for generating a random
+// variable name 
+#ifdef _DEBUG
+#define PP_CAT(a,b) PP_CAT_I(a, b)
+#define PP_CAT_I(a, b) PP_CAT_II(~, a ## b)
+#define PP_CAT_II(p, res) res
+#define UNIQUE_NAME(base) PP_CAT(base, __COUNTER__)
+
+#define TESTIMPL(code, name) \
+static bool name = false;    \
+if (!name)                   \
+{                            \
+code                         \
+name = true;                 \
+}
+#define TEST(code) TESTIMPL(code, UNIQUE_NAME(a))
+#endif
+
 namespace GameData
 {
 #pragma pack(push, 1)
@@ -74,6 +94,58 @@ namespace GameData
         float subScreen[2];                             // 0x70
     }; // Size = 0x78
 
+    struct scr_entref_t
+    {
+        unsigned int classnum : 16;                     // 0x00
+        unsigned int entnum   : 16;                     // 0x02
+    }; // Size = 0x04
+
+    struct hudelem_s
+    {
+        int   type;                                     // 0x00
+        float x;                                        // 0x04
+        float y;                                        // 0x08
+        float z;                                        // 0x0C
+        int   targetEntNum;                             // 0x10
+        char  pad00[0x10];                              // 0x14
+        int   font;                                     // 0x24
+        int   alignOrg;                                 // 0x28
+        int   alignScreen;                              // 0x2C
+        int   rgba;                                     // 0x30
+        char  pad01[0x10];                              // 0x34
+        int   width;                                    // 0x44
+        int   height;                                   // 0x48
+        int   materialIndex;                            // 0x4C
+        char  pad02[0x4];                               // 0x50
+        int   fromAlignOrg;                             // 0x54
+        int   fromAlignScreen;                          // 0x58
+        int   fromwidth;                                // 0x5C
+        int   fromheight;                               // 0x60
+        char  pad03[0x8];                               // 0x64
+        int   fromX;                                    // 0x6C
+        int   fromY;                                    // 0x70
+        char  pad04[0x8];                               // 0x74
+        int   time;                                     // 0x7C
+        int   duration;                                 // 0x80
+        char  pad05[0x4];                               // 0x84
+        int   text;                                     // 0x88
+        char  pad06[0x8];                               // 0x8C
+        int   fxBirthTime;                              // 0x94
+        int   fxLetterTime;                             // 0x98
+        int   fxDecayStartTime;                         // 0x9C
+        int   fxDecayDuration;                          // 0xA0
+        int   soundID;                                  // 0xA4
+        char  pad07[0x4];                               // 0xA8
+    }; // Size = 0xAC
+
+    struct game_hudelem_s
+    {
+        hudelem_s elem;                                 // 0x00
+        int clientNum;                                  // 0xAC
+        int team;                                       // 0xB0
+        int archived;                                   // 0xB4
+    }; // Size = 0xB8
+
     struct LerpEntityState
     {
         int  eFlags;                                    // 0x000
@@ -92,37 +164,39 @@ namespace GameData
 
     struct playerState_s
     {
-        int   commandTime;                              // 0x0000
-        int   pm_type;                                  // 0x0004
-        int   bobCycle;                                 // 0x0008
-        int   pm_flags;                                 // 0x000C
-        int   weapFlags;                                // 0x0010
-        int   otherFlags;                               // 0x0014
-        int   pm_time;                                  // 0x0018
-        int   loopSoundFade;                            // 0x001C
-        float origin[3];                                // 0x0020
-        float velocity[3];                              // 0x002C
-        char  pad00[0x44];                              // 0x0038
-        float delta_angles[3];                          // 0x007C
-        char  pad01[0x70];                              // 0x0088
-        int   clientNum;                                // 0x00F8
-        int   offHandIndex;                             // 0x00FC
-        int   renderOptions;                            // 0x0100
-        int   weapon;                                   // 0x0104
-        char  pad02[0x8];                               // 0x0108
-        float fWeaponPosFrac;                           // 0x0110
-        char  pad03[0x4];                               // 0x0114
-        int   spreadOverride;                           // 0x0118
-        int   spreadOverrideState;                      // 0x011C
-        int   viewmodelIndex;                           // 0x0120
-        float viewangles[3];                            // 0x0124
-        char  pad04[0x34];                              // 0x0130
-        int   health;                                   // 0x0164
-        char  pad05[0x4];                               // 0x0168
-        int   maxHealth;                                // 0x016C
-        char  pad06[0x7A4];                             // 0x0170
-        float aimSpreadScale;                           // 0x0914
-        char  pad07[0x1794];                            // 0x0918
+        int       commandTime;                              // 0x0000
+        int       pm_type;                                  // 0x0004
+        int       bobCycle;                                 // 0x0008
+        int       pm_flags;                                 // 0x000C
+        int       weapFlags;                                // 0x0010
+        int       otherFlags;                               // 0x0014
+        int       pm_time;                                  // 0x0018
+        int       loopSoundFade;                            // 0x001C
+        float     origin[3];                                // 0x0020
+        float     velocity[3];                              // 0x002C
+        char      pad00[0x44];                              // 0x0038
+        float     delta_angles[3];                          // 0x007C
+        char      pad01[0x70];                              // 0x0088
+        int       clientNum;                                // 0x00F8
+        int       offHandIndex;                             // 0x00FC
+        int       renderOptions;                            // 0x0100
+        int       weapon;                                   // 0x0104
+        char      pad02[0x8];                               // 0x0108
+        float     fWeaponPosFrac;                           // 0x0110
+        char      pad03[0x4];                               // 0x0114
+        int       spreadOverride;                           // 0x0118
+        int       spreadOverrideState;                      // 0x011C
+        int       viewmodelIndex;                           // 0x0120
+        float     viewangles[3];                            // 0x0124
+        char      pad04[0x34];                              // 0x0130
+        int       health;                                   // 0x0164
+        char      pad05[0x4];                               // 0x0168
+        int       maxHealth;                                // 0x016C
+        char      pad06[0x7A4];                             // 0x0170
+        float     aimSpreadScale;                           // 0x0914
+        char      pad07[0x2BC];                             // 0x0918
+        hudelem_s current[0x1F];                            // 0x0BD4
+        char      pad08[0x4];                               // 0x20A8
     }; // Size = 0x20AC
 
     struct cpose_t
@@ -413,16 +487,15 @@ namespace GameData
         int            clientMask;                      // 0x04
         int            broadcastTime;                   // 0x08
         char           pad00[0x8];                      // 0x0C
-        float          mins[3];                         // 0x10
-        float          maxs[3];                         // 0x1C
-        int            contents;                        // 0x28
-        float          absmin[3];                       // 0x2C
-        float          absmax[3];                       // 0x38
-        float          currentOrigin[3];                // 0x44
-        float          currentAngles[3];                // 0x50
-        EntHandle      ownerNum;                        // 0x5C
-        int            eventTime;                       // 0x60
-        char           pad01[0x4];                      // 0x64
+        float          mins[3];                         // 0x14
+        float          maxs[3];                         // 0x20
+        int            contents;                        // 0x2C
+        float          absmin[3];                       // 0x30
+        float          absmax[3];                       // 0x3C
+        float          currentOrigin[3];                // 0x48
+        float          currentAngles[3];                // 0x54
+        EntHandle      ownerNum;                        // 0x60
+        int            eventTime;                       // 0x64
     }; // Size = 0x68
 
     struct clientState_s
@@ -491,8 +564,7 @@ namespace GameData
         struct sentient_s *sentient;                    // 0x188
         char               pad00[0xC];                  // 0x18C 
         unsigned short     model;                       // 0x198
-        char               pad01[0x142];                // 0x19A
-        unsigned short     attachModelNames[0x13];      // 0x2DC
+        char               pad01[0x1DE];                // 0x19A
     }; // Size = 0x378
 
     union SoundFileRef
@@ -621,11 +693,14 @@ namespace GameData
     extern clientActive_t  *clientActive;
     extern WORD            *clientObjMap;
     extern BYTE            *objBuf;
-    extern int             *cl_connectionState;
     extern HWND            *hwnd;
     extern scrVmPub_t      *gScrVmPub;
     extern gentity_s       *g_entities;
+    extern WeaponDef      **bg_weaponVariantDefs;
     extern snd_voice_t     *snd_voicesArray;
+    extern cgs_t           *cgs;
+    extern actor_s         *actors;
+    extern int             *cl_connectionState;
     extern UiContext       *dc;
     extern ScreenPlacement *scrPlace;
     extern KeyState        *keys;

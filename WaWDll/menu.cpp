@@ -3,10 +3,6 @@
 
 namespace GameData
 {
-    UiContext       *dc                           = (UiContext*)0x208E920;
-    ScreenPlacement *scrPlace                     = (ScreenPlacement*)0x957360;
-    KeyState        *keys                         = (KeyState*)0x951C44;
-
     Font_s *(__cdecl *R_RegisterFont)(const char *font, int imageTrac)
         = (Font_s *(*)(const char *, int))R_RegisterFont_a;
     void *(__cdecl *Material_RegisterHandle)(const char *materialName, int imageTrac)
@@ -342,7 +338,7 @@ namespace GameData
             menu.Execute();
 
         RenderESP();
-
+       
         LeaveCriticalSection(&menu.critSection);
     }
 }
@@ -373,6 +369,7 @@ Menu::Menu() :
     timer(0)
 {
     GameData::InitializeCriticalSection(&this->critSection);
+
 
     for (int sub = MAIN_MENU; sub <= HUD_MENU; sub++)
         this->options.push_back(std::unordered_map<std::string, Option>());

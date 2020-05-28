@@ -16,9 +16,11 @@ namespace GameData
     cgs_t           *cgs                              = (cgs_t *)0x3466578;
     actor_s         *actors                           = (actor_s *)0x176C874;
     int             *cl_connectionState               = (int *)0x305842C;
+    UiContext       *dc                               = (UiContext *)0x208E920;
+    ScreenPlacement *scrPlace                         = (ScreenPlacement *)0x957360;
+    KeyState        *keys                             = (KeyState *)0x951C44;
 
-    int (__stdcall *MessageBoxA)(HWND hWnd, LPCSTR lpText,
-        LPCSTR lpCaption, UINT uType)
+    int (__stdcall *MessageBoxA)(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType)
         = *(int (__stdcall **)(HWND, LPCSTR, LPCSTR, UINT))MessageBoxA_a;
     DWORD (__stdcall *timeGetTime)() = *(DWORD (__stdcall **)())timeGetTime_a;
     void (__stdcall *InitializeCriticalSection)(LPCRITICAL_SECTION lpCriticalSection)
@@ -28,8 +30,8 @@ namespace GameData
     void (__stdcall *LeaveCriticalSection)(LPCRITICAL_SECTION lpCriticalSection)
         = *(void (__stdcall **)(LPCRITICAL_SECTION))LeaveCriticalSection_a;
 
-    void (__cdecl *Cmd_ExecuteSingleCommand)(int localClientNum,
-        int controllerIndex, const char *text)
+    void (__cdecl *Cmd_ExecuteSingleCommand)(int localClientNum, int controllerIndex, 
+        const char *text)
         = (void(*)(int, int, const char *))Cmd_ExecuteSingleCommmand_a;
     dvar_s *(__cdecl *Dvar_FindVar)(const char *dvarName)
         = (dvar_s *(*)(const char *))Dvar_FindVar_a;
@@ -558,7 +560,6 @@ bool ValidTarget(GameData::centity_s *target)
         return 0;
 
     // Check for correct flags and not ragdoll
-    return target->alive & 2
-       && target->nextState.lerp.eFlags == 16
-       && !target->pose.isRagdoll && !target->pose.ragdollHandle;
+    return target->alive & 2 && target->nextState.lerp.eFlags == 16 
+        && !target->pose.isRagdoll && !target->pose.ragdollHandle;
 }

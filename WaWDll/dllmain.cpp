@@ -7,18 +7,13 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
     {
         case DLL_PROCESS_ATTACH:
         {
-#ifdef _DEBUG
-            GameData::Dvar_FindVar("r_fullbright")->current.enabled = true;
-#endif
-
             if (!AllocConsole())
                 GameData::Com_Error(0, FormatError(GetLastError()).c_str());
             if (!SetConsoleTitle("WaW Hack"))
                 GameData::Com_Error(0, FormatError(GetLastError()).c_str());
             FILE *f;
-            errno_t err;
             char errDesc[0x40] = { 0 };
-            if ((err = freopen_s(&f, "CONOUT$", "w", stdout)))
+            if (errno_t err = freopen_s(&f, "CONOUT$", "w", stdout))
                 GameData::Com_Error(0, "Failed to open stdout stream! %s", strerror_s<0x40>(errDesc, err));
 
             InsertDetour(&GameData::Menu_PaintAll, GameData::Menu_PaintAllDetourInvoke);
@@ -32,7 +27,7 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
             InsertDetour(&GameData::IN_MouseEvent, GameData::IN_MouseEventDetour);
             InsertDetour(&GameData::VM_Notify, GameData::VM_NotifyDetourInvoke);
             InsertDetour(&GameData::CG_DamageFeedback, GameData::CG_DamageFeedbackDetourInvoke);
-            InsertDetour(&GameData::Com_Printf, GameData::Com_PrintfDetour);
+            //InsertDetour(&GameData::Com_Printf, GameData::Com_PrintfDetour);
         }
         break;
         case DLL_PROCESS_DETACH:

@@ -96,6 +96,7 @@
       <BufferSecurityCheck>
       </BufferSecurityCheck>
       <PrecompiledHeaderFile>stdafx.hpp</PrecompiledHeaderFile>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
