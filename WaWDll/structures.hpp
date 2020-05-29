@@ -422,6 +422,19 @@ namespace GameData
         SCRIPT_INSTANCE_MAX   = 0x2,
     };
 
+    union sval_u
+    {
+        char         type;                              // 0x01
+        unsigned int stringValue;                       // 0x04
+        unsigned int idValue;                           // 0x04
+        float        floatValue;                        // 0x04
+        int          intValue;                          // 0x04
+        sval_u      *node;                              // 0x04
+        unsigned int sourcePosValue;                    // 0x04
+        const char  *codePosValue;                      // 0x04
+        const char  *debugString;                       // 0x04
+    }; // Size = 0x04
+
     struct VariableValue
     {
         union VariableUnion
