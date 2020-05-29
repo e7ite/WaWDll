@@ -552,7 +552,6 @@ void Menu::CloseSub()
 
 bool Menu::BoolModify(const std::string &varName)
 {
-|   void(__cdecl *func)() = GameData::GetFunction();
     OptionData &var = this->GetOptionData(this->currentSub, varName);
     return var.data.boolean = !var.data.boolean;
 }

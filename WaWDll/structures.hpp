@@ -828,16 +828,16 @@ namespace GameData
     bool Key_IsDown(const char *bind);
 
     // GSC Script
+    extern void (__cdecl *(__cdecl *Scr_GetFunction)(const char **pName, int *type))();
+    extern void (__cdecl *(__cdecl *CScr_GetFunction)(const char **pName))();
+    extern void (__cdecl *(__cdecl *CScr_GetFunctionProjectSpecific)(const char **pName, int *type))();
+
     void Scr_SetParameters(int count);
     void Scr_AddFloat(float value);
     void Scr_AddInt(int value);
     void Scr_AddString(const char *string);
     void Scr_AddVector(const float *value);
     void (__cdecl *GetFunction(scriptInstance_t inst, const char **pName, int *type))();
-
-    extern void (__cdecl *(__cdecl *Scr_GetFunction)(const char **pName, int *type))();
-    extern void (__cdecl *(__cdecl *CScr_GetFunction)(const char **pName))();
-    extern void (__cdecl *(__cdecl *CScr_GetFunctionProjectSpecific)(const char **pName, int *type))();
 
     // Player data
     extern int (__cdecl *CG_GetPlayerWeapon)(playerState_s *ps, int localClientNum);
@@ -878,7 +878,6 @@ namespace GameData
     int __usercall FS_ReadFile(const char *qpath, void **buffer);
     void __usercall FS_FreeFile(void *buffer);
     XAsset __usercall DB_FindXAsset(XAssetType type);
-
 }
 
 struct vec3_t
