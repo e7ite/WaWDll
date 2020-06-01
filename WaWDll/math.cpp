@@ -68,6 +68,58 @@ namespace GameData
     }
 }
 
+vec3_t vec3_t::operator+(const vec3_t &vec) const
+{
+    return vec3_t(this->x + vec.x, this->y + vec.y, this->z + vec.z);
+}
+
+vec3_t vec3_t::operator+(float vec[3]) const
+{
+    return vec3_t(this->x + vec[0], this->y + vec[1], this->z + vec[2]);
+}
+
+vec3_t vec3_t::operator-(const vec3_t &vec) const
+{
+    return vec3_t(this->x - vec.x, this->y - vec.y, this->z - vec.z);
+}
+
+vec3_t vec3_t::operator-(float vec[3]) const
+{
+    return vec3_t(this->x - vec[0], this->y - vec[1], this->z - vec[2]);
+}
+
+vec3_t &vec3_t::operator+=(const vec3_t &vec)
+{
+    this->x += vec.x;
+    this->y += vec.y;
+    this->z += vec.z;
+    return *this;
+}
+
+vec3_t &vec3_t::operator+=(float vec[3])
+{
+    this->x += vec[0];
+    this->y += vec[1];
+    this->z += vec[2];
+    return *this;
+}
+
+vec3_t &vec3_t::operator-=(const vec3_t &vec)
+{
+    this->x -= vec.x;
+    this->y -= vec.y;
+    this->z -= vec.z;
+    return *this;
+}
+
+vec3_t &vec3_t::operator-=(float vec[3])
+{
+    this->x -= vec[0];
+    this->y -= vec[1];
+    this->z -= vec[2];
+    return *this;
+}
+
 float DegreesToRadians(float deg)
 {
     return deg * pi() / 180.0f;

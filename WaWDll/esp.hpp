@@ -1,6 +1,8 @@
 #pragma once
 
-#include "structures.hpp"
+#include "game_entities.hpp"
+#include "nonhost_menu.hpp"
+#include "aimbot.hpp"
 
 /**
  * @brief Iterates through game entities and draws a bordered box on zombies

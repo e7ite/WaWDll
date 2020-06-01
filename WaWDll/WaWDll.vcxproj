@@ -96,6 +96,7 @@
       <BufferSecurityCheck>
       </BufferSecurityCheck>
       <PrecompiledHeaderFile>stdafx.hpp</PrecompiledHeaderFile>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -165,25 +166,29 @@ call "load.cmd"</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="aimbot.cpp" />
-    <ClCompile Include="detours.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="esp.cpp" />
+    <ClCompile Include="host_menu.cpp" />
     <ClCompile Include="math.cpp" />
-    <ClCompile Include="menu.cpp" />
+    <ClCompile Include="nonhost_menu.cpp" />
+    <ClCompile Include="sound.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdafx.hpp</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="structures.cpp" />
+    <ClCompile Include="game_entities.cpp" />
+    <ClCompile Include="weapon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aimbot.hpp" />
-    <ClInclude Include="detours.hpp" />
     <ClInclude Include="esp.hpp" />
     <ClInclude Include="math.hpp" />
-    <ClInclude Include="menu.hpp" />
+    <ClInclude Include="host_menu.hpp" />
+    <ClInclude Include="nonhost_menu.hpp" />
+    <ClInclude Include="sound.hpp" />
     <ClInclude Include="stdafx.hpp" />
-    <ClInclude Include="structures.hpp" />
+    <ClInclude Include="game_entities.hpp" />
+    <ClInclude Include="weapon.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

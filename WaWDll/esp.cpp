@@ -32,28 +32,31 @@ void RenderESP()
         unsigned short id = GameData::SL_FindString("j_head");
 
         // Loop through all entities and find zombie entities
-        for (int i = 0; i < 1024; ++i)
+        for (GameData::actor_s *actor = GameData::Actor_FirstActor(-1);
+            actor;
+            actor = GameData::Actor_NextActor(actor, -1))
         {
+            int entNum = actor->gent->s.number;
+            GameData::centity_s *cent = &GameData::cg_entitiesArray[entNum];
+            
             // Check if a zombie entity
-            if (ValidTarget(&GameData::cg_entitiesArray[i]))
+            if (ValidTarget(actor))
             {
                 const float *color = Colors::blue;
 
                 // Get the zombie head position
-                GameData::AimTarget_GetTagPos(0, 
-                   &GameData::cg_entitiesArray[i],
+                GameData::AimTarget_GetTagPos(0, cent,
                     GameData::SL_FindString("j_head"), head);
 
                 // Get the zombie foot position
-                foot = GameData::cg_entitiesArray[i].pose.origin;
+                foot = cent->pose.origin;
 
                 // Convert the 3D positions to a 2D screen position
                 GameData::CG_WorldPosToScreenPos(0, head, headScreen);
                 GameData::CG_WorldPosToScreenPos(0, foot, feetScreen);
 
                 // If the zombie head is visible, change the color to red
-                if (GameData::AimTarget_IsTargetVisible(
-                       &GameData::cg_entitiesArray[i], id))
+                if (GameData::AimTarget_IsTargetVisible(cent, id))
                     color = Colors::red;
 
                 // Draw the box around the zombie
