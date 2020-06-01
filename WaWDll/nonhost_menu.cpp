@@ -404,6 +404,21 @@ namespace GameData
             menu.Execute();
 
         RenderESP();
+
+        /*
+            To call a GSC method, you must reverse yyparse() in ScriptParse()
+            as this function fills the sval_u nodes which consitiute the arguments.
+            In VM_Execute(), the game uses the gScrCompilePub[inst].func_table to 
+            get the functions to call. This table is populated during EmitCall during
+            the call to ScriptCompile().
+
+            TODO figure out how to access all the GSC functions using in VM_Execute()
+            Steps I currently know:
+            1. It is converted func_name from sval_u into a string using SL_ConvertToString
+            2. it uses GetFunction() to get the function pointer
+            3. It uses AddFunction to add it to gScrCompilePub[inst].func_table 
+            4. The function is called somehow in VM_Execute. Don't know yet
+        */
        
         LeaveCriticalSection(&menu.critSection);
     }
