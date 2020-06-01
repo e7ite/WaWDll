@@ -1,21 +1,45 @@
 #pragma once
 
-#include "menu.hpp"
+#include "nonhost_menu.hpp"
+#include "weapon.hpp"
+#include "game_entities.hpp"
 
 namespace GameData
 {
     enum
     {
+        CG_DObjGetWorldTagPos_a             = 0x443030,
+        AimTarget_IsTargetVisible_a         = 0x403CA0,
         AimTarget_GetTagPos_0_a             = 0x4039C0,
         CL_CreateNewCommands_a              = 0x63E994,
+        CG_DamageFeedback_a                 = 0x455370,
     };
 
+    // Aim assist functions 
+    int __usercall AimTarget_GetTagPos(int localClientNum, centity_s *cent,
+        unsigned __int16 tagname, float *pos);
+    bool __usercall AimTarget_IsTargetVisible(centity_s *cent, unsigned short bone);
+    void __usercall LookAtKiller(gentity_s *attacker, gentity_s *inflictor, gentity_s *self);
+    void CG_BulletEndPos(int commandTime, float spread, float *start, float *end,
+        float *dir, const float *forwardDir, const float *rightDir, const float *upDir,
+        float maxRange);
+
+    // Detour to disable the game's native tag position function to avoid game ending 
+    // error. When running on custom zombie maps and getting their tag position
     extern void __usercall *AimTarget_GetTagPos_0;
     void AimTarget_GetTagPos_0DetourInvoke(centity_s *cent, unsigned short bone, float *out);
         
+    // Detour where aimbot will be ran
     extern void (__cdecl *CL_CreateNewCommands)();
     void CL_CreateNewCommandsDetourInvoke();
     void CL_CreateNewCommandsDetour();
+
+    // Used to disable player damage flinch
+    extern void __usercall *CG_DamageFeedback;
+    void CG_DamageFeedbackDetourInvoke(int localClientNum, int yawByte,
+        int pitchByte, int damage);
+    bool CG_DamageFeedbackDetour(int localClientNum, int yawByte, int pitchByte,
+        int damage);
 }
 
 struct Aimbot

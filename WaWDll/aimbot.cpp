@@ -3,18 +3,58 @@
 
 namespace GameData
 {
-    void BG_GetSpreadForWeapon(playerState_s *ps, WeaponDef *weap, float *minSpread,
-        float *maxSpread)
+    int __usercall AimTarget_GetTagPos(int localClientNum, centity_s *cent,
+        unsigned __int16 tagname, float *pos)
     {
-        DWORD addr = BG_GetSpreadForWeapon_a;
+        bool result;
+        DWORD CG_DObjGetWorldTagPos = CG_DObjGetWorldTagPos_a;
+
+        WORD handle = clientObjMap[cent->nextState.number + 0x880 * localClientNum];
+        if (!handle)
+            return 0;
+
+        DWORD dobj = (DWORD)objBuf + 0x68 * handle;
+        if (!dobj)
+            return 0;
+
         __asm
         {
-            mov         esi, ps
-            mov         edx, minSpread
-            mov         ecx, maxSpread
-            push        weap
+            mov         edi, dobj
+            movzx       ecx, tagname
+            push        pos
+            push        cent
+            call        CG_DObjGetWorldTagPos
+            add         esp, 8
+            mov         result, al
+        }
+
+        return result;
+    }
+
+    bool __usercall AimTarget_IsTargetVisible(centity_s *cent, unsigned short bone)
+    {
+        bool result;
+        DWORD addr = AimTarget_IsTargetVisible_a;
+        __asm
+        {
+            movzx       eax, bone
+            push        cent
             call        addr
+            mov         result, al
             add         esp, 4
+        }
+        return result;
+    }
+
+    void __usercall LookAtKiller(gentity_s *attacker, gentity_s *inflictor, gentity_s *self)
+    {
+        DWORD addr = LookAtKiller_a;
+        __asm
+        {
+            mov         eax, attacker
+            mov         ecx, inflictor
+            mov         esi, self
+            call        addr
         }
     }
 
@@ -50,8 +90,6 @@ namespace GameData
         }
     }
 
-    // Do not let the game run its usual tag position function as it has error checks which
-    // close the game. 
     void __usercall *AimTarget_GetTagPos_0 = (void __usercall *)AimTarget_GetTagPos_0_a;
     void __declspec(naked) AimTarget_GetTagPos_0DetourInvoke(centity_s *cent,
         unsigned short bone, float *out)
@@ -69,7 +107,6 @@ namespace GameData
         }
     }
 
-    // Aimbot is performed on this detour
     void (__cdecl *CL_CreateNewCommands)() = (void (__cdecl *)())CL_CreateNewCommands_a;
     void __declspec(naked) CL_CreateNewCommandsDetourInvoke()
     {
@@ -120,6 +157,44 @@ namespace GameData
         GameData::LeaveCriticalSection(&menu.critSection);
     }
 
+    void __usercall *CG_DamageFeedback = (void __usercall *)CG_DamageFeedback_a;
+    void __declspec(naked) CG_DamageFeedbackDetourInvoke(int localClientNum,
+        int yawByte, int pitchByte, int damage)
+    {
+        __asm
+        {
+            push        ecx
+            push        ebp
+            mov         ebp, esp
+            push        [ebp + 0Ch] ; damage
+            push        eax         ; pitchByte
+            push        edx         ; yawByte
+            push        [ebp + 8]
+            call        CG_DamageFeedbackDetour
+            add         esp, 10h
+            pop         ebp
+            pop         ecx
+            test        al, al
+            jnz         CONTINUE_FLOW
+            ret
+    CONTINUE_FLOW:
+            sub         esp, 28h
+            mov         ecx, dword ptr[8F435Ch]
+            push        00455379h
+            ret
+        }
+    }
+    bool CG_DamageFeedbackDetour(int localClientNum, int yawByte, int pitchByte,
+        int damage)
+    {
+        Menu &menu = Menu::Instance();
+        GameData::EnterCriticalSection(&menu.critSection);
+
+        bool result = !Menu::Instance().GetOptionData(MISC_MENU, "No Flinch").data.boolean;
+    
+        GameData::LeaveCriticalSection(&menu.critSection);
+        return result;
+    }
 }
 
 bool Aimbot::ExecuteAimbot()
@@ -153,10 +228,14 @@ int Aimbot::GetAimbotTarget() const
     float *myPos = GameData::cgameGlob->predictedPlayerState.origin;
 
     // Loop through all entities and find zombie entities
-    for (int i = 0; i < 1024; i++)
+    for (GameData::actor_s *actor = GameData::Actor_FirstActor(-1);
+        actor;
+        actor = GameData::Actor_NextActor(actor, -1))
     {
-        GameData::centity_s *cent = &GameData::cg_entitiesArray[i];
-        if (ValidTarget(cent)
+        int entNum = actor->gent->s.number;
+        GameData::centity_s *cent = &GameData::cg_entitiesArray[entNum];
+
+        if (ValidTarget(actor)
            && GameData::AimTarget_GetTagPos(0, cent, id, enemyPos))
         {
             // Find closest visible zombie and get their index
@@ -165,7 +244,7 @@ int Aimbot::GetAimbotTarget() const
                 if (float distance = Distance3D(myPos, enemyPos);
                     distance < closestDistance)
                 {
-                    index = i;
+                    index = entNum;
                     closestDistance = distance;
                 }
             }

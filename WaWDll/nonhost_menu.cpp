@@ -1,8 +1,26 @@
 #include "stdafx.hpp"
-#include "menu.hpp"
+#include "nonhost_menu.hpp"
 
 namespace GameData
 {
+    int             *cl_connectionState = (int *)0x305842C;
+    UiContext       *uiDC               = (UiContext *)0x208E920;
+    ScreenPlacement *scrPlace           = (ScreenPlacement *)0x957360;
+    KeyState        *keys               = (KeyState *)0x951C44;
+    HWND            *hwnd               = (HWND *)0x22C1BE4;
+
+    int (__stdcall *MessageBoxA)(HWND hWnd, LPCSTR lpText,
+        LPCSTR lpCaption, UINT uType)
+        = *(int (__stdcall **)(HWND, LPCSTR, LPCSTR, UINT))MessageBoxA_a;
+    DWORD (__stdcall *timeGetTime)() = *(DWORD (__stdcall **)())timeGetTime_a;
+    void (__stdcall *InitializeCriticalSection)(LPCRITICAL_SECTION lpCriticalSection)
+        = *(void (__stdcall **)(LPCRITICAL_SECTION))InitializeCriticalSection_a;
+    void (__stdcall *EnterCriticalSection)(LPCRITICAL_SECTION lpCriticalSection)
+        = *(void (__stdcall **)(LPCRITICAL_SECTION))EnterCriticalSection_a;
+    void (__stdcall *LeaveCriticalSection)(LPCRITICAL_SECTION lpCriticalSection)
+        = *(void (__stdcall **)(LPCRITICAL_SECTION))LeaveCriticalSection_a;
+    dvar_s *(__cdecl *Dvar_FindVar)(const char *dvarName)
+        = (dvar_s *(*)(const char *))Dvar_FindVar_a;
     Font_s *(__cdecl *R_RegisterFont)(const char *font, int imageTrac)
         = (Font_s *(*)(const char *, int))R_RegisterFont_a;
     void *(__cdecl *Material_RegisterHandle)(const char *materialName, int imageTrac)
@@ -11,17 +29,65 @@ namespace GameData
         float width, float height, float angle, const float *color, void *material)
         = (void (*)(ScreenPlacement *, float, float,
             float, float, float, const float*, void*))CG_DrawRotatedPic_a;
-    void (__cdecl *CL_DrawTextPhysicalInternal)(const char *text, int maxChars,
+    void (__cdecl *R_AddCmdDrawStretchPicInternal)(const char *text, int maxChars,
         void *font, float x, float y, float xScale, float yScale, float rotation, int style)
         = (void (__cdecl *)(const char *, int, void *, float, float, 
             float, float, float, int))CL_DrawTextPhysical_a;
     int (__cdecl *UI_TextWidthInternal)(const char *text, int maxChars,
         void *font, float scale)
-        = (int(*)(const char *, int, void *, float))UI_TextWidth_a;
+        = (int (*)(const char *, int, void *, float))UI_TextWidth_a;
+    char *(__cdecl *va)(const char *fmt, ...) 
+        = (char *(__cdecl *)(const char *, ...))va_a;
     void (__cdecl *CG_GameMessage)(int localClientNum, const char *msg, int length)
         = (void (__cdecl *)(int, const char *, int))CG_GameMessage_a;
+    void (__cdecl *Com_Error)(int code, const char *fmt, ...)
+        = (void (__cdecl *)(int, const char *, ...))Com_Error_a;
 
-    Font_s *UI_GetFontHandle(ScreenPlacement *scrPlace, int fontEnum)
+    void __usercall Cbuf_AddText(const char *cmd)
+    {
+        DWORD addr = Cbuf_AddText_a;
+        __asm
+        {
+            mov         ecx, 0
+            mov         eax, cmd
+            call        addr
+        }
+    }
+
+    unsigned int Sys_Milliseconds()
+    {
+        return GameData::timeGetTime() - *(int *)0x22BEC34;
+    }
+    
+    bool IN_IsForegroundWindow()
+    {
+        return *(bool *)(0x229A0D4);
+    }
+
+    const char *SL_ConvertToString(int stringValue)
+    {
+        const char **gScrMemTreePub = (const char **)0x3702390;
+        return *gScrMemTreePub + ((stringValue * 2 + stringValue) * 4) + 4;
+    }
+
+    unsigned short __usercall SL_FindString(const char *tagname)
+    {
+        unsigned short result;
+        unsigned int len = strlen(tagname) + 1;
+        DWORD addr = SL_FindString_a;
+        __asm
+        {
+            mov         eax, 0
+            push        len
+            push        tagname
+            call        addr
+            add         esp, 8
+            mov         result, ax
+        }
+        return result;
+    }
+
+    Font_s *__usercall UI_GetFontHandle(ScreenPlacement *scrPlace, int fontEnum)
     {
         DWORD addr = UI_GetFontHandle_a;
         Font_s *result;
@@ -39,7 +105,7 @@ namespace GameData
         return result;
     }
 
-    float UI_TextWidth(const char *text, int maxChars,
+    float __usercall UI_TextWidth(const char *text, int maxChars,
         Font_s *font, float scale)
     {
         float result;
@@ -63,7 +129,7 @@ namespace GameData
             floor(font->pixelHeight * R_NormalizedTextScale(font, scale) + 0.5));
     }
 
-    void UI_DrawRect(ScreenPlacement *scrPlace, float x, float y, float width,
+    void __usercall UI_DrawRect(ScreenPlacement *scrPlace, float x, float y, float width,
         float height, int horzAlign, int vertAlign, float thickness, const float *color)
     {
         DWORD addr = UI_DrawRect_a;
@@ -90,7 +156,7 @@ namespace GameData
         }
     }
 
-    void UI_FillRect(ScreenPlacement *scrPlace, float x, float y, float width,
+    void __usercall UI_FillRect(ScreenPlacement *scrPlace, float x, float y, float width,
         float height, int horzAlign, int vertAlign, const float *color)
     {
         DWORD addr = UI_FillRect_a;
@@ -117,7 +183,7 @@ namespace GameData
         }
     }
 
-    void UI_DrawText(ScreenPlacement *scrPlace, const char *text,
+    void __usercall UI_DrawText(ScreenPlacement *scrPlace, const char *text,
         int maxChars, void *font, float x, float y, float scale,
         float angle, const float *color, int style)
     {
@@ -140,7 +206,7 @@ namespace GameData
         }
     }
 
-    void CL_DrawTextPhysical(const char *text, int maxChars,
+    void __usercall R_AddCmdDrawStretchPic(const char *text, int maxChars,
         void *font, float x, float y, float xScale, float yScale,
         float rotation, const float *color, int style)
     {
@@ -162,12 +228,12 @@ namespace GameData
             push        maxChars
             push        text
             mov         ecx, color
-            call        CL_DrawTextPhysicalInternal
+            call        R_AddCmdDrawStretchPicInternal
             add         esp, 24h
         }
     }
 
-    void ScrPlace_ApplyRect(ScreenPlacement *scrPlace,
+    void __usercall ScrPlace_ApplyRect(ScreenPlacement *scrPlace,
         float *x, float *y, float *w, float *h, int horzAlign, int vertAlign)
     {
         DWORD addr = ScrPlace_ApplyRect_a;
@@ -185,7 +251,7 @@ namespace GameData
         }
     }
 
-    void CG_DrawRotatedPicPhysical(ScreenPlacement *scrPlace, float x, float y,
+    void __usercall CG_DrawRotatedPicPhysical(ScreenPlacement *scrPlace, float x, float y,
         float width, float height, float angle, const float *color, void *material)
     {
         DWORD addr = CG_DrawRotatedPicPhysical_a;
@@ -209,7 +275,7 @@ namespace GameData
         }
     }
 
-    int Key_StringToKeynum(const char *name)
+    int __usercall Key_StringToKeynum(const char *name)
     {
         DWORD result;
         DWORD addr = Key_StringToKeynum_a;
@@ -242,7 +308,7 @@ namespace GameData
         return static_cast<float>(font->pixelHeight);
     }
 
-    float R_TextWidth(const char *text, int maxChars, Font_s *font)
+    float __usercall R_TextWidth(const char *text, int maxChars, Font_s *font)
     {
         DWORD addr = R_TextWidth_a;
         float result;
@@ -259,7 +325,7 @@ namespace GameData
         return result;
     }
 
-    void DrawSketchPicGun(ScreenPlacement *scrPlace, rectDef_s *rect,
+    void __usercall DrawSketchPicGun(ScreenPlacement *scrPlace, rectDef_s *rect,
         const float *color, Material *material, int ratio)
     {
         DWORD addr = DrawSketchPicGun_a;
@@ -341,7 +407,117 @@ namespace GameData
        
         LeaveCriticalSection(&menu.critSection);
     }
+    
+    int (__cdecl *Menu_HandleMouseMove)(ScreenPlacement *scrPlace, void *menu)
+        = (int (__cdecl *)(ScreenPlacement *, void *))Menu_HandleMouseMove_a;
+    int Menu_HandleMouseMoveDetour(ScreenPlacement *scrPlace, void *item)
+    {
+        Menu &menu = Menu::Instance();
+        GameData::EnterCriticalSection(&menu.critSection);
+
+        if (!menu.open)
+        { 
+            GameData::LeaveCriticalSection(&menu.critSection);
+            return GameData::Menu_HandleMouseMove(scrPlace, item);
+        }
+    
+        GameData::LeaveCriticalSection(&menu.critSection);
+        return 0;
+    }
+
+    void (__cdecl *CL_KeyEvent)(int localClientNum, int value, int down,
+        unsigned int time) = (void(*)(int, int, int, unsigned int))CL_KeyEvent_a;
+    void CL_KeyEventDetour(int localClientNum, int key, int down, int time)
+    {
+        Menu &menu = Menu::Instance();
+        GameData::EnterCriticalSection(&menu.critSection);
+
+        OptionData &aimKey = menu.GetOptionData(AIMBOT_MENU, "Aim Key");
+        OptionData &autoShoot = menu.GetOptionData(AIMBOT_MENU, "Auto Shoot");
+
+        if (InGame() && GameData::keys[key].binding
+            && !*(int *)0x208E938
+            && (aimKey.data.integer != 1 || !strcmp(GameData::keys[key].binding, "+attack"))
+            && autoShoot.data.boolean)
+            return;
+
+        GameData::LeaveCriticalSection(&menu.critSection);
+        return GameData::CL_KeyEvent(localClientNum, key, down, time);
+    }
+
+    void __usercall *Cbuf_AddTextHook = (void __usercall *)Cbuf_AddText_a;
+    void __declspec(naked) Cbuf_AddTextDetourInvoke(const char *text,
+        int localClientNum)
+    {
+        __asm
+        {
+            push        eax
+            push        ecx
+            push        ecx
+            push        eax
+            call        Cbuf_AddTextDetour
+            add         esp, 8h
+            cmp         al, 0
+            pop         ecx
+            pop         eax
+            jz          LABEL_1
+            push        ebp
+            push        esi
+            push        edi
+            push        22990F8h
+            push        594208h
+            ret
+    LABEL_1:
+            pop         edx
+            jmp         edx
+        }
+    }
+    bool Cbuf_AddTextDetour(const char *text, int localClientNum)
+    {
+        return true;
+    }
+
+    void (__cdecl *IN_MouseEvent)(int mstate) = (void (__cdecl *)(int))IN_MouseEvent_a;
+    void IN_MouseEventDetour(int mstate)
+    {
+        Menu &menu = Menu::Instance();
+        GameData::EnterCriticalSection(&menu.critSection);
+
+        if (!menu.open)
+        {
+            GameData::LeaveCriticalSection(&menu.critSection);
+            return GameData::IN_MouseEvent(mstate);
+        }
+
+        GameData::LeaveCriticalSection(&menu.critSection);
+    }
+
+    int (__cdecl *Com_Printf)(int channel, const char *format, ...)
+        = (int (__cdecl *)(int, const char *, ...))Com_Printf_a;
+    int Com_PrintfDetour(int channel, const char *format, ...)
+    {
+        va_list ap;
+        va_start(ap, format);
+
+        char printBuffer[1024];
+        vsnprintf(printBuffer, 1024, format, ap);
+        printf("%s\n", printBuffer);
+
+        va_end(ap);
+        return 0;
+    }
 }
+
+std::unordered_map<const char *, GameData::dvar_s *> dvars;
+
+Fonts::Font Fonts::normalFont = { 1, "fonts/normalFont" };
+
+Colors::Color Colors::white            = { 255.0f, 255.0f, 255.0f, 255.0f };
+Colors::Color Colors::black            = {   0.0f,   0.0f,   0.0f, 255.0f };
+Colors::Color Colors::red              = { 255.0f,   0.0f,   0.0f, 255.0f };
+Colors::Color Colors::green            = {   0.0f, 255.0f,   0.0f, 255.0f };
+Colors::Color Colors::blue             = {   0.0f,   0.0f, 255.0f, 255.0f };
+Colors::Color Colors::transparentBlack = {   0.0f,   0.0f,   0.0f, 100.0f };
 
 OptionData::OptionData(OptionType type) : type(type)
 {
@@ -591,9 +767,9 @@ void Menu::Wait(int ms)
 void Menu::Execute()
 {
     const char *title = "WaW Zombies DLL By E7ite";
-    float menuCenterX = GameData::dc->screenDimensions[0] / 2
+    float menuCenterX = GameData::uiDC->screenDimensions[0] / 2
         / GameData::scrPlace->scaleVirtualToFull[0];
-    float menuCenterY = GameData::dc->screenDimensions[1] / 2
+    float menuCenterY = GameData::uiDC->screenDimensions[1] / 2
         / GameData::scrPlace->scaleVirtualToFull[1];
 
     // Get x position of text aligned with a background and scaled for all resolutions
@@ -655,10 +831,10 @@ void Menu::Execute()
 bool Menu::MonitorMouse(Option &opt, float optionX, float optionY,
     float optionW, float optionH)
 {
-    if (GameData::dc->cursorPos[0] > optionX
-        && GameData::dc->cursorPos[0] < optionX + optionW
-        && GameData::dc->cursorPos[1] > optionY - optionH
-        && GameData::dc->cursorPos[1] < optionY)
+    if (GameData::uiDC->cursorPos[0] > optionX
+        && GameData::uiDC->cursorPos[0] < optionX + optionW
+        && GameData::uiDC->cursorPos[1] > optionY - optionH
+        && GameData::uiDC->cursorPos[1] < optionY)
     {
         if (this->Ready())
         {
@@ -787,7 +963,7 @@ float AlignText(const char *text, const Fonts::Font &font, float scale, float in
 float RenderGameText(const char *text, float x, float y, float scale,
     const Colors::Color &color, GameData::Font_s *font, float rotation)
 {
-    GameData::CL_DrawTextPhysical(text, INT_MAX, font, x, y,
+    GameData::R_AddCmdDrawStretchPic(text, INT_MAX, font, x, y,
         scale, scale, rotation, color, 0);
 
     return GameData::R_TextHeight(font) * scale;
@@ -860,3 +1036,49 @@ void ReadBytes(DWORD addr, char *buf, size_t len)
     VirtualProtect((LPVOID)addr, len, curProtection, 0);
 }
 
+bool InsertDvar(const char *dvarName, GameData::dvar_s *dvar)
+{
+    GameData::dvar_s *pdvar = dvar ? dvar : GameData::Dvar_FindVar(dvarName);
+    if (!pdvar)
+        return false;
+
+    dvars.insert(std::pair<const char *, GameData::dvar_s *>(dvarName, pdvar));
+    return true;
+}
+
+bool InGame()
+{
+    return dvars.at("cl_ingame")->current.enabled
+        && *GameData::cl_connectionState >= 9;
+}
+
+bool CopyTextToClipboard(const std::string &text)
+{
+    if (!OpenClipboard(*GameData::hwnd))
+        return false;
+    if (!EmptyClipboard())
+        return false;
+
+    size_t len = text.size() + 1;
+    bool state = false;
+    HGLOBAL hg = GlobalAlloc(GMEM_MOVEABLE, len);
+    if (hg)
+    {
+        memcpy(static_cast<LPSTR>(GlobalLock(hg)), text.c_str(), len);
+        GlobalUnlock(hg);
+        state = SetClipboardData(CF_TEXT, hg);
+    }
+
+    CloseClipboard();
+    GlobalFree(hg);
+    return state;
+}
+
+std::string FormatError(DWORD lastError)
+{
+    LPSTR message;
+    FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL, lastError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&message, 0, NULL);
+    return message;
+}

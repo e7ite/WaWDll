@@ -11,12 +11,37 @@ namespace GameData
         Vec3Normalize_a                     = 0x4037C0,
     };
 
-     float __libm_sse2_tan(float x);
-     bool CG_WorldPosToScreenPos(int localClientNum, const float *world, float pos[2]);
-     void vectoangles(const float *vec, float *pos);
-     void AngleVectors(const float *angles, float *forward, float *right, float *up);
-     void Vec3Normalize(float *x);
+    float __libm_sse2_tan(float x);
+    bool CG_WorldPosToScreenPos(int localClientNum, const float *world, float pos[2]);
+    void vectoangles(const float *vec, float *pos);
+    void AngleVectors(const float *angles, float *forward, float *right, float *up);
+    void Vec3Normalize(float *x);
 }
+
+struct vec3_t
+{
+    union
+    {
+        struct { float x, y, z; };
+        struct { float pitch, yaw, roll; };
+    };
+
+    vec3_t(float x = 0.0f, float y = 0.0f, float z = 0.0f)
+        : x(x), y(y), z(z) {}
+    vec3_t(float *vec) { memcpy(this, vec, 0xC); }
+    vec3_t(const vec3_t &vec) { memcpy(this, &vec, 0xC); }
+
+    operator float *() { return (float *)this; }
+
+    vec3_t operator+(const vec3_t &vec) const;
+    vec3_t operator+(float vec[3]) const;
+    vec3_t operator-(const vec3_t &vec) const;
+    vec3_t operator-(float vec[3]) const;
+    vec3_t &operator+=(const vec3_t &vec);
+    vec3_t &operator+=(float vec[3]);
+    vec3_t &operator-=(const vec3_t &vec);
+    vec3_t &operator-=(float vec[3]);
+};
 
 /**
  * @brief Converts an angle in degrees to radians
