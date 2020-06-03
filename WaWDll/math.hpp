@@ -4,11 +4,11 @@ namespace GameData
 {
     enum 
     {
-        __libm_sse2_tan_a                   = 0x7E0892,
-        CG_WorldPosToScreenPos_a            = 0x44CD30,
-        vectoangles_a                       = 0x5DF960,
-        AngleVectors_a                      = 0x5E3150,
-        Vec3Normalize_a                     = 0x4037C0,
+        __libm_sse2_tan_a        = 0x7E0892,
+        CG_WorldPosToScreenPos_a = 0x44CD30,
+        vectoangles_a            = 0x5DF960,
+        AngleVectors_a           = 0x5E3150,
+        Vec3Normalize_a          = 0x4037C0,
     };
 
     float __libm_sse2_tan(float x);

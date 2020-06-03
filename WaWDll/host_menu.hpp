@@ -1,6 +1,7 @@
 #pragma once
 
 #include "game_entities.hpp"
+#include "nonhost_menu.hpp"
 
 namespace GameData
 {
@@ -14,6 +15,13 @@ namespace GameData
     };
 
 #pragma pack(push, 1)
+    struct scr_entref_t
+    {
+        unsigned short classnum;                        // 0x00
+        unsigned short entnum;                          // 0x02
+        unsigned short client;                          // 0x04
+    }; // Size = 0x06
+
     struct VariableValue
     {
         union VariableUnion
@@ -68,36 +76,41 @@ namespace GameData
 
     enum
     {
-        FindVariableIndexInternal_a         = 0x68BC20,
-        FindLastSibling_a                   = 0x68BCA0,
-        Scr_AddFloat_a                      = 0x69A670,
-        Scr_AddInt_a                        = 0x42A2B0,
-        Scr_AddString_a                     = 0x69A7E0,
-        Scr_AddVector_a                     = 0x69A940,
-        Scr_GetFunction_a                   = 0x66EA30,
-        CScr_GetFunction_a                  = 0x5676F0,
-        CScr_GetFunctionProjectSpecific_a   = 0x52F0B0,
-        VM_Notify_a                         = 0x698670,
+        FindVariableIndexInternal_a       = 0x68BC20,
+        FindLastSibling_a                 = 0x68BCA0,
+        Scr_AddFloat_a                    = 0x69A670,
+        Scr_AddInt_a                      = 0x42A2B0,
+        Scr_AddString_a                   = 0x69A7E0,
+        Scr_AddVector_a                   = 0x69A940,
+        Scr_GetFunction_a                 = 0x66EA30,
+        CScr_GetFunction_a                = 0x5676F0,
+        CScr_GetFunctionProjectSpecific_a = 0x52F0B0,
+        Scr_GetMethod_a                   = 0x530630,
+        CScr_GetMethod_a                  = 0x671110,
+        VM_Notify_a                       = 0x698670,
     };
     
     // GSC Script
-    extern void (__cdecl *(__cdecl *Scr_GetFunction)(const char **pName, int *type))();
+    extern void (__cdecl *(__cdecl *Scr_GetFunction)(const char **pName, int *pType))();
     extern void (__cdecl *(__cdecl *CScr_GetFunction)(const char **pName))();
-    extern void (__cdecl *(__cdecl *CScr_GetFunctionProjectSpecific)(const char **pName, int *type))();
+    extern void (__cdecl *(__cdecl *CScr_GetFunctionProjectSpecific)(const char **pName, int *pType))();
+    extern void (__cdecl *(__cdecl *CScr_GetMethod)(const char **pName, int *pType))(scr_entref_t entref);
 
     const char *SL_ConvertToString(int stringValue);
-    void Scr_SetParameters(int count);
-    void Scr_AddFloat(float value);
-    void Scr_AddInt(int value);
-    void Scr_AddString(const char *string);
+    void __usercall Scr_AddFloat(float value);
+    void __usercall Scr_AddInt(int value);
+    void __usercall Scr_AddString(const char *string);
     void Scr_AddVector(const float *value);
-    void (__cdecl *GetFunction(scriptInstance_t inst, const char **pName, int *type))();
+    void (__cdecl *__usercall Scr_GetMethod(const char **pName, int *pType))(scr_entref_t entref);
+    void (__cdecl *GetFunction(scriptInstance_t inst, const char **pName, int *pType))();
+    void (__cdecl *GetMethod(scriptInstance_t inst, const char **pName, int *pType))(scr_entref_t entref);
     unsigned int FindVariable(scriptInstance_t inst,
         unsigned int parentId, unsigned int unsignedValue);
     unsigned int FindObject(scriptInstance_t inst, unsigned int id);
     unsigned int Scr_GetSelf(scriptInstance_t inst, unsigned int threadId);
     unsigned int FindLastSibling(scriptInstance_t inst, unsigned int id);
     int GetVariableKeyObject(scriptInstance_t inst, unsigned int id);
+    void *GetFunctionOrMethod(const char *name, int *funcType);
 
     extern void __usercall *VM_Notify;
     void VM_NotifyDetourInvoke(scriptInstance_t inst, int notifyListOwnerId,

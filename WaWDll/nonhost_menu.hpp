@@ -568,6 +568,13 @@ float RenderUITextWithBackground(const char *text, float x, float y,
 bool CopyTextToClipboard(const std::string &text);
 
 /**
+ * @brief Copys an address in hex into the clipboard
+ * @param address The address tto print
+ * @return If the text was successfully copied to clipboard return true else false
+**/
+bool CopyAddressToClipboard(void *address);
+
+/**
  * @brief Outputs an error message and exits the program
  * @return A formatted string with the error code
  *

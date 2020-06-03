@@ -1089,6 +1089,13 @@ bool CopyTextToClipboard(const std::string &text)
     return state;
 }
 
+bool CopyAddressToClipboard(void *address)
+{
+    std::stringstream str;
+    str << std::hex << address;
+    return CopyTextToClipboard(str.str());
+}
+
 std::string FormatError(DWORD lastError)
 {
     LPSTR message;

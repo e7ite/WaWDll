@@ -5,12 +5,14 @@ namespace GameData
 {
     scrVmPub_t *gScrVmPub = (scrVmPub_t *)0x3BD4700;
 
-    void(__cdecl *(__cdecl *Scr_GetFunction)(const char **pName, int *type))()
+    void (__cdecl *(__cdecl *Scr_GetFunction)(const char **pName, int *pType))()
         = (void (__cdecl *(__cdecl *)(const char **, int *))())Scr_GetFunction_a;
     void (__cdecl *(__cdecl *CScr_GetFunction)(const char **pName))()
         = (void (__cdecl *(__cdecl *)(const char **))())CScr_GetFunction_a;
-    void(__cdecl *(__cdecl *CScr_GetFunctionProjectSpecific)(const char **pName, int *type))()
+    void (__cdecl *(__cdecl *CScr_GetFunctionProjectSpecific)(const char **pName, int *pType))()
         = (void (__cdecl *(__cdecl *)(const char **, int *))())CScr_GetFunctionProjectSpecific_a;
+    void (__cdecl *(__cdecl *CScr_GetMethod)(const char **pName, int *pType))(scr_entref_t entref)
+        = (void (__cdecl *(__cdecl *)(const char **, int *))(scr_entref_t))CScr_GetMethod_a;
 
     unsigned int __usercall FindVariableIndexInternal(scriptInstance_t inst, unsigned int name,
         unsigned int index)
@@ -86,9 +88,26 @@ namespace GameData
             )) >> 8) - 0x10000;
     }
 
-    void Scr_SetParameters(int count)
+    void *GetFunctionOrMethod(const char *name, int *funcType)
     {
-        gScrVmPub[SCRIPTINSTANCE_CLIENT].top->u.intValue = count;
+        int type;
+        void *result = nullptr;
+        for (int i = SCRIPTINSTANCE_SERVER; i < SCRIPT_INSTANCE_MAX; i++)
+        {
+            // Discarding result of name change as overwriting the copy of the func name
+            if ((result = GetFunction((scriptInstance_t)i, &name, &type)))
+            {
+                *funcType = 1;
+                return result;
+            }
+            else if ((result = GetMethod((scriptInstance_t)i, &name, &type)))
+            {
+                *funcType = 0;
+                return result;
+            }
+        }
+        *funcType = -1;
+        return result;
     }
 
     void __usercall Scr_AddFloat(float value)
@@ -142,20 +161,41 @@ namespace GameData
         }
     }
 
-    void (__cdecl *GetFunction(scriptInstance_t inst, const char **pName, int *type))()
+    void (__cdecl *__usercall Scr_GetMethod(const char **pName, int *pType))(scr_entref_t entref)
+    {
+        DWORD addr = Scr_GetMethod_a;
+        void (__cdecl *result)(scr_entref_t);
+        __asm
+        {
+            mov         edi, pName
+            mov         esi, pType
+            call        addr
+            mov         result, eax
+        }
+        return result;
+    }
+
+    void (__cdecl *GetFunction(scriptInstance_t inst, const char **pName, int *pType))()
     {
         if (inst)
         {
-            return Scr_GetFunction(pName, type);
+            return Scr_GetFunction(pName, pType);
         }
         else
         {
-            *type = 0;
+            *pType = 0;
             void (__cdecl *result)() = CScr_GetFunction(pName);
             if (!result)
-                result = CScr_GetFunctionProjectSpecific(pName, type);
+                result = CScr_GetFunctionProjectSpecific(pName, pType);
             return result;
         }
+    }
+
+    void (__cdecl *GetMethod(scriptInstance_t inst, const char **pName, int *pType))(scr_entref_t entref)
+    {
+        if (inst)
+            return CScr_GetMethod(pName, pType);
+        return Scr_GetMethod(pName, pType);
     }
 
     void __usercall *VM_Notify = (void __usercall *)VM_Notify_a;
@@ -204,6 +244,12 @@ namespace GameData
             }
         }
 
+        TEST(
+            const char *str = "magicbullet";
+            int type;
+            CopyAddressToClipboard(GetFunctionOrMethod(str, &type));
+        );
+
         //TEST(
         //    for (int i = 0; i < 0x60C; i += 0xC)
         //        std::cout << *(const char **)(0x8CF678 + i) << std::endl;
@@ -230,5 +276,4 @@ namespace GameData
         //DWORD threadId = GetVariableKeyObject(inst, notifyListIndex);
         int self = Scr_GetSelf(inst, notifyListOwnerId);
     }
-
 }

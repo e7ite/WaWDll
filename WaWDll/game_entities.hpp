@@ -84,13 +84,6 @@ namespace GameData
         int archived;                                   // 0xB4
     }; // Size = 0xB8
 
-    struct scr_entref_t
-    {
-        unsigned short classnum;                        // 0x00
-        unsigned short entnum;                          // 0x02
-        unsigned short client;                          // 0x04
-    }; // Size = 0x06
-
     struct LerpEntityState
     {
         int  eFlags;                                    // 0x000
@@ -412,9 +405,9 @@ namespace GameData
         void (__fastcall **GetStateFunctionTable())(actor_s *, ai_state_t)
         {
             return &((void (__fastcall ***)(actor_s *, ai_state_t))0x8DC3C8)[this->species]
-                [this->eState[this->stateLevel] * 8 - this->eState[this->stateLevel]];
+                [this->eState[this->stateLevel] * 7];
         }
-    }; // Size = 0x31B8  
+    }; // Size = 0x31B8
 
     struct gentity_s
     {
