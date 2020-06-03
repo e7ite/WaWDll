@@ -91,6 +91,6 @@ namespace GameData
 
 bool ValidTarget(GameData::actor_s *target)
 {
-    // Check if AI's level is marked as dead
+    // Check if AI's state is marked as dead
     return target->eState[target->stateLevel] != GameData::AIS_DEATH;
 }

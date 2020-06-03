@@ -4,6 +4,8 @@
 
 namespace GameData
 {
+    void __usercall LookAtKiller(gentity_s *attacker, gentity_s *inflictor, gentity_s *self);
+
     enum scriptInstance_t : int
     {
         SCRIPTINSTANCE_SERVER = 0x0,
@@ -96,7 +98,6 @@ namespace GameData
     unsigned int Scr_GetSelf(scriptInstance_t inst, unsigned int threadId);
     unsigned int FindLastSibling(scriptInstance_t inst, unsigned int id);
     int GetVariableKeyObject(scriptInstance_t inst, unsigned int id);
-
 
     extern void __usercall *VM_Notify;
     void VM_NotifyDetourInvoke(scriptInstance_t inst, int notifyListOwnerId,

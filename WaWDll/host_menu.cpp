@@ -9,7 +9,7 @@ namespace GameData
         = (void (__cdecl *(__cdecl *)(const char **, int *))())Scr_GetFunction_a;
     void (__cdecl *(__cdecl *CScr_GetFunction)(const char **pName))()
         = (void (__cdecl *(__cdecl *)(const char **))())CScr_GetFunction_a;
-    void(__cdecl *(__cdecl *CScr_GetFunctionProjectSpecific)(const char **, int *))()
+    void(__cdecl *(__cdecl *CScr_GetFunctionProjectSpecific)(const char **pName, int *type))()
         = (void (__cdecl *(__cdecl *)(const char **, int *))())CScr_GetFunctionProjectSpecific_a;
 
     unsigned int __usercall FindVariableIndexInternal(scriptInstance_t inst, unsigned int name,
@@ -193,23 +193,25 @@ namespace GameData
                         GameData::g_entities + i,
                         GameData::g_entities + i,
                         GameData::g_entities + GameData::cgameGlob->clientNum);*/
-
-            
+            for (actor_s *actor = Actor_FirstActor(-1);
+                actor;
+                actor = Actor_NextActor(actor, -1))
+            {
+                std::cout << "New\n\n";
+                std::cout << "Species: " << actor->species
+                    << " State: " << actor->eState[actor->stateLevel] << std::endl;
+                std::cout << std::hex << actor->GetStateFunctionTable() << std::endl;
+            }
         }
-        
-        TEST(
-            for (int i = 0; i < 0x60C; i += 0xC)
-                std::cout << *(const char **)(0x8CF678 + i) << std::endl;
-            for (int i = 0; i < 0x48; i += 0xC)
-                std::cout << *(const char **)(0x839F80 + i) << std::endl;
-            for (int i = 0; i < 0x1008; i += 0xC)
-                std::cout << *(const char **)(0x8DABE0 + i) << std::endl;
-        );
 
-        TEST(
-            for (actor_s *actor = Actor_FirstActor(-1); actor; actor = Actor_NextActor(actor, -1))
-                std::cout << std::hex << actor->GetStateFunction() << std::endl;
-        )
+        //TEST(
+        //    for (int i = 0; i < 0x60C; i += 0xC)
+        //        std::cout << *(const char **)(0x8CF678 + i) << std::endl;
+        //    for (int i = 0; i < 0x48; i += 0xC)
+        //        std::cout << *(const char **)(0x839F80 + i) << std::endl;
+        //    for (int i = 0; i < 0x1008; i += 0xC)
+        //        std::cout << *(const char **)(0x8DABE0 + i) << std::endl;
+        //);
 
         //DWORD notifyListId = FindVariable(inst, notifyListOwnerId, 0x15FFE);
         //if (!notifyListId)

@@ -28,6 +28,15 @@ namespace GameData
         AIS_COUNT = 0xC,
     };
 
+    enum AISpecies
+    {
+        AI_SPECIES_ZOMBIE = 0x0,
+        AI_SPECIES_DOG = 0x1,
+    };
+
+    struct gentity_s;
+    struct actor_s;
+
 #pragma pack(push, 1)
     struct hudelem_s
     {
@@ -372,33 +381,40 @@ namespace GameData
 
     struct actor_s
     {
-        struct gentity_s  *gent;                        // 0x000
-        struct sentient_s *sentient;                    // 0x004
-        int                species;                     // 0x008
-        char               pad00[0xB80];                // 0x00C
-        ai_state_t         eState[5];                   // 0xB8C
-        int                eSubState[5];                // 0xBA0
-        unsigned int       stateLevel;                  // 0xBB4
-        int                iStateTIme;                  // 0xBB8
-        int                preThinkTIme;                // 0xBBC
+        struct gentity_s  *gent;                        // 0x0000
+        struct sentient_s *sentient;                    // 0x0004
+        AISpecies          species;                     // 0x0008
+        char               pad00[0x154];                // 0x000C
+        float              currentOrigin[3];            // 0x0160
+        char               pad01[0xA1C];                // 0x016C
+        int                legsAnimDuration;            // 0x0B88
+        ai_state_t         eState[5];                   // 0x0B8C
+        int                eSubState[5];                // 0x0BA0
+        unsigned int       stateLevel;                  // 0x0BB4
+        int                iStateTime;                  // 0x0BB8
+        int                preThinkTIme;                // 0x0BBC
         struct ai_transition_cmd_t
         {
             int eTransition;                                // 0x00
             int eState;                                     // 0x04
-        } StateTransitions[0xB];                        // 0xBC0
-        int                transitionCount;             // 0xC18
-        int                eSimulatedState[5];          // 0xC1C
-        int                simulatedStateLevel;         // 0xC30
-        char               pad01[0x136];                // 0xC34
-        unsigned short     damageWeapon;                // 0xD6A
+        } StateTransitions[0xB];                        // 0x0BC0
+        int                transitionCount;             // 0x0C18
+        int                eSimulatedState[5];          // 0x0C1C
+        int                simulatedStateLevel;         // 0x0C30
+        char               pad02[0x136];                // 0x0C34
+        unsigned short     damageWeapon;                // 0x0D6A
+        char               pad03[0x1C];                 // 0x0D6C
+        int                moveMode;                    // 0x0D88
+        int                eAnimMode;                   // 0x0D8C
+        char               pad04[0x13D2];               // 0x0D90
+        EntHandle          pCloseEnt;                   // 0x2162
 
-
-        void (__fastcall *GetStateFunction())(actor_s *, int)
+        void (__fastcall **GetStateFunctionTable())(actor_s *, ai_state_t)
         {
-            return ((void (__fastcall ***)(actor_s *, int))0x8DC3C8)
-                [this->species][this->eState[0] * 8 - this->eState[0]];
+            return &((void (__fastcall ***)(actor_s *, ai_state_t))0x8DC3C8)[this->species]
+                [this->eState[this->stateLevel] * 8 - this->eState[this->stateLevel]];
         }
-    }; // Current Size = 0xD6C
+    }; // Size = 0x31B8  
 
     struct gentity_s
     {
@@ -410,7 +426,8 @@ namespace GameData
         struct scr_vehicle_s *scr_vehicle;              // 0x18C
         char                  pad00[0x8];               // 0x190 
         unsigned short        model;                    // 0x198
-        char                  pad01[0x1DE];             // 0x19A
+        char                  pad01[0x1A];              // 0x19A
+        int                   flags;                    // 0x1B4
     }; // Size = 0x378
 #pragma pack(pop)
 
