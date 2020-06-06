@@ -62,8 +62,7 @@ namespace GameData
         __asm
         {
             mov         esi, x
-            push        addr
-            ret
+            call        addr
         }
     }
 }
@@ -78,6 +77,11 @@ vec3_t vec3_t::operator+(float vec[3]) const
     return vec3_t(this->x + vec[0], this->y + vec[1], this->z + vec[2]);
 }
 
+vec3_t vec3_t::operator+(float value) const
+{
+    return vec3_t(this->x + value, this->y + value, this->z + value);
+}
+
 vec3_t vec3_t::operator-(const vec3_t &vec) const
 {
     return vec3_t(this->x - vec.x, this->y - vec.y, this->z - vec.z);
@@ -86,6 +90,26 @@ vec3_t vec3_t::operator-(const vec3_t &vec) const
 vec3_t vec3_t::operator-(float vec[3]) const
 {
     return vec3_t(this->x - vec[0], this->y - vec[1], this->z - vec[2]);
+}
+
+vec3_t vec3_t::operator-(float value) const
+{
+    return vec3_t(this->x - value, this->y - value, this->z - value);
+}
+
+vec3_t vec3_t::operator*(const vec3_t &vec) const
+{
+    return vec3_t(this->x * vec.x, this->y * vec.y, this->z * vec.z);
+}
+
+vec3_t vec3_t::operator*(float vec[3]) const
+{
+    return vec3_t(this->x * vec[0], this->y * vec[1], this->z * vec[2]);
+}
+
+vec3_t vec3_t::operator*(float value) const
+{
+    return vec3_t(this->x * value, this->y * value, this->z * value);
 }
 
 vec3_t &vec3_t::operator+=(const vec3_t &vec)
@@ -104,6 +128,14 @@ vec3_t &vec3_t::operator+=(float vec[3])
     return *this;
 }
 
+vec3_t &vec3_t::operator+=(float value)
+{
+    this->x += value;
+    this->y += value;
+    this->z += value;
+    return *this;
+}
+
 vec3_t &vec3_t::operator-=(const vec3_t &vec)
 {
     this->x -= vec.x;
@@ -117,6 +149,38 @@ vec3_t &vec3_t::operator-=(float vec[3])
     this->x -= vec[0];
     this->y -= vec[1];
     this->z -= vec[2];
+    return *this;
+}
+
+vec3_t &vec3_t::operator-=(float value)
+{
+    this->x -= value;
+    this->y -= value;
+    this->z -= value;
+    return *this;
+}
+
+vec3_t &vec3_t::operator*=(const vec3_t &vec)
+{
+    this->x *= vec.x;
+    this->y *= vec.y;
+    this->z *= vec.z;
+    return *this;
+}
+
+vec3_t &vec3_t::operator*=(float vec[3])
+{
+    this->x *= vec[0];
+    this->y *= vec[1];
+    this->z *= vec[2];
+    return *this;
+}
+
+vec3_t &vec3_t::operator*=(float value)
+{
+    this->x *= value;
+    this->y *= value;
+    this->z *= value;
     return *this;
 }
 

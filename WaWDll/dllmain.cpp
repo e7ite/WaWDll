@@ -1,6 +1,7 @@
 #include "stdafx.hpp"
 #include "nonhost_menu.hpp"
 
+// Forward declarations for detours
 namespace GameData
 {
     extern void __usercall *AimTarget_GetTagPos_0;
@@ -98,6 +99,8 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
                 GameData::Com_Error(0, 
                     "freopen_s() %s", 
                     strerror_s<0x40>(errDesc, err));
+
+            std::cout << std::hex << sizeof(GameData::playerState_s) << " " << offsetof(GameData::gclient_s, fGunPitch) <<  std::endl;
 
             // Detour all the functions designated
             InsertDetour(&GameData::Menu_PaintAll, GameData::Menu_PaintAllDetourInvoke);

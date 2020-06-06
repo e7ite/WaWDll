@@ -35,12 +35,22 @@ struct vec3_t
 
     vec3_t operator+(const vec3_t &vec) const;
     vec3_t operator+(float vec[3]) const;
+    vec3_t operator+(float value) const;
     vec3_t operator-(const vec3_t &vec) const;
     vec3_t operator-(float vec[3]) const;
+    vec3_t operator-(float value) const;
+    vec3_t operator*(const vec3_t &vec) const;
+    vec3_t operator*(float vec[3]) const;
+    vec3_t operator*(float value) const;
     vec3_t &operator+=(const vec3_t &vec);
     vec3_t &operator+=(float vec[3]);
+    vec3_t &operator+=(float value);
     vec3_t &operator-=(const vec3_t &vec);
     vec3_t &operator-=(float vec[3]);
+    vec3_t &operator-=(float value);
+    vec3_t &operator*=(const vec3_t &vec);
+    vec3_t &operator*=(float vec[3]);
+    vec3_t &operator*=(float value);
 };
 
 /**
