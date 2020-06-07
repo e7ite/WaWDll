@@ -65,7 +65,7 @@ namespace GameData
         return result;
     }
 
-    int GetVariableKeyObject(scriptInstance_t inst, unsigned int id)
+    unsigned int GetVariableKeyObject(scriptInstance_t inst, unsigned int id)
     {
         WORD *gsvgVariableList = (WORD *)0x3974700;
         int *gScrVarGlobClient = (int *)0x3974708;
@@ -91,7 +91,19 @@ namespace GameData
 
     unsigned int GetVariableName(scriptInstance_t inst, unsigned int id)
     {
-        return *(int *)(0x3974708 + (inst * 0x16000 + id << 4)) >> 8;
+        return *(int *)(0x3974708 + ((inst * 0x16000 + id) << 4)) >> 8;
+    }
+
+    unsigned int FindFirstSibling(scriptInstance_t inst, unsigned int id)
+    {
+        return (DWORD)*(WORD *)(0x391471E + ((inst * 0x16000 + id) << 4));
+    }
+
+    unsigned int FindNextSibling(scriptInstance_t inst, unsigned int id)
+    {
+        unsigned int list = 0x3974700 + 0x160000 * inst;
+        unsigned int nextSibling = (DWORD)*(WORD *)(list + (id << 4) + 0xE);
+        return nextSibling ? *(WORD *)(list + (nextSibling << 4)) : 0;
     }
 
     void __usercall Scr_AddFloat(scriptInstance_t inst, float value)
@@ -171,7 +183,7 @@ namespace GameData
         gScrVmPub[inst].inparamcount = 0;
     }
 
-    int __usercall Scr_GetEntityId(scriptInstance_t inst, int entnum, int classnum, short clientNum)
+    unsigned int __usercall Scr_GetEntityId(scriptInstance_t inst, int entnum, int classnum, short clientNum)
     {
         int result;
         DWORD addr = Scr_GetEntityId_a;
@@ -201,6 +213,38 @@ namespace GameData
             call        addr
             add         esp, 4
         }
+    }
+
+    unsigned int __usercall Scr_GetVariableFieldIndex(scriptInstance_t inst, unsigned int name, unsigned int parentId)
+    {
+        int result;
+        DWORD addr = Scr_GetVariableFieldIndex_a;
+        __asm
+        {
+            mov         eax, inst
+            mov         esi, name
+            push        parentId
+            call        addr
+            add         esp, 4
+            mov         result, eax
+        }
+        return *(WORD *)(0x3974700 + (inst * 0x16000 + result << 4));
+    }
+
+    unsigned int __usercall Scr_FindField(scriptInstance_t inst, const char *name, int *pType)
+    {
+        unsigned int result;
+        DWORD addr = Scr_FindField_a;
+        __asm
+        {
+            mov         eax, inst
+            push        pType
+            push        name
+            call        addr
+            add         esp, 8
+            mov         result, eax
+        }
+        return result;
     }
 
     int __usercall Scr_GetPointerType(scriptInstance_t inst, unsigned int index)
@@ -286,14 +330,23 @@ namespace GameData
         std::cout << "mb af: in: " << gScrVmPub[SCRIPTINSTANCE_SERVER].inparamcount
             << " mb out: " << gScrVmPub[SCRIPTINSTANCE_SERVER].outparamcount << std::endl;
         std::cout << "mb Results\n";
+        std::cout << std::hex << gScrVmPub[SCRIPTINSTANCE_SERVER].top->type << std::endl;
         switch (gScrVmPub[SCRIPTINSTANCE_SERVER].top->type)
         {
             case VAR_POINTER:
-                std::cout << "value: " << Scr_GetObject(SCRIPTINSTANCE_SERVER).intValue << std::endl;
+            {
                 std::cout << "pointer type: " << Scr_GetPointerType(SCRIPTINSTANCE_SERVER, 0) << std::endl;
-
-
-                // TODO: FIGURE OUT HOW TO READ THE VALUES FROM THE ARRARY
+                std::cout << "value: " << Scr_GetObject(SCRIPTINSTANCE_SERVER).intValue << std::endl;
+                std::cout << "name: " << GetVariableName(SCRIPTINSTANCE_SERVER, Scr_GetObject(SCRIPTINSTANCE_SERVER).intValue)
+                    << std::endl;
+                int type = 0;
+               // std::cout <<"pos: " << Scr_FindField(SCRIPTINSTANCE_SERVER, "position", &type) << " type: " << type << std::endl;
+                // TODO: continue looking into theses args........
+                for (DWORD id = FindFirstSibling(SCRIPTINSTANCE_SERVER, Scr_GetObject(SCRIPTINSTANCE_SERVER).intValue);
+                        id;
+                        id = FindNextSibling(SCRIPTINSTANCE_SERVER, id))
+                    std::cout << GetVariableName(SCRIPTINSTANCE_SERVER, id) << std::endl;
+            }
             break;
             case VAR_STRING:
                 std::cout << gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.stringValue << std::endl;
@@ -322,8 +375,6 @@ namespace GameData
         Scr_AddVector(SCRIPTINSTANCE_SERVER, end);
         Scr_AddVector(SCRIPTINSTANCE_SERVER, start);
         Scr_SetParameters(SCRIPTINSTANCE_SERVER);
-        std::cout << "bt b4: in: " << gScrVmPub[SCRIPTINSTANCE_SERVER].inparamcount
-            << " bt mb out: " << gScrVmPub[SCRIPTINSTANCE_SERVER].outparamcount << std::endl;
         int result = Scr_BulletTraceInternal();
         return result;
     }
@@ -363,12 +414,14 @@ namespace GameData
             GScr_MagicBullet(cgameGlob->clientNum, "ptrs41_zombie");
 
             // Get the GSC script function/method and pass the arguments
-            void *script = GetFunctionOrMethod("getarrayvalues", &functype, &newInst);
+            void *script = GetFunctionOrMethod("getplayerangles", &functype, &newInst);
 
             switch (functype)
             {
                 case 0:
-                    std::cout << "Method " << newInst << std::endl;
+                    ((void(__cdecl *)())script)();
+                    Scr_ClearOutParams(newInst);
+
                     CopyAddressToClipboard(script);
                     
                 break;

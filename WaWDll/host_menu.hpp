@@ -120,6 +120,9 @@ namespace GameData
         Scr_GetEntityId_a                 = 0x692520,
         Scr_GetPointerType_a              = 0x69A580,
         Scr_GetObject_a                   = 0x69A460,
+        Scr_GetVariableFieldIndex_a       = 0x6902F0,
+        Scr_GetVector_a                   = 0x69A220,
+        Scr_FindField_a                   = 0x693250,
         Scr_ClearOutParams_a              = 0x693DA0,
         Scr_GetFunction_a                 = 0x66EA30,
         CScr_GetFunction_a                = 0x5676F0,
@@ -129,7 +132,6 @@ namespace GameData
         VM_Notify_a                       = 0x698670,
         GScr_MagicBullet_a                = 0x51AFF0,
         Scr_BulletTrace_a                 = 0x51FB40,
-        Scr_GetVector_a                   = 0x69A220,
     };
     
     // GSC Script
@@ -147,8 +149,10 @@ namespace GameData
     void Scr_AddEntity(scriptInstance_t inst, gentity_s *ent);
     void Scr_SetParameters(scriptInstance_t inst);
     void __usercall Scr_ClearOutParams(scriptInstance_t inst);
-    int __usercall Scr_GetEntityId(scriptInstance_t inst, int entnum, int classnum, short clientNum);
+    unsigned int __usercall Scr_GetEntityId(scriptInstance_t inst, int entnum, int classnum, short clientNum);
     void __usercall Scr_GetVector(scriptInstance_t inst, float *vectorValue, unsigned int index);
+    unsigned int __usercall Scr_GetVariableFieldIndex(scriptInstance_t inst, unsigned int name, unsigned int parentId);
+    unsigned int __usercall Scr_FindField(scriptInstance_t inst, const char *name, int *pType);
     int __usercall Scr_GetPointerType(scriptInstance_t inst, unsigned int index);
     VariableValue::VariableUnion __usercall Scr_GetObject(scriptInstance_t inst);
     void (__cdecl *__usercall Scr_GetMethod(const char **pName, int *pType))(scr_entref_t entref);
@@ -157,7 +161,7 @@ namespace GameData
     unsigned int FindVariable(scriptInstance_t inst, unsigned int parentId, unsigned int name);
     unsigned int FindObject(scriptInstance_t inst, unsigned int id);
     unsigned int FindLastSibling(scriptInstance_t inst, unsigned int id);
-    int GetVariableKeyObject(scriptInstance_t inst, unsigned int id);
+    unsigned int GetVariableKeyObject(scriptInstance_t inst, unsigned int id);
     unsigned int Scr_GetSelf(scriptInstance_t inst, unsigned int threadId);
     
     // GSC Script Functions/Methods

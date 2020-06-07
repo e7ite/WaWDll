@@ -25,8 +25,7 @@ namespace GameData
             lea         esi, ds:30FD700h[eax * 8]   ; source
             mov         edi, cmd                    ; destination
             mov         ecx, 0Eh                    ; amount of dwords to copy
-            rep movsd                               ; move dwords esi to edi,
-                                                    ; ecx times
+            rep movsd                               ; move dwords esi to edi, ecx times
         }
     }
 
