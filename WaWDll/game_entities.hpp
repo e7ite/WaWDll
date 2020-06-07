@@ -34,9 +34,6 @@ namespace GameData
         AI_SPECIES_DOG       = 0x1,
     };
 
-    struct gentity_s;
-    struct actor_s;
-
 #pragma pack(push, 1)
     struct hudelem_s
     {
@@ -334,8 +331,8 @@ namespace GameData
 
         void (__fastcall **GetStateFunctionTable())(actor_s *, ai_state_t)
         {
-            return &((void (__fastcall ***)(actor_s *, ai_state_t))0x8DC3C8)[this->species]
-                [this->eState[this->stateLevel] * 7];
+            return &((void (__fastcall ***)(actor_s *, ai_state_t))0x8DC3C8)
+                [this->species][this->eState[this->stateLevel] * 7];
         }
     }; // Size = 0x31B8
 
@@ -417,7 +414,7 @@ namespace GameData
         entityState_s         s;                        // 0x000
         entityShared_t        r;                        // 0x118
         gclient_s            *client;                   // 0x180
-        actor_s              *actor;                    // 0x184
+        struct actor_s       *actor;                    // 0x184
         struct sentient_s    *sentient;                 // 0x188
         struct scr_vehicle_s *scr_vehicle;              // 0x18C
         char                  pad00[0x8];               // 0x190 

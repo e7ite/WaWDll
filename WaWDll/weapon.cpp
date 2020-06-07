@@ -13,8 +13,8 @@ namespace GameData
         return bg_weaponVariantDefs[weapon];
     }
 
-    void BG_GetSpreadForWeapon(playerState_s *ps, WeaponDef *weap, float *minSpread,
-        float *maxSpread)
+    void BG_GetSpreadForWeapon(struct playerState_s *ps, WeaponDef *weap, 
+        float *minSpread, float *maxSpread)
     {
         DWORD addr = BG_GetSpreadForWeapon_a;
         __asm

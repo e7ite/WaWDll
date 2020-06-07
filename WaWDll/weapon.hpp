@@ -2,8 +2,6 @@
 
 namespace GameData
 {
-    struct playerState_s;
-
     enum weapClass_t
     {
         WEAPCLASS_RIFLE                        = 0x0,
@@ -76,6 +74,6 @@ namespace GameData
     extern void (__cdecl *RandomBulletDir)(int randSeed, float *x, float *y);
 
     WeaponDef *BG_GetWeaponDef(int weapon);
-    void __usercall BG_GetSpreadForWeapon(playerState_s *ps, WeaponDef *weap, float *minSpread,
-        float *maxSpread);
+    void __usercall BG_GetSpreadForWeapon(struct playerState_s *ps, WeaponDef *weap, 
+        float *minSpread, float *maxSpread);
 }

@@ -17,6 +17,37 @@ namespace GameData
         SCRIPT_INSTANCE_MAX   = 0x2,
     };
 
+    enum scr_vartypes_t
+    {
+        VAR_UNDEFINED         = 0x0,
+        VAR_BEGIN_REF         = 0x1,
+        VAR_POINTER           = 0x1,
+        VAR_STRING            = 0x2,
+        VAR_ISTRING           = 0x3,
+        VAR_VECTOR            = 0x4,
+        VAR_END_REF           = 0x5,
+        VAR_FLOAT             = 0x5,
+        VAR_INTEGER           = 0x6,
+        VAR_CODEPOS           = 0x7,
+        VAR_PRECODEPOS        = 0x8,
+        VAR_FUNCTION          = 0x9,
+        VAR_STACK             = 0xA,
+        VAR_ANIMATION         = 0xB,
+        VAR_DEVELOPER_CODEPOS = 0xC,
+        VAR_THREAD            = 0xD,
+        VAR_NOTIFY_THREAD     = 0xE,
+        VAR_TIME_THREAD       = 0xF,
+        VAR_CHILD_THREAD      = 0x10,
+        VAR_OBJECT            = 0x11,
+        VAR_DEAD_ENTITY       = 0x12,
+        VAR_ENTITY            = 0x13,
+        VAR_ARRAY             = 0x14,
+        VAR_DEAD_THREAD       = 0x15,
+        VAR_COUNT             = 0x16,
+        VAR_THREAD_LIST       = 0x17,
+        VAR_ENDON_LIST        = 0x18,
+    };
+
 #pragma pack(push, 1)
     struct scr_entref_t
     {
@@ -77,7 +108,7 @@ namespace GameData
 
     extern scrVmPub_t *gScrVmPub;
 
-    enum
+    enum // Addresses
     {
         FindVariableIndexInternal_a       = 0x68BC20,
         FindLastSibling_a                 = 0x68BCA0,
@@ -119,8 +150,7 @@ namespace GameData
     void (__cdecl *__usercall Scr_GetMethod(const char **pName, int *pType))(scr_entref_t entref);
     void (__cdecl *GetFunction(scriptInstance_t inst, const char **pName, int *pType))();
     void (__cdecl *GetMethod(scriptInstance_t inst, const char **pName, int *pType))(scr_entref_t entref);
-    unsigned int FindVariable(scriptInstance_t inst,
-        unsigned int parentId, unsigned int unsignedValue);
+    unsigned int FindVariable(scriptInstance_t inst, unsigned int parentId, unsigned int name);
     unsigned int FindObject(scriptInstance_t inst, unsigned int id);
     unsigned int FindLastSibling(scriptInstance_t inst, unsigned int id);
     int GetVariableKeyObject(scriptInstance_t inst, unsigned int id);

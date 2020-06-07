@@ -34,33 +34,21 @@ namespace GameData
         return result;
     }
 
-    unsigned int FindVariable(scriptInstance_t inst,
-        unsigned int parentId, unsigned int unsignedValue)
+    unsigned int FindVariable(scriptInstance_t inst, unsigned int parentId, unsigned int name)
     {
         WORD *gScVarGlob = (WORD *)0x3974700;
         return static_cast<DWORD>(
             *(WORD *)(
                 (int)gScVarGlob + ((FindVariableIndexInternal(inst,
-                    unsignedValue, (parentId + unsignedValue) % 0xFFFD + 1)
-                    + inst * 0x16000) << 4)
-                )
-            );
+                    name, (parentId + name) % 0xFFFD + 1) + inst * 0x16000) << 4)
+            )
+        );
     }
 
     unsigned int FindObject(scriptInstance_t inst, unsigned int id)
     {
         WORD *gScVarGlob = (WORD *)0x3974704;
         return *(unsigned int *)((int)gScVarGlob + ((id + inst * 0x16000) << 4));
-    }
-
-    unsigned int Scr_GetSelf(scriptInstance_t inst, unsigned int threadId)
-    {
-        unsigned short *gsvgVariableList = (unsigned short *)0x3914716;
-        int index = (threadId + inst * 0x16000) << 4;
-
-        return static_cast<unsigned int>(
-            *(decltype(gsvgVariableList))((int)gsvgVariableList + index)
-        );
     }
 
     unsigned int __usercall FindLastSibling(scriptInstance_t inst, unsigned int parentId)
@@ -79,16 +67,33 @@ namespace GameData
 
     int GetVariableKeyObject(scriptInstance_t inst, unsigned int id)
     {
-        WORD *gsvgcVariableList = (WORD *)0x3974700;
+        WORD *gsvgVariableList = (WORD *)0x3974700;
         int *gScrVarGlobClient = (int *)0x3974708;
         DWORD index = inst * 0x16000;
 
         DWORD index2 =
-            (DWORD)(*(WORD *)((DWORD)gsvgcVariableList + ((id + index) << 4)));
+            (DWORD)(*(WORD *)((DWORD)gsvgVariableList + ((id + index) << 4)));
 
         return ((*(int *)(
             (DWORD)gScrVarGlobClient + ((index2 + index) << 4)
             )) >> 8) - 0x10000;
+    }
+
+    unsigned int Scr_GetSelf(scriptInstance_t inst, unsigned int threadId)
+    {
+        unsigned short *gsvgVariableList = (unsigned short *)0x3914716;
+        int index = (threadId + inst * 0x16000) << 4;
+
+        return static_cast<unsigned int>(
+            *(decltype(gsvgVariableList))((int)gsvgVariableList + index)
+        );
+    }
+
+    void GetVariableName(scriptInstance_t inst, unsigned int id)
+    {
+        // TODO: add offset from LinkFile
+        unsigned int gsvgVariableList = 0x3974708;
+        return gsvgvariableList;
     }
 
     void __usercall Scr_AddFloat(scriptInstance_t inst, float value)
@@ -243,10 +248,32 @@ namespace GameData
 
         vec3_t gunAnglesForward, output;
         AngleVectors(&ent->fGunPitch, gunAnglesForward, nullptr, nullptr);
-        std::cout << "mb out params: " << gScrVmPub[SCRIPTINSTANCE_SERVER].outparamcount
-            << " mb in params: " << gScrVmPub[SCRIPTINSTANCE_SERVER].inparamcount << std::endl;
-        Scr_BulletTrace(gunAnglesForward, gunAnglesForward * 9999.0f, 0, &g_entities[client]);
 
+        Scr_BulletTrace(gunAnglesForward, gunAnglesForward * 9999.0f, 0, &g_entities[client]);
+        std::cout << "mb af: in: " << gScrVmPub[SCRIPTINSTANCE_SERVER].inparamcount
+            << " mb out: " << gScrVmPub[SCRIPTINSTANCE_SERVER].outparamcount << std::endl;
+        std::cout << "mb Results\n";
+        for (int i = 0; i < gScrVmPub[SCRIPTINSTANCE_SERVER].inparamcount; i++)
+        {
+            std::cout << gScrVmPub[SCRIPTINSTANCE_SERVER].top->type << std::endl;
+            switch (gScrVmPub[SCRIPTINSTANCE_SERVER].top->type)
+            {
+                case VAR_POINTER:
+                    std::cout << gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.pointerValue << std::endl;
+                    //FindVariable(SCRIPTINSTANCE_SERVER, gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.pointerValue, )
+                break;
+                case VAR_STRING:
+                    std::cout << gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.stringValue << std::endl;
+                break;
+                case VAR_VECTOR:
+                    for (int i = 0; i < 3; i++)
+                        std::cout << gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.vectorValue[i] << " " ;
+                break;
+            }
+        }
+        Scr_ClearOutParams(SCRIPTINSTANCE_SERVER);
+
+            
         Scr_AddVector(SCRIPTINSTANCE_SERVER, gunAnglesForward * 9999.0f);
         Scr_AddVector(SCRIPTINSTANCE_SERVER, gunAnglesForward);
         Scr_AddString(SCRIPTINSTANCE_SERVER, weapon);
@@ -262,8 +289,9 @@ namespace GameData
         Scr_AddVector(SCRIPTINSTANCE_SERVER, end);
         Scr_AddVector(SCRIPTINSTANCE_SERVER, start);
         Scr_SetParameters(SCRIPTINSTANCE_SERVER);
+        std::cout << "bt b4: in: " << gScrVmPub[SCRIPTINSTANCE_SERVER].inparamcount
+            << " bt mb out: " << gScrVmPub[SCRIPTINSTANCE_SERVER].outparamcount << std::endl;
         int result = Scr_BulletTraceInternal();
-        Scr_ClearOutParams(SCRIPTINSTANCE_SERVER);
         return result;
     }
 
@@ -302,13 +330,14 @@ namespace GameData
             GScr_MagicBullet(cgameGlob->clientNum, "ptrs41_zombie");
 
             // Get the GSC script function/method and pass the arguments
-            void *script = GetFunctionOrMethod("gettagorigin", &functype, &newInst);
+            void *script = GetFunctionOrMethod("getplayerangles", &functype, &newInst);
 
             switch (functype)
             {
                 case 0:
                     std::cout << "Method " << newInst << std::endl;
                     CopyAddressToClipboard(script);
+                    
                 break;
                 case 1:
                     std::cout << "Function " << newInst << std::endl;
@@ -355,7 +384,7 @@ void *GetFunctionOrMethod(const char *name, int *funcType, GameData::scriptInsta
     for (int i = GameData::SCRIPTINSTANCE_SERVER; i < GameData::SCRIPT_INSTANCE_MAX; i++)
     {
         *instType = (GameData::scriptInstance_t)i;
-        // Discarding result of name change as overwriting the copy of the func name
+        // Discarding result of name change as this is overwriting the copy of the func name
         if ((result = GameData::GetFunction((GameData::scriptInstance_t)i, &name, &type)))
         {
             *funcType = 1;
