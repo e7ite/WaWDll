@@ -118,6 +118,8 @@ namespace GameData
         Scr_AddVector_a                   = 0x69A940,
         Scr_AddObject_a                   = 0x69A770,
         Scr_GetEntityId_a                 = 0x692520,
+        Scr_GetPointerType_a              = 0x69A580,
+        Scr_GetObject_a                   = 0x69A460,
         Scr_ClearOutParams_a              = 0x693DA0,
         Scr_GetFunction_a                 = 0x66EA30,
         CScr_GetFunction_a                = 0x5676F0,
@@ -147,6 +149,8 @@ namespace GameData
     void __usercall Scr_ClearOutParams(scriptInstance_t inst);
     int __usercall Scr_GetEntityId(scriptInstance_t inst, int entnum, int classnum, short clientNum);
     void __usercall Scr_GetVector(scriptInstance_t inst, float *vectorValue, unsigned int index);
+    int __usercall Scr_GetPointerType(scriptInstance_t inst, unsigned int index);
+    VariableValue::VariableUnion __usercall Scr_GetObject(scriptInstance_t inst);
     void (__cdecl *__usercall Scr_GetMethod(const char **pName, int *pType))(scr_entref_t entref);
     void (__cdecl *GetFunction(scriptInstance_t inst, const char **pName, int *pType))();
     void (__cdecl *GetMethod(scriptInstance_t inst, const char **pName, int *pType))(scr_entref_t entref);

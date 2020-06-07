@@ -89,11 +89,9 @@ namespace GameData
         );
     }
 
-    void GetVariableName(scriptInstance_t inst, unsigned int id)
+    unsigned int GetVariableName(scriptInstance_t inst, unsigned int id)
     {
-        // TODO: add offset from LinkFile
-        unsigned int gsvgVariableList = 0x3974708;
-        return gsvgvariableList;
+        return *(int *)(0x3974708 + (inst * 0x16000 + id << 4)) >> 8;
     }
 
     void __usercall Scr_AddFloat(scriptInstance_t inst, float value)
@@ -175,6 +173,7 @@ namespace GameData
 
     int __usercall Scr_GetEntityId(scriptInstance_t inst, int entnum, int classnum, short clientNum)
     {
+        int result;
         DWORD addr = Scr_GetEntityId_a;
         __asm
         {
@@ -184,11 +183,15 @@ namespace GameData
             push        entnum
             call        addr
             add         esp, 0Ch
+            mov         result, eax
         }
+        return result;
     }
 
     void __usercall Scr_GetVector(scriptInstance_t inst, float *vectorValue, unsigned int index)
     {
+        Scr_SetParameters(inst);
+
         DWORD addr = Scr_GetVector_a;
         __asm
         {
@@ -198,6 +201,33 @@ namespace GameData
             call        addr
             add         esp, 4
         }
+    }
+
+    int __usercall Scr_GetPointerType(scriptInstance_t inst, unsigned int index)
+    {
+        int result;
+        DWORD addr = Scr_GetPointerType_a;
+        __asm
+        {
+            mov         eax, inst
+            mov         ecx, index
+            call        addr
+            mov         result, eax
+        }
+        return result;
+    }
+
+    VariableValue::VariableUnion Scr_GetObject(scriptInstance_t inst)
+    {
+        VariableValue::VariableUnion result;
+        DWORD addr = Scr_GetObject_a;
+        __asm
+        {
+            mov         eax, inst
+            call        addr
+            mov         result, eax
+        }
+        return result;
     }
 
     void Scr_SetParameters(scriptInstance_t inst)
@@ -252,25 +282,28 @@ namespace GameData
         Scr_BulletTrace(gunAnglesForward, gunAnglesForward * 9999.0f, 0, &g_entities[client]);
         std::cout << "mb af: in: " << gScrVmPub[SCRIPTINSTANCE_SERVER].inparamcount
             << " mb out: " << gScrVmPub[SCRIPTINSTANCE_SERVER].outparamcount << std::endl;
+        Scr_SetParameters(SCRIPTINSTANCE_SERVER);
+        std::cout << "mb af: in: " << gScrVmPub[SCRIPTINSTANCE_SERVER].inparamcount
+            << " mb out: " << gScrVmPub[SCRIPTINSTANCE_SERVER].outparamcount << std::endl;
         std::cout << "mb Results\n";
-        for (int i = 0; i < gScrVmPub[SCRIPTINSTANCE_SERVER].inparamcount; i++)
+        switch (gScrVmPub[SCRIPTINSTANCE_SERVER].top->type)
         {
-            std::cout << gScrVmPub[SCRIPTINSTANCE_SERVER].top->type << std::endl;
-            switch (gScrVmPub[SCRIPTINSTANCE_SERVER].top->type)
-            {
-                case VAR_POINTER:
-                    std::cout << gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.pointerValue << std::endl;
-                    //FindVariable(SCRIPTINSTANCE_SERVER, gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.pointerValue, )
-                break;
-                case VAR_STRING:
-                    std::cout << gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.stringValue << std::endl;
-                break;
-                case VAR_VECTOR:
-                    for (int i = 0; i < 3; i++)
-                        std::cout << gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.vectorValue[i] << " " ;
-                break;
-            }
+            case VAR_POINTER:
+                std::cout << "value: " << Scr_GetObject(SCRIPTINSTANCE_SERVER).intValue << std::endl;
+                std::cout << "pointer type: " << Scr_GetPointerType(SCRIPTINSTANCE_SERVER, 0) << std::endl;
+
+
+                // TODO: FIGURE OUT HOW TO READ THE VALUES FROM THE ARRARY
+            break;
+            case VAR_STRING:
+                std::cout << gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.stringValue << std::endl;
+            break;
+            case VAR_VECTOR:
+                for (int i = 0; i < 3; i++)
+                    std::cout << gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.vectorValue[i] << " " ;
+            break;
         }
+        gScrVmPub[SCRIPTINSTANCE_SERVER].outparamcount = 0;
         Scr_ClearOutParams(SCRIPTINSTANCE_SERVER);
 
             
@@ -330,7 +363,7 @@ namespace GameData
             GScr_MagicBullet(cgameGlob->clientNum, "ptrs41_zombie");
 
             // Get the GSC script function/method and pass the arguments
-            void *script = GetFunctionOrMethod("getplayerangles", &functype, &newInst);
+            void *script = GetFunctionOrMethod("getarrayvalues", &functype, &newInst);
 
             switch (functype)
             {
