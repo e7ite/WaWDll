@@ -7,6 +7,8 @@ void RenderESP();
 
 namespace GameData
 {
+    enum scriptInstance_t;
+
 #pragma pack(push, 1)
     struct rectDef_s
     {
@@ -98,40 +100,40 @@ namespace GameData
 
     enum
     {
-        InitializeCriticalSection_a         = 0x7EB148,
-        EnterCriticalSection_a              = 0x7EB138,
-        LeaveCriticalSection_a              = 0x7EB134,
-        R_RegisterFont_a                    = 0x6E8D84,
-        Material_RegisterHandle_a           = 0x6E9C00,
-        CG_DrawRotatedPic_a                 = 0x43E570,
-        Cmd_ExecuteSingleCommmand_a         = 0x594ED0,
-        Dvar_FindVar_a                      = 0x5EDE30,
-        CL_DrawTextPhysical_a               = 0x6F5F10,
-        UI_TextWidth_a                      = 0x5B5EC0,
-        CG_GameMessage_a                    = 0x661910,
-        UI_GetFontHandle_a                  = 0x5B6400,
-        UI_DrawText_a                       = 0x5B5FB0,
-        SL_FindString_a                     = 0x68DA90,
-        CG_DrawRotatedPicPhysical_a         = 0x43E3C0,
-        R_TextWidth_a                       = 0x6E8DA0,
-        DrawSketchPicGun_a                  = 0x42CC30,
-        Key_StringToKeynum_a                = 0x477540,
-        ScrPlace_ApplyRect_a                = 0x47A450,
-        UI_DrawRect_a                       = 0x5B5BD0,
-        UI_FillRect_a                       = 0x5B08E0,
-        MessageBoxA_a                       = 0x7EB33C,
-        timeGetTime_a                       = 0x7EB39C,
-        Cbuf_AddText_a                      = 0x594200,
-        Com_Error_a                         = 0x59AC50,
-        va_a                                = 0x5F6D80,
-        Menu_PaintAll_a                     = 0x5CA9A2,
-        TopLevelExceptionFilter_a           = 0x5FF510,
-        Menu_HandleMouseMove_a              = 0x5C9B10,
-        CL_WritePacket_a                    = 0x63EA80,
-        CL_KeyEvent_a                       = 0x4780F0,
-        CL_MouseMove_a                      = 0x63DE70,
-        IN_MouseEvent_a                     = 0x5FA5F0,
-        Com_Printf_a                        = 0x59A2C0,
+        InitializeCriticalSection_a = 0x7EB148,
+        EnterCriticalSection_a      = 0x7EB138,
+        LeaveCriticalSection_a      = 0x7EB134,
+        R_RegisterFont_a            = 0x6E8D84,
+        Material_RegisterHandle_a   = 0x6E9C00,
+        CG_DrawRotatedPic_a         = 0x43E570,
+        Cmd_ExecuteSingleCommmand_a = 0x594ED0,
+        Dvar_FindVar_a              = 0x5EDE30,
+        CL_DrawTextPhysical_a       = 0x6F5F10,
+        UI_TextWidth_a              = 0x5B5EC0,
+        CG_GameMessage_a            = 0x661910,
+        UI_GetFontHandle_a          = 0x5B6400,
+        UI_DrawText_a               = 0x5B5FB0,
+        SL_FindString_a             = 0x68DA90,
+        CG_DrawRotatedPicPhysical_a = 0x43E3C0,
+        R_TextWidth_a               = 0x6E8DA0,
+        DrawSketchPicGun_a          = 0x42CC30,
+        Key_StringToKeynum_a        = 0x477540,
+        ScrPlace_ApplyRect_a        = 0x47A450,
+        UI_DrawRect_a               = 0x5B5BD0,
+        UI_FillRect_a               = 0x5B08E0,
+        MessageBoxA_a               = 0x7EB33C,
+        timeGetTime_a               = 0x7EB39C,
+        Cbuf_AddText_a              = 0x594200,
+        Com_Error_a                 = 0x59AC50,
+        va_a                        = 0x5F6D80,
+        Menu_PaintAll_a             = 0x5CA9A2,
+        TopLevelExceptionFilter_a   = 0x5FF510,
+        Menu_HandleMouseMove_a      = 0x5C9B10,
+        CL_WritePacket_a            = 0x63EA80,
+        CL_KeyEvent_a               = 0x4780F0,
+        CL_MouseMove_a              = 0x63DE70,
+        IN_MouseEvent_a             = 0x5FA5F0,
+        Com_Printf_a                = 0x59A2C0,
     };
 
     extern int             *cl_connectionState;
@@ -200,7 +202,7 @@ namespace GameData
     unsigned int Sys_Milliseconds();
 
     // Miscellaneous
-    unsigned short SL_FindString(const char *tagname);
+    unsigned short SL_FindString(scriptInstance_t inst, const char *tagname);
     const char *SL_ConvertToString(int stringValue);
     extern void (__cdecl *Com_Error)(int code, const char *fmt, ...);
     extern char *(__cdecl *va)(const char *fmt, ...);

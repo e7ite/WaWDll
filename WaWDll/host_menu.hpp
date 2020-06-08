@@ -1,7 +1,10 @@
 #pragma once
 
 #include "game_entities.hpp"
-#include "nonhost_menu.hpp"
+#include "math.hpp"
+
+// Forward declared functions
+bool CopyAddressToClipboard(void *address);
 
 namespace GameData
 {
@@ -56,21 +59,29 @@ namespace GameData
         unsigned short client;                          // 0x04
     }; // Size = 0x06
 
+    union VariableUnion
+    {
+        int                         intValue;           // 0x04
+        float                       floatValue;         // 0x04
+        unsigned int                stringValue;        // 0x04
+        const float                *vectorValue;        // 0x04
+        const char                 *codePosValue;       // 0x04
+        unsigned int                pointerValue;       // 0x04
+        struct VariableStackBuffer *stackValue;         // 0x04
+        unsigned int                entityOffset;       // 0x04
+    };
+
+    struct VariableValueInternal
+    {
+        char          pad00[0x4];                       // 0x00
+        VariableUnion u;                                // 0x04
+        int           status;                           // 0x08
+    };
+
     struct VariableValue
     {
-        union VariableUnion
-        {
-            int                         intValue;           // 0x04
-            float                       floatValue;         // 0x04
-            unsigned int                stringValue;        // 0x04
-            const float                *vectorValue;        // 0x04
-            const char                 *codePosValue;       // 0x04
-            unsigned int                pointerValue;       // 0x04
-            struct VariableStackBuffer *stackValue;         // 0x04
-            unsigned int                entityOffset;       // 0x04
-        };
-        VariableUnion u;                                // 0x00
-        int           type;                             // 0x04
+        VariableUnion  u;                                // 0x00
+        scr_vartypes_t type;                             // 0x04
     }; // Size = 0x08
 
     struct function_stack_t
@@ -104,6 +115,18 @@ namespace GameData
         function_frame_t  function_frame_start[0x20];   // 0x0020
         VariableValue     stack[0x800];                 // 0x0320
     }; // Size = 0x4320
+
+    struct scrObject_t
+    {
+        scriptInstance_t inst;
+        VariableValue stackVal;
+        unsigned int id;
+
+        scrObject_t(scriptInstance_t inst, VariableValue *top, unsigned int id)
+            : inst(inst), stackVal(*top), id(id) {}
+        
+        VariableValue operator[](const char *fieldName);
+    };
 #pragma pack(pop)
 
     extern scrVmPub_t *gScrVmPub;
@@ -122,7 +145,10 @@ namespace GameData
         Scr_GetObject_a                   = 0x69A460,
         Scr_GetVariableFieldIndex_a       = 0x6902F0,
         Scr_GetVector_a                   = 0x69A220,
+        Scr_GetType_a                     = 0x69A4E0,
         Scr_FindField_a                   = 0x693250,
+        Scr_FindArrayIndex_a              = 0x6925B0,
+        Scr_EvalArray_a                   = 0x692680,
         Scr_ClearOutParams_a              = 0x693DA0,
         Scr_GetFunction_a                 = 0x66EA30,
         CScr_GetFunction_a                = 0x5676F0,
@@ -151,24 +177,30 @@ namespace GameData
     void __usercall Scr_ClearOutParams(scriptInstance_t inst);
     unsigned int __usercall Scr_GetEntityId(scriptInstance_t inst, int entnum, int classnum, short clientNum);
     void __usercall Scr_GetVector(scriptInstance_t inst, float *vectorValue, unsigned int index);
-    unsigned int __usercall Scr_GetVariableFieldIndex(scriptInstance_t inst, unsigned int name, unsigned int parentId);
-    unsigned int __usercall Scr_FindField(scriptInstance_t inst, const char *name, int *pType);
+    scr_vartypes_t __usercall Scr_GetType(scriptInstance_t inst, unsigned int index);
     int __usercall Scr_GetPointerType(scriptInstance_t inst, unsigned int index);
-    VariableValue::VariableUnion __usercall Scr_GetObject(scriptInstance_t inst);
+    unsigned int __usercall Scr_GetVariableFieldIndex(scriptInstance_t inst, unsigned int name, unsigned int parentId);
+    VariableValue Scr_EvalArray(scriptInstance_t inst, VariableValue *value, VariableValue *index);
+    unsigned int __usercall Scr_FindArrayIndex(scriptInstance_t inst, unsigned int parentId, VariableValue *index);
+    unsigned int __usercall Scr_FindField(scriptInstance_t inst, const char *name, int *pType);
+    VariableUnion __usercall Scr_GetObject(scriptInstance_t inst);
     void (__cdecl *__usercall Scr_GetMethod(const char **pName, int *pType))(scr_entref_t entref);
+    unsigned int Scr_GetSelf(scriptInstance_t inst, unsigned int threadId);
     void (__cdecl *GetFunction(scriptInstance_t inst, const char **pName, int *pType))();
     void (__cdecl *GetMethod(scriptInstance_t inst, const char **pName, int *pType))(scr_entref_t entref);
+    unsigned int GetVariableName(scriptInstance_t inst, unsigned int id);
+    unsigned int FindFirstSibling(scriptInstance_t inst, unsigned int id);
+    unsigned int FindNextSibling(scriptInstance_t inst, unsigned int id);
     unsigned int FindVariable(scriptInstance_t inst, unsigned int parentId, unsigned int name);
     unsigned int FindObject(scriptInstance_t inst, unsigned int id);
     unsigned int FindLastSibling(scriptInstance_t inst, unsigned int id);
     unsigned int GetVariableKeyObject(scriptInstance_t inst, unsigned int id);
-    unsigned int Scr_GetSelf(scriptInstance_t inst, unsigned int threadId);
     
     // GSC Script Functions/Methods
     extern void (__cdecl *GScr_MagicBulletInternal)();
     void GScr_MagicBullet(int client, const char *weapon);
-    extern int (__cdecl *Scr_BulletTraceInternal)();
-    int Scr_BulletTrace(float *start, float *end, unsigned int mask, gentity_s *ent);
+    extern void (__cdecl *Scr_BulletTraceInternal)();
+    vec3_t Scr_BulletTrace(const float *start, const float *end, unsigned int mask, gentity_s *ent);
 
     // Used to monitor player events
     extern void __usercall *VM_Notify;

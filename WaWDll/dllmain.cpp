@@ -86,21 +86,15 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
         {
             // Create a debug console, set its title and redirect stdout to it
             if (!AllocConsole())
-                GameData::Com_Error(0, 
-                    "AllocConsole() %s",
-                    FormatError(GetLastError()).c_str());
+                GameData::Com_Error(0, "AllocConsole() %s", FormatError(GetLastError()).c_str());
             if (!SetConsoleTitle("WaW Hack"))
-                GameData::Com_Error(0, 
-                    "SetConsoleTitle(): %s",
-                    FormatError(GetLastError()).c_str());
+                GameData::Com_Error(0, "SetConsoleTitle(): %s", FormatError(GetLastError()).c_str());
             FILE *f;
             char errDesc[0x40] = { 0 };
             if (errno_t err = freopen_s(&f, "CONOUT$", "w", stdout))
                 GameData::Com_Error(0, 
                     "freopen_s() %s", 
                     strerror_s<0x40>(errDesc, err));
-
-            std::cout << std::hex << sizeof(GameData::playerState_s) << " " << offsetof(GameData::gclient_s, fGunPitch) <<  std::endl;
 
             // Detour all the functions designated
             InsertDetour(&GameData::Menu_PaintAll, GameData::Menu_PaintAllDetourInvoke);

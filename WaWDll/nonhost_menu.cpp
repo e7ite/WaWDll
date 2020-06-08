@@ -66,18 +66,19 @@ namespace GameData
 
     const char *SL_ConvertToString(int stringValue)
     {
+        std::cout << "newjdias\n";
         const char **gScrMemTreePub = (const char **)0x3702390;
         return *gScrMemTreePub + ((stringValue * 2 + stringValue) * 4) + 4;
     }
 
-    unsigned short __usercall SL_FindString(const char *tagname)
+    unsigned short __usercall SL_FindString(scriptInstance_t inst, const char *tagname)
     {
         unsigned short result;
         unsigned int len = strlen(tagname) + 1;
         DWORD addr = SL_FindString_a;
         __asm
         {
-            mov         eax, 0
+            mov         eax, inst
             push        len
             push        tagname
             call        addr
@@ -428,15 +429,15 @@ namespace GameData
     int Menu_HandleMouseMoveDetour(ScreenPlacement *scrPlace, void *item)
     {
         Menu &menu = Menu::Instance();
-        GameData::EnterCriticalSection(&menu.critSection);
+        //GameData::EnterCriticalSection(&menu.critSection);
 
         if (!menu.open)
         { 
-            GameData::LeaveCriticalSection(&menu.critSection);
+           // GameData::LeaveCriticalSection(&menu.critSection);
             return GameData::Menu_HandleMouseMove(scrPlace, item);
         }
     
-        GameData::LeaveCriticalSection(&menu.critSection);
+        //GameData::LeaveCriticalSection(&menu.critSection);
         return 0;
     }
 
@@ -496,7 +497,7 @@ namespace GameData
     void IN_MouseEventDetour(int mstate)
     {
         Menu &menu = Menu::Instance();
-        GameData::EnterCriticalSection(&menu.critSection);
+        //GameData::EnterCriticalSection(&menu.critSection);
 
         if (!menu.open)
         {
@@ -504,7 +505,7 @@ namespace GameData
             return GameData::IN_MouseEvent(mstate);
         }
 
-        GameData::LeaveCriticalSection(&menu.critSection);
+       // GameData::LeaveCriticalSection(&menu.critSection);
     }
 
     int (__cdecl *Com_Printf)(int channel, const char *format, ...)

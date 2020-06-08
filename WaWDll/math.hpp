@@ -28,7 +28,7 @@ struct vec3_t
 
     vec3_t(float x = 0.0f, float y = 0.0f, float z = 0.0f)
         : x(x), y(y), z(z) {}
-    vec3_t(float *vec) { memcpy(this, vec, 0xC); }
+    vec3_t(const float *vec) { memcpy(this, vec, 0xC); }
     vec3_t(const vec3_t &vec) { memcpy(this, &vec, 0xC); }
 
     operator float *() { return (float *)this; }

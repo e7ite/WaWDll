@@ -6,6 +6,8 @@
 
 namespace GameData
 {
+    enum scriptInstance_t;
+
     enum
     {
         CG_DObjGetWorldTagPos_a             = 0x443030,

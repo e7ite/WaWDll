@@ -174,17 +174,17 @@ namespace GameData
 
     struct cpose_t
     {
-        unsigned __int16 lightningHandle;               // 0x00
-        char             eType;                         // 0x02
-        char             eTypeUnion;                    // 0x03
-        char             localClientNum;                // 0x04
-        char             isRagdoll;                     // 0x05
-        char             pad00[0x2];                    // 0x06
-        int              ragdollHandle;                 // 0x08
-        char             pad01[0x18];                   // 0x0C
-        float            origin[3];                     // 0x24
-        float            angles[3];                     // 0x30    
-        char             pad02[0x8];                    // 0x3C
+        unsigned short lightningHandle;                 // 0x00
+        char           eType;                           // 0x02
+        char           eTypeUnion;                      // 0x03
+        char           localClientNum;                  // 0x04
+        char           isRagdoll;                       // 0x05
+        char           pad00[0x2];                      // 0x06
+        int            ragdollHandle;                   // 0x08
+        char           pad01[0x18];                     // 0x0C
+        float          origin[3];                       // 0x24
+        float          angles[3];                       // 0x30    
+        char           pad02[0x8];                      // 0x3C
     }; // Size = 0x44
 
     struct centity_s
@@ -329,7 +329,7 @@ namespace GameData
         char               pad04[0x13D2];               // 0x0D90
         EntHandle          pCloseEnt;                   // 0x2162
 
-        void (__fastcall **GetStateFunctionTable())(actor_s *, ai_state_t)
+        void (__fastcall **GetStateFunctionTable())(actor_s *self, ai_state_t ePrevState)
         {
             return &((void (__fastcall ***)(actor_s *, ai_state_t))0x8DC3C8)
                 [this->species][this->eState[this->stateLevel] * 7];
@@ -357,9 +357,9 @@ namespace GameData
 
     struct clientState_s
     {
-        int  clientIndex;                                // 0x000
-        int  team;                                       // 0x004
-        int  modelIndex;                                 // 0x008
+        int  clientIndex;                               // 0x000
+        int  team;                                      // 0x004
+        int  modelIndex;                                // 0x008
         char pad00[0x44];                               // 0x00C
         char name[0x20];                                // 0x050
         char pad01[0x24];                               // 0x070
