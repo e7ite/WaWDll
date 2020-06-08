@@ -29,7 +29,7 @@ void RenderESP()
     {
         vec3_t head, foot;
         float headScreen[2], feetScreen[2];
-        unsigned short id = GameData::SL_FindString("j_head");
+        unsigned short id = GameData::SL_FindString((GameData::scriptInstance_t)0, "j_head");
 
         // Loop through all entities and find zombie entities
         for (GameData::actor_s *actor = GameData::Actor_FirstActor(-1);
@@ -46,7 +46,7 @@ void RenderESP()
 
                 // Get the zombie head position
                 GameData::AimTarget_GetTagPos(0, cent,
-                    GameData::SL_FindString("j_head"), head);
+                    GameData::SL_FindString((GameData::scriptInstance_t)0, "j_head"), head);
 
                 // Get the zombie foot position
                 foot = cent->pose.origin;

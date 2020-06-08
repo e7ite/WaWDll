@@ -4,11 +4,11 @@ namespace GameData
 {
     enum 
     {
-        __libm_sse2_tan_a                   = 0x7E0892,
-        CG_WorldPosToScreenPos_a            = 0x44CD30,
-        vectoangles_a                       = 0x5DF960,
-        AngleVectors_a                      = 0x5E3150,
-        Vec3Normalize_a                     = 0x4037C0,
+        __libm_sse2_tan_a        = 0x7E0892,
+        CG_WorldPosToScreenPos_a = 0x44CD30,
+        vectoangles_a            = 0x5DF960,
+        AngleVectors_a           = 0x5E3150,
+        Vec3Normalize_a          = 0x4037C0,
     };
 
     float __libm_sse2_tan(float x);
@@ -28,19 +28,29 @@ struct vec3_t
 
     vec3_t(float x = 0.0f, float y = 0.0f, float z = 0.0f)
         : x(x), y(y), z(z) {}
-    vec3_t(float *vec) { memcpy(this, vec, 0xC); }
+    vec3_t(const float *vec) { memcpy(this, vec, 0xC); }
     vec3_t(const vec3_t &vec) { memcpy(this, &vec, 0xC); }
 
     operator float *() { return (float *)this; }
 
     vec3_t operator+(const vec3_t &vec) const;
     vec3_t operator+(float vec[3]) const;
+    vec3_t operator+(float value) const;
     vec3_t operator-(const vec3_t &vec) const;
     vec3_t operator-(float vec[3]) const;
+    vec3_t operator-(float value) const;
+    vec3_t operator*(const vec3_t &vec) const;
+    vec3_t operator*(float vec[3]) const;
+    vec3_t operator*(float value) const;
     vec3_t &operator+=(const vec3_t &vec);
     vec3_t &operator+=(float vec[3]);
+    vec3_t &operator+=(float value);
     vec3_t &operator-=(const vec3_t &vec);
     vec3_t &operator-=(float vec[3]);
+    vec3_t &operator-=(float value);
+    vec3_t &operator*=(const vec3_t &vec);
+    vec3_t &operator*=(float vec[3]);
+    vec3_t &operator*=(float value);
 };
 
 /**

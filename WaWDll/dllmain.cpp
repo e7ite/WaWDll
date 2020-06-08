@@ -1,6 +1,7 @@
 #include "stdafx.hpp"
 #include "nonhost_menu.hpp"
 
+// Forward declarations for detours
 namespace GameData
 {
     extern void __usercall *AimTarget_GetTagPos_0;
@@ -85,13 +86,15 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
         {
             // Create a debug console, set its title and redirect stdout to it
             if (!AllocConsole())
-                GameData::Com_Error(0, FormatError(GetLastError()).c_str());
+                GameData::Com_Error(0, "AllocConsole() %s", FormatError(GetLastError()).c_str());
             if (!SetConsoleTitle("WaW Hack"))
-                GameData::Com_Error(0, FormatError(GetLastError()).c_str());
+                GameData::Com_Error(0, "SetConsoleTitle(): %s", FormatError(GetLastError()).c_str());
             FILE *f;
             char errDesc[0x40] = { 0 };
             if (errno_t err = freopen_s(&f, "CONOUT$", "w", stdout))
-                GameData::Com_Error(0, "Failed to open stdout stream! %s", strerror_s<0x40>(errDesc, err));
+                GameData::Com_Error(0, 
+                    "freopen_s() %s", 
+                    strerror_s<0x40>(errDesc, err));
 
             // Detour all the functions designated
             InsertDetour(&GameData::Menu_PaintAll, GameData::Menu_PaintAllDetourInvoke);
@@ -111,8 +114,7 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
             // Free the allocated console and closes stdout stream
             if (!FreeConsole())
                 GameData::Com_Error(0, FormatError(GetLastError()).c_str());
-            if (fclose(stdout) == EOF)
-                GameData::Com_Error(0, FormatError(GetLastError()).c_str());
+            fclose(stdout);
 
             // Remove all the detours used
             for (auto i : detours)

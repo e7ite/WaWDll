@@ -6,6 +6,8 @@
 
 namespace GameData
 {
+    enum scriptInstance_t;
+
     enum
     {
         CG_DObjGetWorldTagPos_a             = 0x443030,
@@ -15,9 +17,13 @@ namespace GameData
         CG_DamageFeedback_a                 = 0x455370,
     };
 
+    // Miscellaneous
+    unsigned short SL_FindString(scriptInstance_t inst, const char *tagname);
+    const char *SL_ConvertToString(int stringValue);
+
     // Aim assist functions 
     int __usercall AimTarget_GetTagPos(int localClientNum, centity_s *cent,
-        unsigned __int16 tagname, float *pos);
+        unsigned short tagname, float *pos);
     bool __usercall AimTarget_IsTargetVisible(centity_s *cent, unsigned short bone);
     void __usercall LookAtKiller(gentity_s *attacker, gentity_s *inflictor, gentity_s *self);
     void CG_BulletEndPos(int commandTime, float spread, float *start, float *end,

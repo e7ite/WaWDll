@@ -5,11 +5,11 @@ namespace GameData
 {
     centity_s      *cg_entitiesArray = (centity_s *)0x35D39F0;
     cg_s           *cgameGlob        = (cg_s *)0x34732B8;
+    clientActive_t *clientActive     = (clientActive_t *)0x3058528;
     WORD           *clientObjMap     = (WORD *)0x1FE58C8;
     BYTE           *objBuf           = (BYTE *)0x1F978C8;
     gentity_s      *g_entities       = (gentity_s *)0x176C6F0;
     cgs_t          *cgs              = (cgs_t *)0x3466578;
-    clientActive_t *clientActive     = (clientActive_t *)0x3058528;
 
     int (__cdecl *CG_GetPlayerWeapon)(playerState_s *ps, int localClientNum)
         = (int (__cdecl *)(playerState_s *, int))CG_GetPlayerWeapon_a;
@@ -25,8 +25,7 @@ namespace GameData
             lea         esi, ds:30FD700h[eax * 8]   ; source
             mov         edi, cmd                    ; destination
             mov         ecx, 0Eh                    ; amount of dwords to copy
-            rep movsd                               ; move dwords esi to edi,
-                                                    ; ecx times
+            rep movsd                               ; move dwords from esi to edi, ecx times
         }
     }
 
@@ -87,10 +86,22 @@ namespace GameData
         }
         return result;
     }
+
+    void __usercall G_GetPlayerViewOrigin(playerState_s *ps, float origin[3])
+    {
+        DWORD addr = G_GetPlayerViewOrigin_a;
+        __asm
+        {
+            mov         edi, origin
+            push        ps
+            call        addr
+            add         esp, 4
+        }
+    }
 }
 
 bool ValidTarget(GameData::actor_s *target)
 {
-    // Check if AI's level is marked as dead
+    // Check if AI's state is marked as dead
     return target->eState[target->stateLevel] != GameData::AIS_DEATH;
 }
