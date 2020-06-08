@@ -6,25 +6,6 @@ namespace GameData
 {
     scrVmPub_t *gScrVmPub = (scrVmPub_t *)0x3BD4700;
 
-    VariableValue scrObject_t::operator[](const char *fieldName)
-    {
-        VariableValue val;
-        for (DWORD id = FindFirstSibling(SCRIPTINSTANCE_SERVER, this->id);
-            id;
-            id = FindNextSibling(SCRIPTINSTANCE_SERVER, id))
-        {
-            if (!strcmp(fieldName, SL_ConvertToString(GetVariableName(SCRIPTINSTANCE_SERVER, id))))
-            {
-                val.type = VAR_STRING;
-                val.u.stringValue = GetVariableName(SCRIPTINSTANCE_SERVER, id);
-                return Scr_EvalArray(SCRIPTINSTANCE_SERVER, &this->stackVal, &val);
-            }
-        }
-        val.type = VAR_UNDEFINED;
-        val.u.intValue = 0;
-        return val;
-    }
-
     void (__cdecl *(__cdecl *Scr_GetFunction)(const char **pName, int *pType))()
         = (void (__cdecl *(__cdecl *)(const char **, int *))())Scr_GetFunction_a;
     void (__cdecl *(__cdecl *CScr_GetFunction)(const char **pName))()
@@ -33,8 +14,31 @@ namespace GameData
         = (void (__cdecl *(__cdecl *)(const char **, int *))())CScr_GetFunctionProjectSpecific_a;
     void (__cdecl *(__cdecl *CScr_GetMethod)(const char **pName, int *pType))(scr_entref_t entref)
         = (void (__cdecl *(__cdecl *)(const char **, int *))(scr_entref_t))CScr_GetMethod_a;
-    void (__cdecl *GScr_MagicBulletInternal)() = (void (__cdecl *)())GScr_MagicBullet_a;
-    void (__cdecl *Scr_BulletTraceInternal)() = (void (__cdecl *)())Scr_BulletTrace_a;
+
+    ScriptObject::VariableValueWrapper ScriptObject::operator[](const char *fieldName)
+    {
+        VariableValue index;
+        const char *err = "Variable is not a pointer";
+        if (this->stackVal.type == VAR_POINTER)
+        {
+            for (DWORD id = FindFirstSibling(SCRIPTINSTANCE_SERVER, this->stackVal.u.stringValue);
+                id;
+                id = FindNextSibling(SCRIPTINSTANCE_SERVER, id))
+            {
+                if (!strcmp(fieldName, SL_ConvertToString(GetVariableName(SCRIPTINSTANCE_SERVER, id))))
+                {
+                    index.type = VAR_STRING;
+                    index.u.stringValue = GetVariableName(SCRIPTINSTANCE_SERVER, id);
+                    return Scr_EvalArray(SCRIPTINSTANCE_SERVER, &this->stackVal, &index);
+                }
+            }
+            err = "Variable not found";
+        }
+        index.type = VAR_UNDEFINED;
+        index.u.intValue = 0;
+        Com_Error(0, err);
+        return index;
+    }
 
     unsigned int __usercall FindVariableIndexInternal(scriptInstance_t inst, unsigned int name,
         unsigned int index)
@@ -64,6 +68,22 @@ namespace GameData
         );
     }
 
+    unsigned int FindArrayVariable(scriptInstance_t inst, unsigned parentId, int intValue)
+    {
+        unsigned int result;
+        DWORD addr = FindArrayVariable_a;
+        __asm
+        {
+            mov         eax, parentId
+            mov         ecx, intValue
+            push        inst
+            call        addr
+            add         esp, 4
+            mov         result, eax
+        }
+        return result;
+    }
+
     unsigned int FindObject(scriptInstance_t inst, unsigned int id)
     {
         WORD *gScVarGlob = (WORD *)0x3974704;
@@ -84,6 +104,18 @@ namespace GameData
         return result;
     }
 
+    unsigned int FindFirstSibling(scriptInstance_t inst, unsigned int id)
+    {
+        return *(WORD *)(0x391471E + ((inst * 0x16000 + id) << 4));
+    }
+
+    unsigned int FindNextSibling(scriptInstance_t inst, unsigned int id)
+    {
+        unsigned int list = 0x3974700 + 0x160000 * inst;
+        unsigned int nextSibling = *(WORD *)(list + (id << 4) + 0xE);
+        return nextSibling ? *(WORD *)(list + (nextSibling << 4)) : 0;
+    }
+
     unsigned int GetVariableKeyObject(scriptInstance_t inst, unsigned int id)
     {
         WORD *gsvgVariableList = (WORD *)0x3974700;
@@ -98,6 +130,34 @@ namespace GameData
             )) >> 8) - 0x10000;
     }
 
+    unsigned int GetVariableName(scriptInstance_t inst, unsigned int id)
+    {
+        return *(unsigned int *)(((id + inst * 0x16000) << 4) + 0x3974708) >> 8;
+    }
+
+    const char *SL_ConvertToString(int stringValue)
+    {
+        const char **gScrMemTreePub = (const char **)0x3702390;
+        return *gScrMemTreePub + ((stringValue * 2 + stringValue) * 4) + 4;
+    }
+
+    unsigned short __usercall SL_FindString(scriptInstance_t inst, const char *tagname)
+    {
+        unsigned short result;
+        unsigned int len = strlen(tagname) + 1;
+        DWORD addr = SL_FindString_a;
+        __asm
+        {
+            mov         eax, inst
+            push        len
+            push        tagname
+            call        addr
+            add         esp, 8
+            mov         result, ax
+        }
+        return result;
+    }
+
     unsigned int Scr_GetSelf(scriptInstance_t inst, unsigned int threadId)
     {
         unsigned short *gsvgVariableList = (unsigned short *)0x3914716;
@@ -106,23 +166,6 @@ namespace GameData
         return static_cast<unsigned int>(
             *(decltype(gsvgVariableList))((int)gsvgVariableList + index)
         );
-    }
-
-    unsigned int GetVariableName(scriptInstance_t inst, unsigned int id)
-    {
-        return *(unsigned int *)(0x3974708 + ((inst * 0x16000 + id) << 4)) >> 8;
-    }
-
-    unsigned int FindFirstSibling(scriptInstance_t inst, unsigned int id)
-    {
-        return (DWORD)*(WORD *)(0x391471E + ((inst * 0x16000 + id) << 4));
-    }
-
-    unsigned int FindNextSibling(scriptInstance_t inst, unsigned int id)
-    {
-        unsigned int list = 0x3974700 + 0x160000 * inst;
-        unsigned int nextSibling = (DWORD)*(WORD *)(list + (id << 4) + 0xE);
-        return nextSibling ? *(WORD *)(list + (nextSibling << 4)) : 0;
     }
 
     void __usercall Scr_AddFloat(scriptInstance_t inst, float value)
@@ -276,18 +319,19 @@ namespace GameData
 
     unsigned int __usercall Scr_FindArrayIndex(scriptInstance_t inst, unsigned int parentId, VariableValue *index)
     {
-        unsigned int result;
-        DWORD addr = Scr_FindArrayIndex_a;
-        __asm
+        const char *err = "Invalid array index type";
+        switch (index->type)
         {
-            mov         eax, inst
-            mov         ecx, index
-            push        parentId
-            call        addr
-            add         esp, 4
-            mov         result, eax
+            case VAR_INTEGER:
+                if (index->u.intValue + 0x7EA002 <= 0xFEA001)
+                    return FindArrayVariable(inst, parentId, index->u.intValue);
+                err = "Array index out of bounds";
+            break;
+            case VAR_STRING:
+                return FindVariable(inst, parentId, index->u.stringValue);
         }
-        return result;
+        Com_Error(0, err);
+        return 0;
     }
 
     unsigned int __usercall Scr_FindField(scriptInstance_t inst, const char *name, int *pType)
@@ -375,27 +419,30 @@ namespace GameData
         return Scr_GetMethod(pName, pType);
     }
 
+    void (__cdecl *GScr_MagicBulletInternal)() = (void (__cdecl *)())GScr_MagicBullet_a;
     void GScr_MagicBullet(int client, const char *weapon)
     {
         gclient_s *ent = g_entities[client].client;
 
-        vec3_t gunAnglesForward, output;
-        AngleVectors(&ent->fGunPitch, gunAnglesForward, nullptr, nullptr);
-
-        Scr_BulletTrace(gunAnglesForward, gunAnglesForward * 9999.0f, 0, &g_entities[client]);
+        vec3_t origin = Scr_GetTagOrigin(client, "tag_eye");
+        origin.x -= 20;
+        origin.z -= 15;
         
-        gScrVmPub[SCRIPTINSTANCE_SERVER].outparamcount = 0;
-
-            
-        Scr_AddVector(SCRIPTINSTANCE_SERVER, gunAnglesForward * 9999.0f);
-        Scr_AddVector(SCRIPTINSTANCE_SERVER, gunAnglesForward);
+        Scr_AddVector(SCRIPTINSTANCE_SERVER, 
+            Scr_BulletTrace(
+                origin, 
+                Scr_AnglesToForward(Scr_GetPlayerAngles(cgameGlob->clientNum)) * 9999.0f,
+                0, 
+                &g_entities[client])["position"]);
+        Scr_AddVector(SCRIPTINSTANCE_SERVER, origin);
         Scr_AddString(SCRIPTINSTANCE_SERVER, weapon);
         Scr_SetParameters(SCRIPTINSTANCE_SERVER);
         GScr_MagicBulletInternal();
         Scr_ClearOutParams(SCRIPTINSTANCE_SERVER);
     }
 
-    /*vec3_t Scr_BulletTrace(const float *start, const float *end, unsigned int mask, gentity_s *ent)
+    void (__cdecl *Scr_BulletTraceInternal)() = (void (__cdecl *)())Scr_BulletTrace_a;
+    ScriptObject Scr_BulletTrace(const float *start, const float *end, unsigned int mask, gentity_s *ent)
     {
         Scr_AddEntity(SCRIPTINSTANCE_SERVER, ent);
         Scr_AddInt(SCRIPTINSTANCE_SERVER, mask);
@@ -403,63 +450,52 @@ namespace GameData
         Scr_AddVector(SCRIPTINSTANCE_SERVER, start);
         Scr_SetParameters(SCRIPTINSTANCE_SERVER);
         Scr_BulletTraceInternal();
-        scrObject_t obj(SCRIPTINSTANCE_SERVER, gScrVmPub[SCRIPTINSTANCE_SERVER].top,
-            Scr_GetObject(SCRIPTINSTANCE_SERVER).stringValue);
+        ScriptObject obj(SCRIPTINSTANCE_SERVER, gScrVmPub[SCRIPTINSTANCE_SERVER].top);
         Scr_ClearOutParams(SCRIPTINSTANCE_SERVER);
-        return obj["position"].u.vectorValue;
-    }*/
-
-    /* void GScr_MagicBullet(int client, const char *weapon)
-    {
-        gclient_s *ent = g_entities[client].client;
-
-        vec3_t gunAnglesForward, output;
-        AngleVectors(&ent->fGunPitch, gunAnglesForward, nullptr, nullptr);
-
-        Scr_BulletTrace(gunAnglesForward, gunAnglesForward * 9999.0f, 0, &g_entities[client]);
-        std::cout << "mb af: in: " << gScrVmPub[SCRIPTINSTANCE_SERVER].inparamcount
-            << " mb out: " << gScrVmPub[SCRIPTINSTANCE_SERVER].outparamcount << std::endl;
-        Scr_SetParameters(SCRIPTINSTANCE_SERVER);
-
-        switch (gScrVmPub[SCRIPTINSTANCE_SERVER].top->type)
-        {
-            case VAR_POINTER:
-            {
-                std::cout << "pointer type: " << Scr_GetPointerType(SCRIPTINSTANCE_SERVER, 0) << std::endl;
-                std::cout << "value: " << Scr_GetObject(SCRIPTINSTANCE_SERVER).intValue << std::endl;
-                for (DWORD id = FindFirstSibling(SCRIPTINSTANCE_SERVER, Scr_GetObject(SCRIPTINSTANCE_SERVER).intValue);
-                    id;
-                    id = FindNextSibling(SCRIPTINSTANCE_SERVER, id))
-                {
-                    std::cout << SL_ConvertToString(GetVariableName(SCRIPTINSTANCE_SERVER, id)) << std::endl;
-                    VariableValue val;
-                    val.type = VAR_STRING;
-                    val.u.stringValue = GetVariableName(SCRIPTINSTANCE_SERVER, id);
-                    VariableValue result = Scr_EvalArray(SCRIPTINSTANCE_SERVER, gScrVmPub[SCRIPTINSTANCE_SERVER].top, &val);
-                   
-                }
-            }
-            break;
-            case VAR_STRING:
-                std::cout << gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.stringValue << std::endl;
-            break;
-            case VAR_VECTOR:
-                for (int i = 0; i < 3; i++)
-                    std::cout << gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.vectorValue[i] << " " ;
-            break;
-        }
-        gScrVmPub[SCRIPTINSTANCE_SERVER].outparamcount = 0;
-        Scr_ClearOutParams(SCRIPTINSTANCE_SERVER);
-
-            
-        Scr_AddVector(SCRIPTINSTANCE_SERVER, gunAnglesForward * 9999.0f);
-        Scr_AddVector(SCRIPTINSTANCE_SERVER, gunAnglesForward);
-        Scr_AddString(SCRIPTINSTANCE_SERVER, weapon);
-        Scr_SetParameters(SCRIPTINSTANCE_SERVER);
-        GScr_MagicBulletInternal();
-        Scr_ClearOutParams(SCRIPTINSTANCE_SERVER);
+        return obj;
     }
-*/
+
+    void (__cdecl *Scr_GetTagOriginInternal)(scr_entref_t entref) 
+        = (void (__cdecl *)(scr_entref_t))Scr_GetTagOrigin_a;
+    vec3_t Scr_GetTagOrigin(int client, const char *tagName)
+    {
+        scr_entref_t entref;
+        entref.classnum = 0;
+        entref.client = 0;
+        entref.entnum = client;
+        Scr_AddString(SCRIPTINSTANCE_SERVER, tagName);
+        Scr_SetParameters(SCRIPTINSTANCE_SERVER);
+        Scr_GetTagOriginInternal(entref);
+        vec3_t vec = gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.vectorValue;
+        Scr_ClearOutParams(SCRIPTINSTANCE_SERVER);
+        return vec;
+    }
+
+    void (__cdecl *Scr_GetPlayerAnglesInternal)(scr_entref_t entref)
+        = (void (__cdecl *)(scr_entref_t))Scr_GetPlayerAngles_a;
+    vec3_t Scr_GetPlayerAngles(int client)
+    {
+        scr_entref_t entref;
+        entref.classnum = 0;
+        entref.client = 0;
+        entref.entnum = client;
+        Scr_GetPlayerAnglesInternal(entref);
+        vec3_t vec = gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.vectorValue;
+        Scr_ClearOutParams(SCRIPTINSTANCE_SERVER);
+        return vec;
+    }
+
+    void (__cdecl *Scr_AnglesToForwardInternal)() = (void (__cdecl *)())Scr_AnglesToForward_a;
+    vec3_t Scr_AnglesToForward(const float *angles)
+    {
+        Scr_AddVector(SCRIPTINSTANCE_SERVER, angles);
+        Scr_SetParameters(SCRIPTINSTANCE_SERVER);
+        Scr_AnglesToForwardInternal();
+        vec3_t vec = gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.vectorValue;
+        Scr_ClearOutParams(SCRIPTINSTANCE_SERVER);
+
+        return vec;
+    }
 
     void __usercall *VM_Notify = (void __usercall *)VM_Notify_a;
     void __declspec(naked) VM_NotifyDetourInvoke(scriptInstance_t inst,
@@ -493,19 +529,16 @@ namespace GameData
             int functype;
             GameData::scriptInstance_t newInst;
 
-            GScr_MagicBullet(cgameGlob->clientNum, "ptrs41_zombie");
+            GScr_MagicBullet(cgameGlob->clientNum, /*ptrs41_zombie*/"panzerschrek");
 
             // Get the GSC script function/method and pass the arguments
-            void *script = GetFunctionOrMethod("getplayerangles", &functype, &newInst);
+            void *script = GetFunctionOrMethod("anglestoforward", &functype, &newInst);
 
             switch (functype)
             {
                 case 0:
-                    ((void(__cdecl *)())script)();
-                    Scr_ClearOutParams(newInst);
-
+                    std::cout << "MEthod " << newInst << std::endl;
                     CopyAddressToClipboard(script);
-                    
                 break;
                 case 1:
                     std::cout << "Function " << newInst << std::endl;

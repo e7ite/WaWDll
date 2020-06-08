@@ -12,6 +12,8 @@ namespace GameData
     void CG_BulletEndPos(int commandTime, float spread, float *start, float *end,
     float *dir, const float *forwardDir, const float *rightDir, const float *upDir,
     float maxRange);
+    int __usercall AimTarget_GetTagPos(int localClientNum, centity_s *cent,
+        unsigned __int16 tagname, float *pos);
 
     enum scriptInstance_t : int
     {
@@ -115,19 +117,31 @@ namespace GameData
         function_frame_t  function_frame_start[0x20];   // 0x0020
         VariableValue     stack[0x800];                 // 0x0320
     }; // Size = 0x4320
+#pragma pack(pop)
 
-    struct scrObject_t
+    struct ScriptObject
     {
+        struct VariableValueWrapper
+        {
+            VariableValue val;
+
+            VariableValueWrapper(VariableValue &&val)
+                : val(val) {}
+
+            operator const float *() { return this->val.u.vectorValue; }
+            operator float()         { return this->val.u.floatValue; }
+            operator int()           { return this->val.u.intValue; }
+            operator unsigned int()  { return this->val.u.stringValue; }
+        };
+
         scriptInstance_t inst;
         VariableValue stackVal;
-        unsigned int id;
 
-        scrObject_t(scriptInstance_t inst, VariableValue *top, unsigned int id)
-            : inst(inst), stackVal(*top), id(id) {}
+        ScriptObject(scriptInstance_t inst, VariableValue *top)
+            : inst(inst), stackVal(*top) {}
         
-        VariableValue operator[](const char *fieldName);
+        VariableValueWrapper operator[](const char *fieldName);
     };
-#pragma pack(pop)
 
     extern scrVmPub_t *gScrVmPub;
 
@@ -135,6 +149,8 @@ namespace GameData
     {
         FindVariableIndexInternal_a       = 0x68BC20,
         FindLastSibling_a                 = 0x68BCA0,
+        FindArrayVariable_a               = 0x690210,
+        SL_FindString_a                   = 0x68DA90,
         Scr_AddFloat_a                    = 0x69A670,
         Scr_AddInt_a                      = 0x69A610,
         Scr_AddString_a                   = 0x69A7E0,
@@ -147,18 +163,23 @@ namespace GameData
         Scr_GetVector_a                   = 0x69A220,
         Scr_GetType_a                     = 0x69A4E0,
         Scr_FindField_a                   = 0x693250,
-        Scr_FindArrayIndex_a              = 0x6925B0,
         Scr_EvalArray_a                   = 0x692680,
         Scr_ClearOutParams_a              = 0x693DA0,
         Scr_GetFunction_a                 = 0x66EA30,
-        CScr_GetFunction_a                = 0x5676F0,
-        CScr_GetFunctionProjectSpecific_a = 0x52F0B0,
         Scr_GetMethod_a                   = 0x530630,
+        CScr_GetFunctionProjectSpecific_a = 0x52F0B0,
+        CScr_GetFunction_a                = 0x5676F0,
         CScr_GetMethod_a                  = 0x671110,
         VM_Notify_a                       = 0x698670,
         GScr_MagicBullet_a                = 0x51AFF0,
         Scr_BulletTrace_a                 = 0x51FB40,
+        Scr_GetTagOrigin_a                = 0x51B5B0,
+        Scr_GetPlayerAngles_a             = 0x4EE820,
+        Scr_AnglesToForward_a             = 0x521480,
     };
+
+    // Error handling
+    extern void (__cdecl *Com_Error)(int code, const char *fmt, ...);
     
     // GSC Script
     extern void (__cdecl *(__cdecl *Scr_GetFunction)(const char **pName, int *pType))();
@@ -166,7 +187,18 @@ namespace GameData
     extern void (__cdecl *(__cdecl *CScr_GetFunctionProjectSpecific)(const char **pName, int *pType))();
     extern void (__cdecl *(__cdecl *CScr_GetMethod)(const char **pName, int *pType))(scr_entref_t entref);
 
+    void (__cdecl *GetFunction(scriptInstance_t inst, const char **pName, int *pType))();
+    void (__cdecl *GetMethod(scriptInstance_t inst, const char **pName, int *pType))(scr_entref_t entref);
+    unsigned int GetVariableName(scriptInstance_t inst, unsigned int id);
+    unsigned int FindFirstSibling(scriptInstance_t inst, unsigned int id);
+    unsigned int FindNextSibling(scriptInstance_t inst, unsigned int id);
+    unsigned int FindVariable(scriptInstance_t inst, unsigned int parentId, unsigned int name);
+    unsigned int FindObject(scriptInstance_t inst, unsigned int id);
+    unsigned int FindLastSibling(scriptInstance_t inst, unsigned int id);
+    unsigned int GetVariableKeyObject(scriptInstance_t inst, unsigned int id);
+    unsigned short SL_FindString(scriptInstance_t inst, const char *tagname);
     const char *SL_ConvertToString(int stringValue);
+    unsigned int Scr_GetSelf(scriptInstance_t inst, unsigned int threadId);
     void __usercall Scr_AddFloat(scriptInstance_t inst, float value);
     void __usercall Scr_AddInt(scriptInstance_t inst, int value);
     void __usercall Scr_AddString(scriptInstance_t inst, const char *string);
@@ -185,22 +217,22 @@ namespace GameData
     unsigned int __usercall Scr_FindField(scriptInstance_t inst, const char *name, int *pType);
     VariableUnion __usercall Scr_GetObject(scriptInstance_t inst);
     void (__cdecl *__usercall Scr_GetMethod(const char **pName, int *pType))(scr_entref_t entref);
-    unsigned int Scr_GetSelf(scriptInstance_t inst, unsigned int threadId);
-    void (__cdecl *GetFunction(scriptInstance_t inst, const char **pName, int *pType))();
-    void (__cdecl *GetMethod(scriptInstance_t inst, const char **pName, int *pType))(scr_entref_t entref);
-    unsigned int GetVariableName(scriptInstance_t inst, unsigned int id);
-    unsigned int FindFirstSibling(scriptInstance_t inst, unsigned int id);
-    unsigned int FindNextSibling(scriptInstance_t inst, unsigned int id);
-    unsigned int FindVariable(scriptInstance_t inst, unsigned int parentId, unsigned int name);
-    unsigned int FindObject(scriptInstance_t inst, unsigned int id);
-    unsigned int FindLastSibling(scriptInstance_t inst, unsigned int id);
-    unsigned int GetVariableKeyObject(scriptInstance_t inst, unsigned int id);
     
     // GSC Script Functions/Methods
     extern void (__cdecl *GScr_MagicBulletInternal)();
     void GScr_MagicBullet(int client, const char *weapon);
+    
     extern void (__cdecl *Scr_BulletTraceInternal)();
-    vec3_t Scr_BulletTrace(const float *start, const float *end, unsigned int mask, gentity_s *ent);
+    ScriptObject Scr_BulletTrace(const float *start, const float *end, unsigned int mask, gentity_s *ent);
+    
+    extern void (__cdecl *Scr_GetTagOriginInternal)(scr_entref_t entref);
+    vec3_t Scr_GetTagOrigin(int client, const char *tagName);
+
+    extern void (__cdecl *Scr_GetPlayerAnglesInternal)(scr_entref_t entref);
+    vec3_t Scr_GetPlayerAngles(int client);
+
+    extern void (__cdecl *Scr_AnglesToForwardInternal)();
+    vec3_t Scr_AnglesToForward(const float *angles);
 
     // Used to monitor player events
     extern void __usercall *VM_Notify;

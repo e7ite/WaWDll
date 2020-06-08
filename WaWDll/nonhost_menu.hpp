@@ -113,7 +113,6 @@ namespace GameData
         CG_GameMessage_a            = 0x661910,
         UI_GetFontHandle_a          = 0x5B6400,
         UI_DrawText_a               = 0x5B5FB0,
-        SL_FindString_a             = 0x68DA90,
         CG_DrawRotatedPicPhysical_a = 0x43E3C0,
         R_TextWidth_a               = 0x6E8DA0,
         DrawSketchPicGun_a          = 0x42CC30,
@@ -202,8 +201,6 @@ namespace GameData
     unsigned int Sys_Milliseconds();
 
     // Miscellaneous
-    unsigned short SL_FindString(scriptInstance_t inst, const char *tagname);
-    const char *SL_ConvertToString(int stringValue);
     extern void (__cdecl *Com_Error)(int code, const char *fmt, ...);
     extern char *(__cdecl *va)(const char *fmt, ...);
 

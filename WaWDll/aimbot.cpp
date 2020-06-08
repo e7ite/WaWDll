@@ -4,7 +4,7 @@
 namespace GameData
 {
     int __usercall AimTarget_GetTagPos(int localClientNum, centity_s *cent,
-        unsigned __int16 tagname, float *pos)
+        unsigned short tagname, float *pos)
     {
         bool result;
         DWORD CG_DObjGetWorldTagPos = CG_DObjGetWorldTagPos_a;

@@ -64,30 +64,6 @@ namespace GameData
         return *(bool *)(0x229A0D4);
     }
 
-    const char *SL_ConvertToString(int stringValue)
-    {
-        std::cout << "newjdias\n";
-        const char **gScrMemTreePub = (const char **)0x3702390;
-        return *gScrMemTreePub + ((stringValue * 2 + stringValue) * 4) + 4;
-    }
-
-    unsigned short __usercall SL_FindString(scriptInstance_t inst, const char *tagname)
-    {
-        unsigned short result;
-        unsigned int len = strlen(tagname) + 1;
-        DWORD addr = SL_FindString_a;
-        __asm
-        {
-            mov         eax, inst
-            push        len
-            push        tagname
-            call        addr
-            add         esp, 8
-            mov         result, ax
-        }
-        return result;
-    }
-
     Font_s *__usercall UI_GetFontHandle(ScreenPlacement *scrPlace, int fontEnum)
     {
         DWORD addr = UI_GetFontHandle_a;
@@ -396,7 +372,7 @@ namespace GameData
     void Menu_PaintAllDetour(UiContext *dc)
     {
         Menu &menu = Menu::Instance();
-        EnterCriticalSection(&menu.critSection);
+       // EnterCriticalSection(&menu.critSection);
 
         if (IN_IsForegroundWindow())
             menu.MonitorKeys();
@@ -421,7 +397,7 @@ namespace GameData
             4. The function is called somehow in VM_Execute. Don't know yet
         */
        
-        LeaveCriticalSection(&menu.critSection);
+       // LeaveCriticalSection(&menu.critSection);
     }
     
     int (__cdecl *Menu_HandleMouseMove)(ScreenPlacement *scrPlace, void *menu)
