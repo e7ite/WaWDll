@@ -493,7 +493,6 @@ namespace GameData
         Scr_AnglesToForwardInternal();
         vec3_t vec = gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.vectorValue;
         Scr_ClearOutParams(SCRIPTINSTANCE_SERVER);
-
         return vec;
     }
 
