@@ -205,8 +205,8 @@ namespace GameData
     void __usercall Scr_AddVector(scriptInstance_t inst, const float *value);
     void __usercall Scr_AddObject(scriptInstance_t inst, unsigned int id);
     void Scr_AddEntity(scriptInstance_t inst, gentity_s *ent);
-    void Scr_SetParameters(scriptInstance_t inst);
-    void __usercall Scr_ClearOutParams(scriptInstance_t inst);
+    void Scr_SetParameters(scriptInstance_t inst, int argCount);
+    void Scr_ClearOutParams(scriptInstance_t inst, int argCount);
     unsigned int __usercall Scr_GetEntityId(scriptInstance_t inst, int entnum, int classnum, short clientNum);
     void __usercall Scr_GetVector(scriptInstance_t inst, float *vectorValue, unsigned int index);
     scr_vartypes_t __usercall Scr_GetType(scriptInstance_t inst, unsigned int index);

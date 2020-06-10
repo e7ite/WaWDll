@@ -1,5 +1,8 @@
 #include "stdafx.hpp"
 #include "nonhost_menu.hpp"
+#include "aimbot.hpp"
+#include "esp.hpp"
+#include "game_entities.hpp"
 
 // Forward declarations for detours
 namespace GameData

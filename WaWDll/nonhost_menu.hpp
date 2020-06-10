@@ -4,6 +4,7 @@
 
 // Forward declared functions
 void RenderESP();
+bool CopyAddressToClipboard(void *address);
 
 namespace GameData
 {

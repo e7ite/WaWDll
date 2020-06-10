@@ -10,6 +10,9 @@
 // Windows Library
 #include <windows.h>
 #include <detours.h>
+#ifdef _DEBUG
+#include <ShlObj_core.h>
+#endif // _DEBUG
 
 // Standard Library 
 #include <vector>
@@ -18,7 +21,9 @@
 #include <unordered_map>
 #ifdef _DEBUG
 #include <iostream>
-#endif
+#include <filesystem>
+#include <fstream>
+#endif // _DEBUG
 
 // Use when game function is using non-standard calling convention caused by 
 // compiler optimization. Caller cleans the stack frame

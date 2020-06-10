@@ -318,6 +318,7 @@ namespace GameData
         }
     }
 
+#ifdef _DEBUG
     LONG (__stdcall *TopLevelExceptionFilter)(struct _EXCEPTION_POINTERS *ExceptionInfo)
         = (LONG (__stdcall *)(_EXCEPTION_POINTERS *))TopLevelExceptionFilter_a;
     void TopLevelExceptionFilterDetour(struct _EXCEPTION_POINTERS *ExceptionInfo)
@@ -327,32 +328,102 @@ namespace GameData
         PDWORD_PTR currEIP =
             (PDWORD_PTR)ExceptionInfo->ContextRecord->Eip;
 
-        printf("EAX: %p\n", (void *)ExceptionInfo->ContextRecord->Eax);
-        printf("EBX: %p\n", (void *)ExceptionInfo->ContextRecord->Ebx);
-        printf("ECX: %p\n", (void *)ExceptionInfo->ContextRecord->Ecx);
-        printf("EDX: %p\n", (void *)ExceptionInfo->ContextRecord->Edx);
-        printf("EDI: %p\n", (void *)ExceptionInfo->ContextRecord->Edi);
-        printf("ESI: %p\n", (void *)ExceptionInfo->ContextRecord->Esi);
-        printf("EBP: %p\n", (void *)ExceptionInfo->ContextRecord->Ebp);
-        printf("ESP: %p\n", (void *)currESP);
-        printf("EIP: %p\n", (void *)currEIP);
+        std::cerr << std::hex;
+        std::cerr << "EAX: " << ExceptionInfo->ContextRecord->Eax << std::endl;
+        std::cerr << "EBX: " << ExceptionInfo->ContextRecord->Ebx << std::endl;
+        std::cerr << "ECX: " << ExceptionInfo->ContextRecord->Ecx << std::endl;
+        std::cerr << "EDX: " << ExceptionInfo->ContextRecord->Edx << std::endl;
+        std::cerr << "EDI: " << ExceptionInfo->ContextRecord->Edi << std::endl;
+        std::cerr << "ESI: " << ExceptionInfo->ContextRecord->Esi << std::endl;
+        std::cerr << "EBP: " << ExceptionInfo->ContextRecord->Ebp;
+        std::cerr << "ESP: " << currESP << std::endl;
+        std::cerr << "EIP: " << currEIP << std::endl;
 
-        printf("\nSTACK VIEW:\n");
+        TCHAR szFolderPath[MAX_PATH];
+        std::unordered_map<DWORD, std::string> addrs;
+        if (SHGetSpecialFolderPath(*hwnd, szFolderPath, CSIDL_MYDOCUMENTS, false))
+        {
+            std::string path(szFolderPath);
+            path += "\\Visual Studio 2017\\WaWDll\\WaWDll";
+            std::filesystem::directory_iterator it(path);
+            for (const auto &i : it)
+            {
+                std::string str = i.path().string();
+                size_t index;
+                if ((index = str.find(".hpp")) == std::string::npos)
+                    continue;
+
+                std::ifstream file(str);
+                if (file.good())
+                {
+                    std::string tmp;
+                    bool startParsing = false;
+                    while (std::getline(file, tmp))
+                    {
+                        if (tmp.find("enum") != std::string::npos)
+                        {
+                            startParsing = true;
+                            break;
+                        }
+                    }
+
+                    if (startParsing)
+                    {
+                        while (std::getline(file, tmp))
+                        {
+                            int nameStart, addrStart;
+                            if ((nameStart = tmp.find("_a")) != std::string::npos
+                                && (addrStart = tmp.find("= 0x")) != std::string::npos)
+                            {
+                                std::string name = tmp.substr(0, nameStart);
+                                std::string addr = tmp.substr(addrStart + 4);
+                                while (isspace(name.at(0)))
+                                    name.erase(0, 1);
+                                addr.pop_back();
+                                addrs.insert(
+                                    std::pair<int, std::string>(strtol(addr.c_str(), nullptr, 0x10), name)
+                                );
+                            }
+                        }
+                    }
+                }
+                file.close();
+            }
+        }
+
+        std::cerr << "\nCALL STACK:\n";
+        for (int i = 0; i < 24; i++)
+        {
+            if (auto result = std::find_if(addrs.begin(), addrs.end(),
+                [currESP](const auto& i) 
+                { 
+                    // TODO: work on getting  adding the relative offset to match any
+                    // addresses in enum
+                    DWORD relativeInstrOffset = *(DWORD *)((int)currEsp - 4);
+                    return i.first == *(DWORD *)((int)currEsp - 4) + currEsp; 
+                })
+                != addrs.end())
+                std::cerr << result.second << std::endl;
+
+        }
+
+        std::cerr << "\nSTACK VIEW:\n";
         for (int i = 0; i < 8; i++)
         {
             if (i)
                 ++currESP;
-            printf("%p: %p ", (void *)currESP, (void *)*currESP);
+            std::cerr << currESP << ": " << *currESP << " ";
             for (int j = 0; j < 3; j++)
-                printf("%p ", (void *)*(++currESP));
-            printf("\n");
+                std::cerr << " " << *(++currESP);
+            std::cerr << std::endl;
         }
 
-        if (CopyTextToClipboard(GameData::va("%p", currEIP)))
-            printf("\nInstruction pointer copied to clipboard\n");
+        if (CopyAddressToClipboard(currEIP))
+            std::cerr << "\nInstruction pointer copied to clipboard\n";
         else
-            printf("\nProblem copying instruction pointer to clipboard\n");
+            std::cerr << "\nProblem copying instruction pointer to clipboard\n";
     }
+#endif
 
     void __usercall *Menu_PaintAll = (void __usercall *)Menu_PaintAll_a;
     void __declspec(naked) Menu_PaintAllDetourInvoke(UiContext *dc)

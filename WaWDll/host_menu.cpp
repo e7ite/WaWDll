@@ -233,18 +233,6 @@ namespace GameData
         Scr_AddObject(inst, Scr_GetEntityId(inst, ent->s.number, 0, 0));
     }
 
-    void __usercall Scr_ClearOutParams(scriptInstance_t inst)
-    {
-        DWORD addr = Scr_ClearOutParams_a;
-        __asm
-        {
-            mov         edi, inst
-            call        addr
-        }
-
-        gScrVmPub[inst].inparamcount = 0;
-    }
-
     unsigned int __usercall Scr_GetEntityId(scriptInstance_t inst, int entnum, int classnum, short clientNum)
     {
         int result;
@@ -264,8 +252,6 @@ namespace GameData
 
     void __usercall Scr_GetVector(scriptInstance_t inst, float *vectorValue, unsigned int index)
     {
-        Scr_SetParameters(inst);
-
         DWORD addr = Scr_GetVector_a;
         __asm
         {
@@ -377,11 +363,6 @@ namespace GameData
         return result;
     }
 
-    void Scr_SetParameters(scriptInstance_t inst)
-    {
-        gScrVmPub[inst].outparamcount = gScrVmPub[inst].inparamcount;
-    }
-
     void (__cdecl *__usercall Scr_GetMethod(const char **pName, int *pType))(scr_entref_t entref)
     {
         void (__cdecl *result)(scr_entref_t);
@@ -394,6 +375,25 @@ namespace GameData
             mov         result, eax
         }
         return result;
+    }
+
+    void Scr_SetParameters(scriptInstance_t inst, int argCount)
+    {
+        gScrVmPub[inst].inparamcount = argCount;
+        gScrVmPub[inst].outparamcount = argCount;
+    }
+
+    void Scr_ClearOutParams(scriptInstance_t inst, int argCount)
+    {
+        for (int i = argCount; i > 0; i--)
+        {
+            ((void (__cdecl *)(scriptInstance_t, VariableValue *))0x67EB70)(
+                inst, 
+                gScrVmPub[inst].top--);
+            gScrVmPub[inst].outparamcount--;
+        }
+
+        gScrVmPub[inst].inparamcount = gScrVmPub[inst].outparamcount;
     }
 
     void (__cdecl *GetFunction(scriptInstance_t inst, const char **pName, int *pType))()
@@ -426,19 +426,20 @@ namespace GameData
 
         vec3_t origin = Scr_GetTagOrigin(client, "tag_eye");
         origin.x -= 20;
+        origin.x -= 20;
         origin.z -= 15;
         
         Scr_AddVector(SCRIPTINSTANCE_SERVER, 
             Scr_BulletTrace(
-                origin, 
+                Scr_AnglesToForward(Scr_GetPlayerAngles(cgameGlob->clientNum)) * 25.0f, 
                 Scr_AnglesToForward(Scr_GetPlayerAngles(cgameGlob->clientNum)) * 9999.0f,
                 0, 
                 &g_entities[client])["position"]);
-        Scr_AddVector(SCRIPTINSTANCE_SERVER, origin);
+        Scr_AddVector(SCRIPTINSTANCE_SERVER, Scr_AnglesToForward(Scr_GetPlayerAngles(cgameGlob->clientNum)) * 25.0f);
         Scr_AddString(SCRIPTINSTANCE_SERVER, weapon);
-        Scr_SetParameters(SCRIPTINSTANCE_SERVER);
+        Scr_SetParameters(SCRIPTINSTANCE_SERVER, 3);
         GScr_MagicBulletInternal();
-        Scr_ClearOutParams(SCRIPTINSTANCE_SERVER);
+        Scr_ClearOutParams(SCRIPTINSTANCE_SERVER, 4);
     }
 
     void (__cdecl *Scr_BulletTraceInternal)() = (void (__cdecl *)())Scr_BulletTrace_a;
@@ -448,10 +449,10 @@ namespace GameData
         Scr_AddInt(SCRIPTINSTANCE_SERVER, mask);
         Scr_AddVector(SCRIPTINSTANCE_SERVER, end);
         Scr_AddVector(SCRIPTINSTANCE_SERVER, start);
-        Scr_SetParameters(SCRIPTINSTANCE_SERVER);
+        Scr_SetParameters(SCRIPTINSTANCE_SERVER, 4);
         Scr_BulletTraceInternal();
         ScriptObject obj(SCRIPTINSTANCE_SERVER, gScrVmPub[SCRIPTINSTANCE_SERVER].top);
-        Scr_ClearOutParams(SCRIPTINSTANCE_SERVER);
+        Scr_ClearOutParams(SCRIPTINSTANCE_SERVER, 5);
         return obj;
     }
 
@@ -464,10 +465,10 @@ namespace GameData
         entref.client = 0;
         entref.entnum = client;
         Scr_AddString(SCRIPTINSTANCE_SERVER, tagName);
-        Scr_SetParameters(SCRIPTINSTANCE_SERVER);
+        Scr_SetParameters(SCRIPTINSTANCE_SERVER, 1);
         Scr_GetTagOriginInternal(entref);
         vec3_t vec = gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.vectorValue;
-        Scr_ClearOutParams(SCRIPTINSTANCE_SERVER);
+        Scr_ClearOutParams(SCRIPTINSTANCE_SERVER, 2);
         return vec;
     }
 
@@ -481,7 +482,7 @@ namespace GameData
         entref.entnum = client;
         Scr_GetPlayerAnglesInternal(entref);
         vec3_t vec = gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.vectorValue;
-        Scr_ClearOutParams(SCRIPTINSTANCE_SERVER);
+        Scr_ClearOutParams(SCRIPTINSTANCE_SERVER, 1);
         return vec;
     }
 
@@ -489,10 +490,10 @@ namespace GameData
     vec3_t Scr_AnglesToForward(const float *angles)
     {
         Scr_AddVector(SCRIPTINSTANCE_SERVER, angles);
-        Scr_SetParameters(SCRIPTINSTANCE_SERVER);
+        Scr_SetParameters(SCRIPTINSTANCE_SERVER, 1);
         Scr_AnglesToForwardInternal();
         vec3_t vec = gScrVmPub[SCRIPTINSTANCE_SERVER].top->u.vectorValue;
-        Scr_ClearOutParams(SCRIPTINSTANCE_SERVER);
+        Scr_ClearOutParams(SCRIPTINSTANCE_SERVER, 2);
         return vec;
     }
 
@@ -528,7 +529,11 @@ namespace GameData
             int functype;
             GameData::scriptInstance_t newInst;
 
-            GScr_MagicBullet(cgameGlob->clientNum, /*ptrs41_zombie*/"panzerschrek");
+            // GScr_MagicBullet(cgameGlob->clientNum, /*ptrs41_zombie*/"panzerschrek");
+            
+            vec3_t vec = Scr_GetPlayerAngles(cgameGlob->clientNum);
+            for (int i = 0; i < 3; i++)
+                std::cout << vec[i] << std::endl;
 
             // Get the GSC script function/method and pass the arguments
             void *script = GetFunctionOrMethod("anglestoforward", &functype, &newInst);
