@@ -124,18 +124,18 @@ namespace GameData
 
     enum
     {
-        DB_FindXAssetEntry_a                = 0x48D760,
-        FS_WriteFile_a                      = 0x5DC050,
-        FS_ReadFile_a                       = 0x5DBFB0,
-        SND_FindAlias_a                     = 0x63B560,
-        FileWrapper_Open_a                  = 0x7AC7B1,
-        UI_PlaySound_a                      = 0x5CAC10,
-        SND_Play_a                          = 0x6B2530,
-        Snd_FindBuffer_a                    = 0x6BE4D0,
-        SND_FindAliasBank_a                 = 0x5E5670,
-        Snd_StreamGetRequest_a              = 0x6BE1A0,
-        Snd_LoadBuffer_a                    = 0x6BE530,
-        FS_FreeFile_a                       = 0x5E4580,
+        DB_FindXAssetEntry_a   = 0x48D760,
+        FS_WriteFile_a         = 0x5DC050,
+        FS_ReadFile_a          = 0x5DBFB0,
+        SND_FindAlias_a        = 0x63B560,
+        FileWrapper_Open_a     = 0x7AC7B1,
+        UI_PlaySound_a         = 0x5CAC10,
+        SND_Play_a             = 0x6B2530,
+        Snd_FindBuffer_a       = 0x6BE4D0,
+        SND_FindAliasBank_a    = 0x5E5670,
+        Snd_StreamGetRequest_a = 0x6BE1A0,
+        Snd_LoadBuffer_a       = 0x6BE530,
+        FS_FreeFile_a          = 0x5E4580,
     };
 
     // File system

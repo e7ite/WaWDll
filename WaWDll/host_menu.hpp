@@ -13,7 +13,7 @@ namespace GameData
     float *dir, const float *forwardDir, const float *rightDir, const float *upDir,
     float maxRange);
     int __usercall AimTarget_GetTagPos(int localClientNum, centity_s *cent,
-        unsigned __int16 tagname, float *pos);
+        unsigned short tagname, float *pos);
 
     enum scriptInstance_t : int
     {
@@ -135,10 +135,10 @@ namespace GameData
         };
 
         scriptInstance_t inst;
-        VariableValue stackVal;
+        VariableValue *stackVal;
 
         ScriptObject(scriptInstance_t inst, VariableValue *top)
-            : inst(inst), stackVal(*top) {}
+            : inst(inst), stackVal(top) {}
         
         VariableValueWrapper operator[](const char *fieldName);
     };

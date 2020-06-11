@@ -92,9 +92,9 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
             FILE *f;
             char errDesc[0x40] = { 0 };
             if (errno_t err = freopen_s(&f, "CONOUT$", "w", stdout))
-                GameData::Com_Error(0, 
-                    "freopen_s() %s", 
-                    strerror_s<0x40>(errDesc, err));
+                GameData::Com_Error(0, "freopen_s(stdout) %s", strerror_s<0x40>(errDesc, err));
+            if (errno_t err = freopen_s(&f, "CONOUT$", "w", stderr))
+                GameData::Com_Error(0, "freopen_s(stderr) %s", strerror_s<0x40>(errDesc, err));
 
             // Detour all the functions designated
             InsertDetour(&GameData::Menu_PaintAll, GameData::Menu_PaintAllDetourInvoke);
@@ -115,6 +115,7 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
             if (!FreeConsole())
                 GameData::Com_Error(0, FormatError(GetLastError()).c_str());
             fclose(stdout);
+            fclose(stderr);
 
             // Remove all the detours used
             for (auto i : detours)

@@ -318,6 +318,7 @@ namespace GameData
         }
     }
 
+#ifdef _DEBUG
     LONG (__stdcall *TopLevelExceptionFilter)(struct _EXCEPTION_POINTERS *ExceptionInfo)
         = (LONG (__stdcall *)(_EXCEPTION_POINTERS *))TopLevelExceptionFilter_a;
     void TopLevelExceptionFilterDetour(struct _EXCEPTION_POINTERS *ExceptionInfo)
@@ -327,32 +328,129 @@ namespace GameData
         PDWORD_PTR currEIP =
             (PDWORD_PTR)ExceptionInfo->ContextRecord->Eip;
 
-        printf("EAX: %p\n", (void *)ExceptionInfo->ContextRecord->Eax);
-        printf("EBX: %p\n", (void *)ExceptionInfo->ContextRecord->Ebx);
-        printf("ECX: %p\n", (void *)ExceptionInfo->ContextRecord->Ecx);
-        printf("EDX: %p\n", (void *)ExceptionInfo->ContextRecord->Edx);
-        printf("EDI: %p\n", (void *)ExceptionInfo->ContextRecord->Edi);
-        printf("ESI: %p\n", (void *)ExceptionInfo->ContextRecord->Esi);
-        printf("EBP: %p\n", (void *)ExceptionInfo->ContextRecord->Ebp);
-        printf("ESP: %p\n", (void *)currESP);
-        printf("EIP: %p\n", (void *)currEIP);
+        // Print all the register values
+        std::cerr << std::hex;
+        std::cerr << "EAX: " << (void *)ExceptionInfo->ContextRecord->Eax << std::endl;
+        std::cerr << "EBX: " << (void *)ExceptionInfo->ContextRecord->Ebx << std::endl;
+        std::cerr << "ECX: " << (void *)ExceptionInfo->ContextRecord->Ecx << std::endl;
+        std::cerr << "EDX: " << (void *)ExceptionInfo->ContextRecord->Edx << std::endl;
+        std::cerr << "EDI: " << (void *)ExceptionInfo->ContextRecord->Edi << std::endl;
+        std::cerr << "ESI: " << (void *)ExceptionInfo->ContextRecord->Esi << std::endl;
+        std::cerr << "EBP: " << (void *)ExceptionInfo->ContextRecord->Ebp << std::endl;
+        std::cerr << "ESP: " << (void *)currESP << std::endl;
+        std::cerr << "EIP: " << (void *)currEIP << std::endl;
 
-        printf("\nSTACK VIEW:\n");
+        // Specific for my code!
+        // Finds all enum addresses stored in an anonymous enum to be used for matches
+        // with the call stack values
+        TCHAR szFolderPath[MAX_PATH];
+        std::unordered_map<DWORD, std::string> addrs;
+        // Look for my documents directory
+        if (SHGetSpecialFolderPath(*hwnd, szFolderPath, CSIDL_MYDOCUMENTS, false))
+        {
+            // Append my directory for my project and Iterate through all files in project directory
+            std::string path(szFolderPath);
+            std::filesystem::directory_iterator it(path + "\\Visual Studio 2017\\WaWDll\\WaWDll");
+            for (const auto &i : it)
+            {
+                // Look for the header files in the project
+                std::string str = i.path().string();
+                size_t index;
+                if ((index = str.find(".hpp")) == std::string::npos)
+                    continue;
+
+                // Find where an anonymous enum is located and begin parsing
+                std::ifstream file(str);
+                if (file.good())
+                {
+                    std::string tmp;
+                    bool startParsing = false;
+                    while (std::getline(file, tmp))
+                    {
+                        if (tmp.find("enum") != std::string::npos)
+                        {
+                            startParsing = true;
+                            break;
+                        }
+                    }
+
+                    if (startParsing)
+                    {
+                        while (std::getline(file, tmp))
+                        {
+                            // Find the part with the function name and address, 
+                            // remove the prefix and suffix from the message
+                            // and store it in the map of addresses
+                            int nameStart, addrStart;
+                            if ((nameStart = tmp.find("_a")) != std::string::npos
+                                && (addrStart = tmp.find("= 0x")) != std::string::npos)
+                            {
+                                std::string name = tmp.substr(0, nameStart);
+                                std::string addr = tmp.substr(addrStart + 4);
+                                while (isspace(name.at(0)))
+                                    name.erase(0, 1);
+                                addr.pop_back();
+                                addrs.insert(
+                                    std::pair<int, std::string>(strtol(addr.c_str(), nullptr, 0x10), name)
+                                );
+                            }
+                            if (tmp.find("}") != std::string::npos)
+                                break;
+                        }
+                    }
+                }
+                file.close();
+            }
+        }
+
+        constexpr unsigned TEXTSEGSTART = 0x401000;
+        constexpr unsigned TEXTSEGEND = 0x7EB000;
+        // For 8 addresses, print the caller address 
+        std::cerr << "\nCALL STACK:\n";
+        for (int i = 0; i < 8; currESP++)
+        {
+            // If the value on the stack exists in the text segment
+            if (*currESP >= TEXTSEGSTART && *currESP <= TEXTSEGEND)
+            {
+                // Get the return location and add the bytes the relative offset in the opcode
+                DWORD caller = *(DWORD *)((int)*currESP - 4) + *currESP;
+                if (caller >= TEXTSEGSTART && caller <= TEXTSEGEND)
+                {
+                    // See if the caller matches any functions defined in this project
+                    // if not 
+                    auto result = std::find_if(addrs.begin(), addrs.end(),
+                        [caller](const auto &i)
+                        {
+                            return i.first == caller;
+                        });
+                    if (result != addrs.end())
+                        std::cerr << result->second << std::endl;
+                    else
+                        std::cerr << (void *)caller << std::endl;
+                    i++;
+                }
+            }
+        }
+
+        // Reset the stack pointer copy and print the next
+        currESP = (PDWORD_PTR)ExceptionInfo->ContextRecord->Esp;
+        std::cerr << "\nSTACK VIEW:\n";
         for (int i = 0; i < 8; i++)
         {
             if (i)
                 ++currESP;
-            printf("%p: %p ", (void *)currESP, (void *)*currESP);
+            std::cerr << (void *)currESP << ": " << (void *)*currESP << " ";
             for (int j = 0; j < 3; j++)
-                printf("%p ", (void *)*(++currESP));
-            printf("\n");
+                std::cerr << " " << (void *)*(++currESP);
+            std::cerr << std::endl;
         }
 
-        if (CopyTextToClipboard(GameData::va("%p", currEIP)))
-            printf("\nInstruction pointer copied to clipboard\n");
+        if (CopyAddressToClipboard(currEIP))
+            std::cerr << "\nInstruction pointer copied to clipboard\n";
         else
-            printf("\nProblem copying instruction pointer to clipboard\n");
+            std::cerr << "\nProblem copying instruction pointer to clipboard\n";
     }
+#endif
 
     void __usercall *Menu_PaintAll = (void __usercall *)Menu_PaintAll_a;
     void __declspec(naked) Menu_PaintAllDetourInvoke(UiContext *dc)

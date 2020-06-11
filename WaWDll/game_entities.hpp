@@ -434,12 +434,12 @@ namespace GameData
    
     enum
     {
-        CG_GetPlayerViewOrigin_a            = 0x468A00,
-        G_GetPlayerViewOrigin_a             = 0x4EC4E0,
-        CG_GetPlayerWeapon_a                = 0x46BF20,
-        LookAtKiller_a                      = 0x4F5450,
-        Actor_FirstActor_a                  = 0x4B5850,
-        Actor_NextActor_a                   = 0x4B58A0,
+        CG_GetPlayerViewOrigin_a = 0x468A00,
+        G_GetPlayerViewOrigin_a  = 0x4EC4E0,
+        CG_GetPlayerWeapon_a     = 0x46BF20,
+        LookAtKiller_a           = 0x4F5450,
+        Actor_FirstActor_a       = 0x4B5850,
+        Actor_NextActor_a        = 0x4B58A0,
     };
 
     // Actors
@@ -452,7 +452,7 @@ namespace GameData
     void __usercall CL_GetUserCmd(int cmdNum, usercmd_s *cmd);
     usercmd_s *__usercall CL_GetUserCmd(int cmdNum);
     bool __usercall CG_GetPlayerViewOrigin(int localClientNum, playerState_s *ps, float out[3]);
-    void __usercall G_GetPlayerViewOrigin(playerState_s *ps, float *origin);
+    void __usercall G_GetPlayerViewOrigin(playerState_s *ps, float origin[3]);
 }
 
 /**

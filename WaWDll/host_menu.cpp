@@ -19,9 +19,9 @@ namespace GameData
     {
         VariableValue index;
         const char *err = "Variable is not a pointer";
-        if (this->stackVal.type == VAR_POINTER)
+        if (this->stackVal->type == VAR_POINTER)
         {
-            for (DWORD id = FindFirstSibling(SCRIPTINSTANCE_SERVER, this->stackVal.u.stringValue);
+            for (DWORD id = FindFirstSibling(SCRIPTINSTANCE_SERVER, this->stackVal->u.stringValue);
                 id;
                 id = FindNextSibling(SCRIPTINSTANCE_SERVER, id))
             {
@@ -29,7 +29,7 @@ namespace GameData
                 {
                     index.type = VAR_STRING;
                     index.u.stringValue = GetVariableName(SCRIPTINSTANCE_SERVER, id);
-                    return Scr_EvalArray(SCRIPTINSTANCE_SERVER, &this->stackVal, &index);
+                    return Scr_EvalArray(SCRIPTINSTANCE_SERVER, this->stackVal, &index);
                 }
             }
             err = "Variable not found";
@@ -233,18 +233,6 @@ namespace GameData
         Scr_AddObject(inst, Scr_GetEntityId(inst, ent->s.number, 0, 0));
     }
 
-    void __usercall Scr_ClearOutParams(scriptInstance_t inst)
-    {
-        DWORD addr = Scr_ClearOutParams_a;
-        __asm
-        {
-            mov         edi, inst
-            call        addr
-        }
-
-        gScrVmPub[inst].inparamcount = 0;
-    }
-
     unsigned int __usercall Scr_GetEntityId(scriptInstance_t inst, int entnum, int classnum, short clientNum)
     {
         int result;
@@ -264,8 +252,6 @@ namespace GameData
 
     void __usercall Scr_GetVector(scriptInstance_t inst, float *vectorValue, unsigned int index)
     {
-        Scr_SetParameters(inst);
-
         DWORD addr = Scr_GetVector_a;
         __asm
         {
@@ -377,11 +363,6 @@ namespace GameData
         return result;
     }
 
-    void Scr_SetParameters(scriptInstance_t inst)
-    {
-        gScrVmPub[inst].outparamcount = gScrVmPub[inst].inparamcount;
-    }
-
     void (__cdecl *__usercall Scr_GetMethod(const char **pName, int *pType))(scr_entref_t entref)
     {
         void (__cdecl *result)(scr_entref_t);
@@ -394,6 +375,22 @@ namespace GameData
             mov         result, eax
         }
         return result;
+    }
+
+    void Scr_SetParameters(scriptInstance_t inst)
+    {
+        gScrVmPub[inst].outparamcount = gScrVmPub[inst].inparamcount;
+    }
+
+    void __usercall Scr_ClearOutParams(scriptInstance_t inst)
+    {
+        DWORD addr = Scr_ClearOutParams_a;
+        __asm
+        {
+            mov         edi, inst
+            call        addr
+        }
+        gScrVmPub[inst].inparamcount = 0;
     }
 
     void (__cdecl *GetFunction(scriptInstance_t inst, const char **pName, int *pType))()
@@ -425,6 +422,7 @@ namespace GameData
         gclient_s *ent = g_entities[client].client;
 
         vec3_t origin = Scr_GetTagOrigin(client, "tag_eye");
+        origin.x -= 20;
         origin.x -= 20;
         origin.z -= 15;
         
