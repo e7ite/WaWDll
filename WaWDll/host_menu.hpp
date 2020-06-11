@@ -13,7 +13,7 @@ namespace GameData
     float *dir, const float *forwardDir, const float *rightDir, const float *upDir,
     float maxRange);
     int __usercall AimTarget_GetTagPos(int localClientNum, centity_s *cent,
-        unsigned __int16 tagname, float *pos);
+        unsigned short tagname, float *pos);
 
     enum scriptInstance_t : int
     {
@@ -135,10 +135,10 @@ namespace GameData
         };
 
         scriptInstance_t inst;
-        VariableValue stackVal;
+        VariableValue *stackVal;
 
         ScriptObject(scriptInstance_t inst, VariableValue *top)
-            : inst(inst), stackVal(*top) {}
+            : inst(inst), stackVal(top) {}
         
         VariableValueWrapper operator[](const char *fieldName);
     };
@@ -205,8 +205,8 @@ namespace GameData
     void __usercall Scr_AddVector(scriptInstance_t inst, const float *value);
     void __usercall Scr_AddObject(scriptInstance_t inst, unsigned int id);
     void Scr_AddEntity(scriptInstance_t inst, gentity_s *ent);
-    void Scr_SetParameters(scriptInstance_t inst, int argCount);
-    void Scr_ClearOutParams(scriptInstance_t inst, int argCount);
+    void Scr_SetParameters(scriptInstance_t inst);
+    void __usercall Scr_ClearOutParams(scriptInstance_t inst);
     unsigned int __usercall Scr_GetEntityId(scriptInstance_t inst, int entnum, int classnum, short clientNum);
     void __usercall Scr_GetVector(scriptInstance_t inst, float *vectorValue, unsigned int index);
     scr_vartypes_t __usercall Scr_GetType(scriptInstance_t inst, unsigned int index);
