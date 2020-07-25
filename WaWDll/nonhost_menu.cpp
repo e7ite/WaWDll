@@ -20,14 +20,14 @@ namespace GameData
     void (__stdcall *LeaveCriticalSection)(LPCRITICAL_SECTION lpCriticalSection)
         = *(void (__stdcall **)(LPCRITICAL_SECTION))LeaveCriticalSection_a;
     dvar_s *(__cdecl *Dvar_FindVar)(const char *dvarName)
-        = (dvar_s *(*)(const char *))Dvar_FindVar_a;
+        = (dvar_s *(__cdecl *)(const char *))Dvar_FindVar_a;
     Font_s *(__cdecl *R_RegisterFont)(const char *font, int imageTrac)
-        = (Font_s *(*)(const char *, int))R_RegisterFont_a;
+        = (Font_s *(__cdecl *)(const char *, int))R_RegisterFont_a;
     void *(__cdecl *Material_RegisterHandle)(const char *materialName, int imageTrac)
-        = (void *(*)(const char *, int))Material_RegisterHandle_a;
+        = (void *(__cdecl *)(const char *, int))Material_RegisterHandle_a;
     void (__cdecl *CG_DrawRotatedPic)(ScreenPlacement *scrPlace, float x, float y,
         float width, float height, float angle, const float *color, void *material)
-        = (void (*)(ScreenPlacement *, float, float,
+        = (void (__cdecl *)(ScreenPlacement *, float, float,
             float, float, float, const float*, void*))CG_DrawRotatedPic_a;
     void (__cdecl *R_AddCmdDrawStretchPicInternal)(const char *text, int maxChars,
         void *font, float x, float y, float xScale, float yScale, float rotation, int style)
@@ -35,7 +35,7 @@ namespace GameData
             float, float, float, int))CL_DrawTextPhysical_a;
     int (__cdecl *UI_TextWidthInternal)(const char *text, int maxChars,
         void *font, float scale)
-        = (int (*)(const char *, int, void *, float))UI_TextWidth_a;
+        = (int (__cdecl *)(const char *, int, void *, float))UI_TextWidth_a;
     char *(__cdecl *va)(const char *fmt, ...) 
         = (char *(__cdecl *)(const char *, ...))va_a;
     void (__cdecl *CG_GameMessage)(int localClientNum, const char *msg, int length)
@@ -516,7 +516,7 @@ namespace GameData
     }
 
     void (__cdecl *CL_KeyEvent)(int localClientNum, int value, int down,
-        unsigned int time) = (void(*)(int, int, int, unsigned int))CL_KeyEvent_a;
+        unsigned int time) = (void(__cdecl *)(int, int, int, unsigned int))CL_KeyEvent_a;
     void CL_KeyEventDetour(int localClientNum, int key, int down, int time)
     {
         Menu &menu = Menu::Instance();

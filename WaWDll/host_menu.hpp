@@ -3,7 +3,6 @@
 #include "game_entities.hpp"
 #include "math.hpp"
 
-// Forward declared functions
 bool CopyAddressToClipboard(void *address);
 
 namespace GameData
