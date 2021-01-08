@@ -19,6 +19,12 @@ If you have any questions about this program or want any explanations to anythin
 
 ## Future Updates
 - Host All-Client Mod Menu
+- Rendering the game mouse cursor always when menu is open
+
+## Controls
+- Home button opens the menu
+- Backspace exits submenus and menus
+- Use mouse cursor to highlight options, and left-click to select.
 
 ## Build Instructions
 1. Download and install Microsoft Detours Research package https://github.com/microsoft/Detours
