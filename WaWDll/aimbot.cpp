@@ -256,7 +256,9 @@ int Aimbot::GetAimbotTarget() const
 
 void Aimbot::SetAngles() const
 {
-    *(vec3_t *)GameData::clientActive->viewangles = this->targetAngles;
+	GameData::clientActive->viewangles[0] = this->targetAngles.pitch;
+	GameData::clientActive->viewangles[1] = this->targetAngles.yaw;
+	GameData::clientActive->viewangles[2] = this->targetAngles.roll;
 }
 
 void Aimbot::RemoveSpread(GameData::playerState_s *ps, GameData::usercmd_s *cmd) const

@@ -9,13 +9,13 @@ namespace GameData
     {
         struct PrimedSound
         {
-            const char  *directory;                         // 0x00
-            const char  *buffer;                            // 0x04
+            const char *directory;							// 0x00
+            const char *buffer;								// 0x04
             unsigned int size;                              // 0x08
         } *primeSnd;                                    // 0x04
         struct LoadedSound
         {
-            char        pad00[0x4];                         // 0x00
+            char pad00[0x4];								// 0x00
             const char *directory;                          // 0x04
             const char *name;                               // 0x08               
         } loadSnd;                                      // 0x0C
@@ -23,28 +23,28 @@ namespace GameData
 
     struct SoundFile
     {
-        char         pad00[0x4];                        // 0x00
+        char pad00[0x4];								// 0x00
         SoundFileRef file;                              // 0x04
     }; // Size = 0x90
 
     struct snd_alias_t
     {
-        const char  *name;                              // 0x00
+        const char *name;								// 0x00
         unsigned int id;                                // 0x04
-        char         pad00[0x4];                        // 0x08
+        char pad00[0x4];								// 0x08
         const char **secondaryname;                     // 0x0C
-        char         pad01[0x4];                        // 0x10
-        SoundFile   *soundFile;                         // 0x14
-        int          sequence;                          // 0x18
-        char         pad02[0x1C];                       // 0x1C
-        float        distReverbMax;                     // 0x38
-        float        probability;                       // 0x3C
-        char         pad03[0x44];                       // 0x40
-        int          flags;                             // 0x84
-        char         dryCurve;                          // 0x88
-        char         pad04[0x1F];                       // 0x89
-        char         flags2;                            // 0xA8
-        char         pad05[0xF];                        // 0xA9
+        char pad01[0x4];								// 0x10
+        SoundFile *soundFile;							// 0x14
+        int sequence;									// 0x18
+        char pad02[0x1C];								// 0x1C
+        float distReverbMax;							// 0x38
+        float probability;								// 0x3C
+        char pad03[0x44];								// 0x40
+        int flags;										// 0x84
+        char dryCurve;									// 0x88
+        char pad04[0x1F];								// 0x89
+        char flags2;									// 0xA8
+        char pad05[0xF];								// 0xA9
     }; // Size = 0xB8
 
     struct SndStartAliasInfo
@@ -54,7 +54,7 @@ namespace GameData
 
     struct SndBank
     {
-        const char  *name;                              // 0x00
+        const char *name;								// 0x00
         snd_alias_t *head;                              // 0x04
         unsigned int aliasCount;                        // 0x08
     }; // Size = 0x0C
@@ -70,24 +70,24 @@ namespace GameData
         struct XAssetPool
         {
             T *freeHead;
-            T  entries[N];
+            T entries[N];
         };
         XAssetPool<SndBank, 0x3E80> sound;
     };
 
     struct XAsset
     {
-        const char   *name;                             // 0x00
-        XAssetType    type;                             // 0x04
-        int           assets;                           // 0x08
+        const char *name;								// 0x00
+        XAssetType type;								// 0x04
+        int assets;										// 0x08
         XAssetHeader *header;                           // 0x0C
     }; // Size = 0x10
 
     struct snd_buffer
     {
-        char        *data;                              // 0x000
-        int          reference_count;                   // 0x004
-        char         filename[0x104];                   // 0x008
+        char *data;										// 0x000
+        int reference_count;							// 0x004
+        char filename[0x104];							// 0x008
         unsigned int offset_in_file;                    // 0x10C
         unsigned int data_size;                         // 0x110
         unsigned int file_size;                         // 0x114
@@ -95,28 +95,28 @@ namespace GameData
 
     struct snd_asset
     {
-        char         pad00[0xC];                        // 0x000
+        char pad00[0xC];								// 0x000
         unsigned int header_size;                       // 0x00C
         unsigned int block_size;                        // 0x010
         unsigned int buffer_size;                       // 0x014
-        char         pad01[0x8];                        // 0x018
-        char         data[0x830];                       // 0x020
+        char pad01[0x8];								// 0x018
+        char data[0x830];								// 0x020
     }; // Size = 0x850
 
     struct snd_voice_t
     {
-        int          loadingState;                      // 0x000
-        int          srcChannelCount;                   // 0x004
-        int          baserate;                          // 0x008
-        int          endtime;                           // 0x00C
-        int          totalMsec;                         // 0x010
-        int          handle;                            // 0x014
-        int          entity_update;                     // 0x018
-        char         pad00[0x1C];                       // 0x01C
-        int          notify_context;                    // 0x038
-        char         pad01[0x20];                       // 0x03C
+        int loadingState;								// 0x000
+        int srcChannelCount;							// 0x004
+        int baserate;									// 0x008
+        int endtime;									// 0x00C
+        int totalMsec;									// 0x010
+        int handle;										// 0x014
+        int entity_update;								// 0x018
+        char pad00[0x1C];								// 0x01C
+        int notify_context;								// 0x038
+        char pad01[0x20];								// 0x03C
         snd_alias_t *aliases[2];                        // 0x05C
-        char         pad02[0x128];                      // 0x064
+        char pad02[0x128];								// 0x064
     }; // Size = 0x18C
 #pragma pack(pop)
 

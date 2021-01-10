@@ -4,6 +4,8 @@
 // Forward declarations for detours
 namespace GameData
 {
+    enum scriptInstance_t : int;
+
     extern void __usercall *AimTarget_GetTagPos_0;
     void AimTarget_GetTagPos_0DetourInvoke(centity_s *cent,
         unsigned short bone, float *out);
@@ -12,7 +14,6 @@ namespace GameData
     void CL_CreateNewCommandsDetourInvoke();
     void CL_CreateNewCommandsDetour();
 
-    enum scriptInstance_t;
     extern void __usercall *VM_Notify;
     void VM_NotifyDetourInvoke(scriptInstance_t inst,
         int notifyListOwnerId, int stringValue, struct VariableValue *top);
