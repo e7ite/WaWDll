@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/mekgh42kq15fjkv6?svg=true)](https://ci.appveyor.com/project/e7ite/wawdll)
+
 # WaWDll
 Simple mod menu for Call of Duty World at War on Steam for Windows. Reverse engineering this game has taught me so much about the x86 instruction set, layouts of data in the executable, the layout of Windows PE executables, etc. Using this knowledge I was able to find many game objects, and I learned a ton of how the Call of Duty engine works. This game has no ASLR so we are allowed to get static pointers to game objects in the .data segment, and game subroutines in the .text segment in the executable. I used Explorer Suite to dump the game, and I used IDA to reverse engineer the game and find all the information that I have in the project.
 
