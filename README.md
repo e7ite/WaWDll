@@ -6,7 +6,7 @@ Simple mod menu for Call of Duty World at War on Steam for Windows. Reverse engi
 If you have any questions about this program or want any explanations to anything, feel free to message me on Discord @E7ite#1156
 
 ## Features
-- Mod menu
+- Non-Host Mod Menu
 - Support for All Resolutions
 - Regular Aimbot for Zombies
 - ESP (Extra Sensory Perception) for Zombies.
