@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nonhost_menu.hpp"
+#include "host_menu.hpp"
 #include "weapon.hpp"
 #include "game_entities.hpp"
 

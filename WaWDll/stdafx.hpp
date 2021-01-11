@@ -9,7 +9,7 @@
 
 // Windows Library
 #include <windows.h>
-#include <detours/detours.h>
+#include <detours.h>
 #ifdef _DEBUG
 #include <ShlObj_core.h>
 #endif // _DEBUG
@@ -46,9 +46,9 @@
 // Credit to StackOverflow answer for the preprocessor hack for generating a random
 // variable name 
 #ifdef _DEBUG
-#define PP_CAT(a,b) PP_CAT_I(a, b)
-#define PP_CAT_I(a, b) PP_CAT_II(~, a ## b)
 #define PP_CAT_II(p, res) res
+#define PP_CAT_I(a, b) PP_CAT_II(~, a ## b)
+#define PP_CAT(a,b) PP_CAT_I(a, b)
 #define UNIQUE_NAME(base) PP_CAT(base, __COUNTER__)
 
 #define TESTIMPL(code, name) \

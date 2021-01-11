@@ -21,7 +21,7 @@ namespace GameData
         SCRIPT_INSTANCE_MAX   = 0x2,
     };
 
-    enum scr_vartypes_t
+    enum scr_vartypes_t : int
     {
         VAR_UNDEFINED         = 0x0,
         VAR_BEGIN_REF         = 0x1,
