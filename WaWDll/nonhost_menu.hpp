@@ -23,58 +23,58 @@ namespace GameData
 
     union DvarValue
     {
-        bool enabled;									// 0x01
-        int integer;									// 0x04
-        unsigned int unsignedInt;						// 0x04
-        __int64 integer64;							    // 0x08
+        bool enabled;                                   // 0x01
+        int integer;                                    // 0x04
+        unsigned int unsignedInt;                       // 0x04
+        __int64 integer64;                              // 0x08
         unsigned __int64 unsignedInt64;                 // 0x08
-        float value;									// 0x04
-        float vector[4];			                    // 0x10
-        const char *string;								// 0x04
-        char color[4];									// 0x04
+        float value;                                    // 0x04
+        float vector[4];                                // 0x10
+        const char *string;                             // 0x04
+        char color[4];                                  // 0x04
     }; // Size = 0x10
 
     struct dvar_s
     {
-        const char *name;								// 0x00
-        const char *description;						// 0x04
-        unsigned int flags;								// 0x08
-        char pad00[0x4];								// 0x0C
-        DvarValue current;								// 0x10
-        DvarValue latched;								// 0x20
-        DvarValue reset;								// 0x30
-        DvarValue saved;								// 0x40
-        char pad01[0x8];								// 0x50
-        dvar_s *next;									// 0x58
+        const char *name;                               // 0x00
+        const char *description;                        // 0x04
+        unsigned int flags;                             // 0x08
+        char pad00[0x4];                                // 0x0C
+        DvarValue current;                              // 0x10
+        DvarValue latched;                              // 0x20
+        DvarValue reset;                                // 0x30
+        DvarValue saved;                                // 0x40
+        char pad01[0x8];                                // 0x50
+        dvar_s *next;                                   // 0x58
     }; // Size = 0x5C
 
      struct UiContext
     {
-        int contentIndex;								// 0x00
+        int contentIndex;                               // 0x00
         float bias;                                     // 0x04
-        int realTime;									// 0x08
-        int frameTime;									// 0x0C
+        int realTime;                                   // 0x08
+        int frameTime;                                  // 0x0C
         float cursorPos[2];                             // 0x10
-        int isCursorVisible;							// 0x18
-        int screenDimensions[2];						// 0x1C
+        int isCursorVisible;                            // 0x18
+        int screenDimensions[2];                        // 0x1C
         float screenAspect;                             // 0x24
         float fps;                                      // 0x28
     }; // Size = 0x2C
 
     struct Font_s
     {
-        const char *fontName;							// 0x00
-        int pixelHeight;								// 0x04
-        int glyphCount;									// 0x08
+        const char *fontName;                           // 0x00
+        int pixelHeight;                                // 0x04
+        int glyphCount;                                 // 0x08
         struct Material *material;                      // 0x0C
         struct Material *glowMaterial;                  // 0x10
-        struct Glyph *glyphs;							// 0x14
+        struct Glyph *glyphs;                           // 0x14
     }; // Size = 0x18
 
     struct KeyState
     {
-        int down;										// 0x00
-        int repeats;									// 0x04
+        int down;                                       // 0x00
+        int repeats;                                    // 0x04
         const char *binding;                            // 0x08
         const char *binding2;                           // 0x0C
     }; // Size = 0x10
