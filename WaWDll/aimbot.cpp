@@ -3,7 +3,7 @@
 
 namespace GameData
 {
-	enum scriptInstance_t : int;
+    enum scriptInstance_t : int;
 
     int __usercall AimTarget_GetTagPos(int localClientNum, centity_s *cent,
         unsigned short tagname, float *pos)
@@ -258,9 +258,9 @@ int Aimbot::GetAimbotTarget() const
 
 void Aimbot::SetAngles() const
 {
-	GameData::clientActive->viewangles[0] = this->targetAngles.pitch;
-	GameData::clientActive->viewangles[1] = this->targetAngles.yaw;
-	GameData::clientActive->viewangles[2] = this->targetAngles.roll;
+    GameData::clientActive->viewangles[0] = this->targetAngles.pitch;
+    GameData::clientActive->viewangles[1] = this->targetAngles.yaw;
+    GameData::clientActive->viewangles[2] = this->targetAngles.roll;
 }
 
 void Aimbot::RemoveSpread(GameData::playerState_s *ps, GameData::usercmd_s *cmd) const

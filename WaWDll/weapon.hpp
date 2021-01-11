@@ -36,30 +36,30 @@ namespace GameData
 #pragma pack(push, 1)
     struct WeaponDef
     {
-        const char *szInternalName;						// 0x000
-        const char *szOverlayName;						// 0x004
-        char pad00[0x13C];								// 0x008
-        int weapType;									// 0x144
-        int weapClass;									// 0x148
-        int penetrateType;								// 0x14C
-        int impactType;									// 0x150
-        int inventoryType;								// 0x154
-        int fireType;									// 0x158
-        int clipType;									// 0x15C
-        int itemIndex;									// 0x160
-        char pad01[0x13C];								// 0x164
+        const char *szInternalName;                     // 0x000
+        const char *szOverlayName;                      // 0x004
+        char pad00[0x13C];                              // 0x008
+        int weapType;                                   // 0x144
+        int weapClass;                                  // 0x148
+        int penetrateType;                              // 0x14C
+        int impactType;                                 // 0x150
+        int inventoryType;                              // 0x154
+        int fireType;                                   // 0x158
+        int clipType;                                   // 0x15C
+        int itemIndex;                                  // 0x160
+        char pad01[0x13C];                              // 0x164
         struct Material *reticleSlide;                  // 0x2A0
-        char pad02[0x134];								// 0x2A4
+        char pad02[0x134];                              // 0x2A4
         struct Material *hudIcon;                       // 0x3D8
-        int hudIconRatio;								// 0x3DC
+        int hudIconRatio;                               // 0x3DC
         struct Material *ammoCounterIcon;               // 0x3E0
-        int ammoCounterIconRatio;						// 0x3E4
-        char pad03[0x24];								// 0x3E8
-        int shotCount;									// 0x40C
-        char pad04[0x420];								// 0x410
-        float fAdsSpread;								// 0x830
-        char pad05[0xEC];								// 0x834
-        float fMinDamageRange;							// 0x920
+        int ammoCounterIconRatio;                       // 0x3E4
+        char pad03[0x24];                               // 0x3E8
+        int shotCount;                                  // 0x40C
+        char pad04[0x420];                              // 0x410
+        float fAdsSpread;                               // 0x830
+        char pad05[0xEC];                               // 0x834
+        float fMinDamageRange;                          // 0x920
     }; // Current Size = 0x924
 #pragma pack(pop)
 

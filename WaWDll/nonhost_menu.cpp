@@ -3,7 +3,7 @@
 
 namespace GameData
 {
-    int *cl_connectionState	  = (int *)0x305842C;
+    int *cl_connectionState   = (int *)0x305842C;
     UiContext *uiDC           = (UiContext *)0x208E920;
     ScreenPlacement *scrPlace = (ScreenPlacement *)0x957360;
     KeyState *keys            = (KeyState *)0x951C44;
