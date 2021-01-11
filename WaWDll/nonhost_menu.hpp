@@ -8,7 +8,7 @@ bool CopyAddressToClipboard(void *address);
 
 namespace GameData
 {
-    enum scriptInstance_t;
+    enum scriptInstance_t : int;
 
 #pragma pack(push, 1)
     struct rectDef_s
@@ -17,64 +17,64 @@ namespace GameData
         float y;                                        // 0x04
         float w;                                        // 0x08
         float h;                                        // 0x0C
-        int   horzAlign;                                // 0x10
-        int   vertAlign;                                // 0x14
+        int horzAlign;                                  // 0x10
+        int vertAlign;                                  // 0x14
     }; // Size = 0x18
 
     union DvarValue
     {
-        bool             enabled;                       // 0x01
-        int              integer;                       // 0x04
-        unsigned int     unsignedInt;                   // 0x04
-        __int64          integer64;                     // 0x08
+        bool enabled;									// 0x01
+        int integer;									// 0x04
+        unsigned int unsignedInt;						// 0x04
+        __int64 integer64;							    // 0x08
         unsigned __int64 unsignedInt64;                 // 0x08
-        float            value;                         // 0x04
-        float            vector[4];                     // 0x10
-        const char      *string;                        // 0x04
-        char             color[4];                      // 0x04
+        float value;									// 0x04
+        float vector[4];			                    // 0x10
+        const char *string;								// 0x04
+        char color[4];									// 0x04
     }; // Size = 0x10
 
     struct dvar_s
     {
-        const char  *name;                              // 0x00
-        const char  *description;                       // 0x04
-        unsigned int flags;                             // 0x08
-        char         pad00[0x4];                        // 0x0C
-        DvarValue    current;                           // 0x10
-        DvarValue    latched;                           // 0x20
-        DvarValue    reset;                             // 0x30
-        DvarValue    saved;                             // 0x40
-        char         pad01[0x8];                        // 0x50
-        dvar_s      *next;                              // 0x58
+        const char *name;								// 0x00
+        const char *description;						// 0x04
+        unsigned int flags;								// 0x08
+        char pad00[0x4];								// 0x0C
+        DvarValue current;								// 0x10
+        DvarValue latched;								// 0x20
+        DvarValue reset;								// 0x30
+        DvarValue saved;								// 0x40
+        char pad01[0x8];								// 0x50
+        dvar_s *next;									// 0x58
     }; // Size = 0x5C
 
      struct UiContext
     {
-        int   contentIndex;                             // 0x00
+        int contentIndex;								// 0x00
         float bias;                                     // 0x04
-        int   realTime;                                 // 0x08
-        int   frameTime;                                // 0x0C
+        int realTime;									// 0x08
+        int frameTime;									// 0x0C
         float cursorPos[2];                             // 0x10
-        int   isCursorVisible;                          // 0x18
-        int   screenDimensions[2];                      // 0x1C
+        int isCursorVisible;							// 0x18
+        int screenDimensions[2];						// 0x1C
         float screenAspect;                             // 0x24
         float fps;                                      // 0x28
     }; // Size = 0x2C
 
     struct Font_s
     {
-        const char      *fontName;                      // 0x00
-        int              pixelHeight;                   // 0x04
-        int              glyphCount;                    // 0x08
+        const char *fontName;							// 0x00
+        int pixelHeight;								// 0x04
+        int glyphCount;									// 0x08
         struct Material *material;                      // 0x0C
         struct Material *glowMaterial;                  // 0x10
-        struct Glyph    *glyphs;                        // 0x14
+        struct Glyph *glyphs;							// 0x14
     }; // Size = 0x18
 
     struct KeyState
     {
-        int         down;                               // 0x00
-        int         repeats;                            // 0x04
+        int down;										// 0x00
+        int repeats;									// 0x04
         const char *binding;                            // 0x08
         const char *binding2;                           // 0x0C
     }; // Size = 0x10
@@ -136,11 +136,11 @@ namespace GameData
         Com_Printf_a                = 0x59A2C0,
     };
 
-    extern int             *cl_connectionState;
+    extern int *cl_connectionState;
     extern ScreenPlacement *scrPlace;
-    extern UiContext       *uiDC;
-    extern KeyState        *keys;
-    extern HWND            *hwnd;
+    extern UiContext *uiDC;
+    extern KeyState *keys;
+    extern HWND *hwnd;
 
     // Game's imported library
     extern int (__stdcall *MessageBoxA)(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
@@ -303,8 +303,8 @@ struct OptionData
 {
     union Data
     {
-        bool  boolean;
-        int   integer;
+        bool boolean;
+        int integer;
         float rational;
 
         Data()               : integer(0) {}
@@ -346,15 +346,15 @@ struct Menu
     // Data structure where all options in menu are stored
     std::vector<std::unordered_map<std::string, Option>> options;
     // Used to synchronize detours in menu
-    CRITICAL_SECTION                                     critSection;
+    CRITICAL_SECTION critSection;
     // If menu is open
-    bool                                                 open;
+    bool open;
     // Used to discern whether a decrease/increase was called in Menu::IntModify
-    bool                                                 toggled;
+    bool toggled;
     // Current submenu
-    Submenu                                              currentSub;
+    Submenu currentSub;
     // Used to delay the speed of activing an option again
-    unsigned int                                         timer;
+    unsigned int timer;
 
     /**
      * @brief Initializes menu and inserts all options into it

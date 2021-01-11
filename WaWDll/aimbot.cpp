@@ -3,6 +3,8 @@
 
 namespace GameData
 {
+	enum scriptInstance_t : int;
+
     int __usercall AimTarget_GetTagPos(int localClientNum, centity_s *cent,
         unsigned short tagname, float *pos)
     {
@@ -206,7 +208,7 @@ bool Aimbot::ExecuteAimbot()
         {
             // Get entity tag position in world 
             GameData::AimTarget_GetTagPos(0, &GameData::cg_entitiesArray[target],
-                GameData::SL_FindString((GameData::scriptInstance_t)0, "j_head"), this->targetAngles);
+                GameData::SL_FindString(GameData::SCRIPTINSTANCE_SERVER, "j_head"), this->targetAngles);
 
             // Convert from 3D vector to angles and subtract the delta angles
             GameData::vectoangles(this->targetAngles - GameData::cgameGlob->refdef.vieworg,
@@ -224,7 +226,7 @@ int Aimbot::GetAimbotTarget() const
     float enemyPos[3];
     int index = -1;
     float closestDistance = 999999999999.0f;
-    unsigned short id = GameData::SL_FindString((GameData::scriptInstance_t)0, "j_head");
+    unsigned short id = GameData::SL_FindString(GameData::scriptInstance_t::SCRIPTINSTANCE_SERVER, "j_head");
     float *myPos = GameData::cgameGlob->predictedPlayerState.origin;
 
     // Loop through all entities and find zombie entities
@@ -256,7 +258,9 @@ int Aimbot::GetAimbotTarget() const
 
 void Aimbot::SetAngles() const
 {
-    *(vec3_t *)GameData::clientActive->viewangles = this->targetAngles;
+	GameData::clientActive->viewangles[0] = this->targetAngles.pitch;
+	GameData::clientActive->viewangles[1] = this->targetAngles.yaw;
+	GameData::clientActive->viewangles[2] = this->targetAngles.roll;
 }
 
 void Aimbot::RemoveSpread(GameData::playerState_s *ps, GameData::usercmd_s *cmd) const

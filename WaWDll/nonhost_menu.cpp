@@ -3,14 +3,13 @@
 
 namespace GameData
 {
-    int             *cl_connectionState = (int *)0x305842C;
-    UiContext       *uiDC               = (UiContext *)0x208E920;
-    ScreenPlacement *scrPlace           = (ScreenPlacement *)0x957360;
-    KeyState        *keys               = (KeyState *)0x951C44;
-    HWND            *hwnd               = (HWND *)0x22C1BE4;
+    int *cl_connectionState	  = (int *)0x305842C;
+    UiContext *uiDC           = (UiContext *)0x208E920;
+    ScreenPlacement *scrPlace = (ScreenPlacement *)0x957360;
+    KeyState *keys            = (KeyState *)0x951C44;
+    HWND *hwnd                = (HWND *)0x22C1BE4;
 
-    int (__stdcall *MessageBoxA)(HWND hWnd, LPCSTR lpText,
-        LPCSTR lpCaption, UINT uType)
+    int (__stdcall *MessageBoxA)(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType)
         = *(int (__stdcall **)(HWND, LPCSTR, LPCSTR, UINT))MessageBoxA_a;
     DWORD (__stdcall *timeGetTime)() = *(DWORD (__stdcall **)())timeGetTime_a;
     void (__stdcall *InitializeCriticalSection)(LPCRITICAL_SECTION lpCriticalSection)

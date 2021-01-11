@@ -22,44 +22,44 @@ namespace GameData
 
     enum weapType_t
     {
-        WEAPTYPE_BULLET                        = 0x0,
-        WEAPTYPE_GRENADE                       = 0x1,
-        WEAPTYPE_PROJECTILE                    = 0x2,
-        WEAPTYPE_BINOCULARS                    = 0x3,
-        WEAPTYPE_GAS                           = 0x4,
-        WEAPTYPE_BOMB                          = 0x5,
-        WEAPTYPE_MINE                          = 0x6,
-        WEAPTYPE_MELEE                         = 0x7,
-        WEAPTYPE_NUM                           = 0x8,
+        WEAPTYPE_BULLET     = 0x0,
+        WEAPTYPE_GRENADE    = 0x1,
+        WEAPTYPE_PROJECTILE = 0x2,
+        WEAPTYPE_BINOCULARS = 0x3,
+        WEAPTYPE_GAS        = 0x4,
+        WEAPTYPE_BOMB       = 0x5,
+        WEAPTYPE_MINE       = 0x6,
+        WEAPTYPE_MELEE      = 0x7,
+        WEAPTYPE_NUM        = 0x8,
     };
 
 #pragma pack(push, 1)
     struct WeaponDef
     {
-        const char      *szInternalName;                // 0x000
-        const char      *szOverlayName;                 // 0x004
-        char             pad00[0x13C];                  // 0x008
-        int              weapType;                      // 0x144
-        int              weapClass;                     // 0x148
-        int              penetrateType;                 // 0x14C
-        int              impactType;                    // 0x150
-        int              inventoryType;                 // 0x154
-        int              fireType;                      // 0x158
-        int              clipType;                      // 0x15C
-        int              itemIndex;                     // 0x160
-        char             pad01[0x13C];                  // 0x164
+        const char *szInternalName;						// 0x000
+        const char *szOverlayName;						// 0x004
+        char pad00[0x13C];								// 0x008
+        int weapType;									// 0x144
+        int weapClass;									// 0x148
+        int penetrateType;								// 0x14C
+        int impactType;									// 0x150
+        int inventoryType;								// 0x154
+        int fireType;									// 0x158
+        int clipType;									// 0x15C
+        int itemIndex;									// 0x160
+        char pad01[0x13C];								// 0x164
         struct Material *reticleSlide;                  // 0x2A0
-        char             pad02[0x134];                  // 0x2A4
+        char pad02[0x134];								// 0x2A4
         struct Material *hudIcon;                       // 0x3D8
-        int              hudIconRatio;                  // 0x3DC
+        int hudIconRatio;								// 0x3DC
         struct Material *ammoCounterIcon;               // 0x3E0
-        int              ammoCounterIconRatio;          // 0x3E4
-        char             pad03[0x24];                   // 0x3E8
-        int              shotCount;                     // 0x40C
-        char             pad04[0x420];                  // 0x410
-        float            fAdsSpread;                    // 0x830
-        char             pad05[0xEC];                   // 0x834
-        float            fMinDamageRange;               // 0x920
+        int ammoCounterIconRatio;						// 0x3E4
+        char pad03[0x24];								// 0x3E8
+        int shotCount;									// 0x40C
+        char pad04[0x420];								// 0x410
+        float fAdsSpread;								// 0x830
+        char pad05[0xEC];								// 0x834
+        float fMinDamageRange;							// 0x920
     }; // Current Size = 0x924
 #pragma pack(pop)
 
@@ -67,8 +67,8 @@ namespace GameData
 
     enum
     {
-        RandomBulletDir_a                   = 0x4E54C0,
-        BG_GetSpreadForWeapon_a             = 0x41DB20,
+        RandomBulletDir_a       = 0x4E54C0,
+        BG_GetSpreadForWeapon_a = 0x41DB20,
     };
 
     extern void (__cdecl *RandomBulletDir)(int randSeed, float *x, float *y);

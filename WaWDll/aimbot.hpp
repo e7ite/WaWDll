@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nonhost_menu.hpp"
+#include "host_menu.hpp"
 #include "weapon.hpp"
 #include "game_entities.hpp"
 
@@ -10,11 +11,11 @@ namespace GameData
 
     enum
     {
-        CG_DObjGetWorldTagPos_a             = 0x443030,
-        AimTarget_IsTargetVisible_a         = 0x403CA0,
-        AimTarget_GetTagPos_0_a             = 0x4039C0,
-        CL_CreateNewCommands_a              = 0x63E994,
-        CG_DamageFeedback_a                 = 0x455370,
+        CG_DObjGetWorldTagPos_a     = 0x443030,
+        AimTarget_IsTargetVisible_a = 0x403CA0,
+        AimTarget_GetTagPos_0_a     = 0x4039C0,
+        CL_CreateNewCommands_a      = 0x63E994,
+        CG_DamageFeedback_a         = 0x455370,
     };
 
     // Miscellaneous
@@ -51,7 +52,7 @@ namespace GameData
 struct Aimbot
 {
     // The angles needed to be set to my player to aim at target
-    vec3_t      targetAngles;
+    vec3_t targetAngles;
     // Refereence to the menu variable; used to tell if aimbot should be used
     OptionData &enableAimbot;
     // Refereence to the menu variable; used to trigger aimbot if set
