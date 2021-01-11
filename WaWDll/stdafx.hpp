@@ -9,7 +9,7 @@
 
 // Windows Library
 #include <windows.h>
-#include <detours.h>
+#include <detours/detours.h>
 #ifdef _DEBUG
 #include <ShlObj_core.h>
 #endif // _DEBUG
