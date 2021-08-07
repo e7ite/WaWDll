@@ -138,11 +138,12 @@ namespace GameData
 
         bool aimbotRun = false;
         bool isShooting = GameData::Key_IsDown("+attack");
-        if (aimbot.enableAimbot.data.boolean)
+        if (std::get<bool>(aimbot.enableAimbot.data))
         {
-            if ((aimbot.aimKey.data.integer == 1 && isShooting)
-                || (aimbot.aimKey.data.integer == 2 && GameData::Key_IsDown("+speed_throw"))
-                || !aimbot.aimKey.data.integer)
+            int aimKey = std::get<int>(aimbot.aimKey.data);
+            if ((aimKey == 1 && isShooting) || 
+                (aimKey == 2 && GameData::Key_IsDown("+speed_throw")) || 
+                !aimKey)
             {
                 aimbotRun = aimbot.ExecuteAimbot();
                 if (aimbotRun)
@@ -150,7 +151,7 @@ namespace GameData
             }
         }
 
-        if (aimbot.autoShoot.data.boolean && (aimbotRun || isShooting))
+        if (std::get<bool>(aimbot.autoShoot.data) && (aimbotRun || isShooting))
         {
             ccmd->button_bits &= ~1;
             ocmd->button_bits |= 1;
@@ -192,7 +193,7 @@ namespace GameData
         Menu &menu = Menu::Instance();
        // GameData::EnterCriticalSection(&menu.critSection);
 
-        bool result = !Menu::Instance().GetOptionData(MISC_MENU, "No Flinch").data.boolean;
+        bool result = !std::get<bool>(Menu::Instance().GetOptionData(MISC_MENU, "No Flinch").data);
     
        // GameData::LeaveCriticalSection(&menu.critSection);
         return result;

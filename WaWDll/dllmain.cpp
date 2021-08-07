@@ -107,7 +107,7 @@ BOOL APIENTRY DllMain(HMODULE H, DWORD Reason, LPVOID P)
             InsertDetour(&GameData::IN_MouseEvent, GameData::IN_MouseEventDetour);
             InsertDetour(&GameData::VM_Notify, GameData::VM_NotifyDetourInvoke);
             InsertDetour(&GameData::CG_DamageFeedback, GameData::CG_DamageFeedbackDetourInvoke);
-            //InsertDetour(&GameData::Com_Printf, GameData::Com_PrintfDetour);
+            InsertDetour(&GameData::Com_Printf, GameData::Com_PrintfDetour);
         }
         break;
         case DLL_PROCESS_DETACH:

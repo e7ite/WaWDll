@@ -2,6 +2,8 @@
 
 #include "game_entities.hpp"
 
+#include <variant>
+
 // Forward declared functions
 void RenderESP();
 bool CopyAddressToClipboard(void *address);
@@ -34,21 +36,50 @@ namespace GameData
         char color[4];                                  // 0x04
     }; // Size = 0x10
 
+    enum dvarType_t : char
+    {
+        DVAR_TYPE_BOOL = 0,
+        DVAR_TYPE_FLOAT = 1,
+        DVAR_TYPE_FLOAT_2 = 2,
+        DVAR_TYPE_FLOAT_3 = 3,
+        DVAR_TYPE_FLOAT_4 = 4,
+        DVAR_TYPE_INT = 5,
+        DVAR_TYPE_ENUM = 6,
+        DVAR_TYPE_STRING = 7,
+        DVAR_TYPE_COLOR = 8,
+    };
+
+    union DvarLimit
+    {
+        struct 
+        {
+            float min;
+            float max;
+        } floatLim;
+        struct
+        {
+            int min;
+            int max;
+        } intLim;
+    }; // Size = 0x08
+
     struct dvar_s
     {
         const char *name;                               // 0x00
         const char *description;                        // 0x04
-        unsigned int flags;                             // 0x08
+        unsigned short flags;                           // 0x08
+        dvarType_t type;                                // 0x0A
+        bool modified;                                  // 0x0B
         char pad00[0x4];                                // 0x0C
         DvarValue current;                              // 0x10
         DvarValue latched;                              // 0x20
         DvarValue reset;                                // 0x30
         DvarValue saved;                                // 0x40
-        char pad01[0x8];                                // 0x50
+        DvarLimit domain;                               // 0x50
         dvar_s *next;                                   // 0x58
     }; // Size = 0x5C
 
-     struct UiContext
+    struct UiContext
     {
         int contentIndex;                               // 0x00
         float bias;                                     // 0x04
@@ -250,16 +281,19 @@ enum Submenu : char
     MISC_MENU,
     AIMBOT_MENU,
     ESP_MENU,
+    HOST_MENU,
     HUD_MENU
 };
 
+// Bit 0 == Display bit (value shown in menu)
 enum OptionType : char
 {
-    TYPE_SUB,
-    TYPE_INT,
-    TYPE_FLOAT,
-    TYPE_BOOL,
-    TYPE_VOID
+    TYPE_VOID = 0,
+    TYPE_SUB = 2,
+    TYPE_INT = 1,
+    TYPE_FLOAT = 3,
+    TYPE_BOOL = 5,
+    TYPE_DVAR = 7,
 };
 
 namespace Colors
@@ -301,22 +335,14 @@ extern std::unordered_map<const char *, GameData::dvar_s *> dvars;
 // The data stored inside each option
 struct OptionData
 {
-    union Data
-    {
-        bool boolean;
-        int integer;
-        float rational;
-
-        Data()               : integer(0) {}
-        Data(bool boolean)   : boolean(boolean) {}
-        Data(int integer)    : integer(integer) {}
-        Data(float rational) : rational(rational) {}
-    };
-
-    Data       data;
+    std::variant<bool, int, float> data;
     OptionType type;
 
-    OptionData(OptionType type = TYPE_INT);
+    OptionData(OptionType type);
+    OptionData(GameData::dvar_s *val);
+    OptionData(int val) : type(TYPE_INT) { data = val; }
+    OptionData(bool val) : type(TYPE_BOOL) { data = val; }
+    OptionData(float val) : type(TYPE_FLOAT) { data = val; }
 };
 
 // The basic structure each menu option contains
@@ -337,8 +363,18 @@ struct Option
      * @param callback The function to perform to when the option is clicked in
      *                 by the mouse throguh Menu::MonitorMouse
     **/
-    Option(const char *option, OptionType type, std::function<void()> &&callback)
+    Option(const std::string &option, OptionType type, std::function<void()> &&callback)
         : name(option), var(OptionData(type)), callback(callback) {}
+
+    /**
+     * @brief Constructor of an option with option to specify data
+     * @param option The option name which is displayed on menu
+     * @param dvar The dvar for the option
+     * @param callback The function to perform to when the option is clicked in
+     *                 by the mouse throguh Menu::MonitorMouse
+    **/
+    Option(const std::string &option, GameData::dvar_s *dvar, std::function<void()> &&callback)
+        : name(option), var(OptionData(dvar)), callback(callback) {}
 };
 
 struct Menu
@@ -376,8 +412,18 @@ struct Menu
      * @param callback The function to perform to when the option is clicked in
      *                 by the mouse throguh Menu::MonitorMouse
     **/
-    void Insert(int sub, const char *option, OptionType type, 
+    void Insert(int sub, const std::string &option, OptionType type,
         std::function<void()> &&callback);
+
+    /**
+     * @brief Wrapper to insert an option into the menu explicitly defined for
+     *        dvar options
+     * @param sub The sub menu to insert into. Values defined in enum Submenu
+     * @param option The option name which is displayed on menu
+     * @param type The type of option. Menu displays them differenntly based
+     *             on the type specified. Values defined in enum OptionType
+    **/
+    void Insert(int sub, const std::string &option, GameData::dvar_s *dvar);
 
     /**
      * @brief Handles where to go when user exits a submenu
@@ -406,7 +452,7 @@ struct Menu
      * @return if the mouse is currently over the option passed in as argument
     **/
     bool MonitorMouse(Option &opt, float optionX, float optionY,
-        float optionW, float optionH);
+                      float optionW, float optionH);
 
     /**
      * @brief Monitors keyboard input and adjusts menu accordingly to it
@@ -429,9 +475,11 @@ struct Menu
     /**
      * @brief Increments/Decrements the value of a varName integer variable
      * @param varName The name of the variable being changed
+     * @param min The minimum value to set it to.
+     * @param max The max value to set it to.
      * @return The result of the variable after the change
     **/
-    int IntModify(const std::string &varName, OptionType type, int min, int max);
+    int IntModify(const std::string &varName, int min, int max);
 
     /**
      * @brief Returns a reference to an option stored in Menu::options

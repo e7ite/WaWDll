@@ -1,6 +1,13 @@
 #include "stdafx.hpp"
 #include "nonhost_menu.hpp"
 
+/**
+ *   Exits game with an game's fatal error routine while displaying function name.
+ *   @param msg Format string for message
+ *   @param ... Arguments for format string. 
+ */
+#define FATALMENUERROR(msg, ...) GameData::Com_Error(0, __FUNCSIG__ ": " msg, __VA_ARGS__);
+
 namespace GameData
 {
     int *cl_connectionState   = (int *)0x305842C;
@@ -411,21 +418,23 @@ namespace GameData
             // If the value on the stack exists in the text segment
             if (*currESP >= TEXTSEGSTART && *currESP <= TEXTSEGEND)
             {
-                // Get the return location and add the bytes the relative offset in the opcode
-                DWORD caller = *(DWORD *)((int)*currESP - 4) + *currESP;
-                if (caller >= TEXTSEGSTART && caller <= TEXTSEGEND)
+                // Get the return location and add the bytes representing the 
+                // relative offset to the instruction following the branch to
+                // to get the location of the start of the called function
+                DWORD callee = *(int *)((DWORD)*currESP - 4u) + *currESP;
+                if (callee >= TEXTSEGSTART && callee <= TEXTSEGEND)
                 {
                     // See if the caller matches any functions defined in this project
                     // if not 
                     auto result = std::find_if(addrs.begin(), addrs.end(),
-                        [caller](const auto &i)
+                        [callee](const auto &i)
                         {
-                            return i.first == caller;
+                            return i.first == callee;
                         });
                     if (result != addrs.end())
                         std::cerr << result->second << std::endl;
                     else
-                        std::cerr << (void *)caller << std::endl;
+                        std::cerr << (void *)callee << std::endl;
                     i++;
                 }
             }
@@ -469,7 +478,6 @@ namespace GameData
     void Menu_PaintAllDetour(UiContext *dc)
     {
         Menu &menu = Menu::Instance();
-       // EnterCriticalSection(&menu.critSection);
 
         if (IN_IsForegroundWindow())
             menu.MonitorKeys();
@@ -493,8 +501,6 @@ namespace GameData
             3. It uses AddFunction to add it to gScrCompilePub[inst].func_table 
             4. The function is called somehow in VM_Execute. Don't know yet
         */
-       
-       // LeaveCriticalSection(&menu.critSection);
     }
     
     int (__cdecl *Menu_HandleMouseMove)(ScreenPlacement *scrPlace, void *menu)
@@ -526,8 +532,8 @@ namespace GameData
 
         if (InGame() && GameData::keys[key].binding
             && !*(int *)0x208E938
-            && (aimKey.data.integer != 1 || !strcmp(GameData::keys[key].binding, "+attack"))
-            && autoShoot.data.boolean)
+            && (std::get<int>(aimKey.data) != 1 || !strcmp(GameData::keys[key].binding, "+attack"))
+            && std::get<bool>(autoShoot.data))
             return;
 
         GameData::LeaveCriticalSection(&menu.critSection);
@@ -612,18 +618,41 @@ OptionData::OptionData(OptionType type) : type(type)
 {
     switch (type)
     {
-        case TYPE_INT:
-            this->data = Data(0);
-            break;
-        case TYPE_BOOL:
-            this->data = Data(false);
-            break;
-        case TYPE_FLOAT:
-            this->data = Data(0.0f);
-            break;
-        default:
-            this->data = Data(0);
-            break;
+    case TYPE_INT:
+    case TYPE_SUB:
+    case TYPE_VOID:
+        data = 0;
+        break;
+    case TYPE_FLOAT:
+        data = 0.0f;
+        break;
+    case TYPE_BOOL:
+    case TYPE_DVAR:
+        data = false;
+        break;
+    default:
+        FATALMENUERROR("Menu option initialized with bad type!");
+        break;
+    }
+}
+
+OptionData::OptionData(GameData::dvar_s *val) : type(TYPE_DVAR) 
+{
+    switch (val->type)
+    {
+    case GameData::DVAR_TYPE_BOOL:
+        data = val->current.enabled;
+        break;
+    case GameData::DVAR_TYPE_INT:
+        data = val->current.integer;
+        break;
+    case GameData::DVAR_TYPE_FLOAT:
+        data = val->current.value;
+        break;
+    default:
+        FATALMENUERROR("Need to add handle this dvar type in menu! "
+                       "Name is %s Type is %i", val->name, val->type);
+        break;
     }
 }
 
@@ -635,96 +664,43 @@ Menu::Menu() :
 {
     GameData::InitializeCriticalSection(&this->critSection);
 
-
     for (int sub = MAIN_MENU; sub <= HUD_MENU; sub++)
         this->options.push_back(std::unordered_map<std::string, Option>());
 
+    if (!InsertDvar("cl_ingame") || !InsertDvar("cg_fov") ||
+        !InsertDvar("perk_weapSpreadMultiplier") || !InsertDvar("sv_cheats") ||
+        !InsertDvar("player_sustainAmmo") || !InsertDvar("cg_debugevents"))
+        FATALMENUERROR("Dvars failed to load\n");
+
     // Main menu options
-    Insert(MAIN_MENU, "Aimbot Menu", TYPE_SUB, 
-        []() 
-        { 
-            Menu::Instance().LoadSub(AIMBOT_MENU); 
-        });
-    Insert(MAIN_MENU, "ESP Menu", TYPE_SUB, 
-        []() 
-        { 
-            Menu::Instance().LoadSub(ESP_MENU); 
-        });
-    Insert(MAIN_MENU, "HUD Menu", TYPE_SUB, 
-        []() 
-        { 
-            Menu::Instance().LoadSub(HUD_MENU); 
-        });
-    Insert(MAIN_MENU, "Misc Menu", TYPE_SUB, 
-        []() 
-        { 
-            Menu::Instance().LoadSub(MISC_MENU); 
-        });
-
-    // ESP menu options
-    Insert(ESP_MENU, "Enemy ESP", TYPE_BOOL, 
-        []() 
-        { 
-            Menu::Instance().BoolModify("Enemy ESP"); 
-        });
-    Insert(ESP_MENU, "Friendly ESP", TYPE_BOOL, 
-        []() 
-        { 
-            Menu::Instance().BoolModify("Friendly ESP"); 
-        });
-
-    // HUD menu options
-    Insert(HUD_MENU, "Server Info", TYPE_BOOL, 
-        []() 
-        { 
-            Menu::Instance().BoolModify("Server Info"); 
-        });
+    Insert(MAIN_MENU, "Aimbot Menu", TYPE_SUB, []() { Menu::Instance().LoadSub(AIMBOT_MENU); });
+    Insert(MAIN_MENU, "ESP Menu", TYPE_SUB, []() { Menu::Instance().LoadSub(ESP_MENU); });
+    Insert(MAIN_MENU, "HUD Menu", TYPE_SUB, []() { Menu::Instance().LoadSub(HUD_MENU); });
+    Insert(MAIN_MENU, "Misc Menu", TYPE_SUB, []() { Menu::Instance().LoadSub(MISC_MENU); });
 
     // Aimbot menu options
-    Insert(AIMBOT_MENU, "Enable Aimbot", TYPE_BOOL, 
-        []() 
-        { 
-            Menu::Instance().BoolModify("Enable Aimbot"); 
-        });
-    Insert(AIMBOT_MENU, "Aim Key",  TYPE_INT, 
-        []() 
-        { 
-            Menu::Instance().IntModify("Aim Key", TYPE_INT, 0, 2); 
-        });
-    Insert(AIMBOT_MENU, "Aim Type",  TYPE_INT, 
-        []() 
-        { 
-            Menu::Instance().IntModify("Aim Type", TYPE_INT, 0, 2); 
-        });
-    Insert(AIMBOT_MENU, "Auto Aim", TYPE_BOOL, 
-        []() 
-        { 
-            Menu::Instance().BoolModify("Auto Aim"); 
-        });
-    Insert(AIMBOT_MENU, "Auto Shoot", TYPE_BOOL, 
-        []() 
-        { 
-            Menu::Instance().BoolModify("Auto Shoot"); 
-        });
+    Insert(AIMBOT_MENU, "Enable Aimbot", TYPE_BOOL, []() { Menu::Instance().BoolModify("Enable Aimbot"); });
+    Insert(AIMBOT_MENU, "Aim Key", TYPE_INT, []() { Menu::Instance().IntModify("Aim Key", 0, 2); });
+    Insert(AIMBOT_MENU, "Aim Type", TYPE_INT, []() { Menu::Instance().IntModify("Aim Type", 0, 2);});
+    Insert(AIMBOT_MENU, "Auto Aim", TYPE_BOOL, []() { Menu::Instance().BoolModify("Auto Aim"); });
+    Insert(AIMBOT_MENU, "Auto Shoot", TYPE_BOOL, []() { Menu::Instance().BoolModify("Auto Shoot"); });
     Insert(AIMBOT_MENU, "No Recoil", TYPE_BOOL, 
-        []() 
+        []()
         {
             WriteBytes(0x46A87E,
                 Menu::Instance().BoolModify("No Recoil") ? "\xEB" : "\x74", 1);
         });
-    Insert(AIMBOT_MENU, "No Spread", TYPE_BOOL, 
-        []() 
-        {
-            Menu::Instance().BoolModify("No Spread"); 
-        });
+    Insert(AIMBOT_MENU, "No Spread", TYPE_BOOL, []() { Menu::Instance().BoolModify("No Spread"); });
+
+    // ESP menu options
+    Insert(ESP_MENU, "Enemy ESP", TYPE_BOOL, []() { Menu::Instance().BoolModify("Enemy ESP"); });
+    Insert(ESP_MENU, "Friendly ESP", TYPE_BOOL, []() { Menu::Instance().BoolModify("Friendly ESP"); });
+
+    // HUD menu options
+    Insert(HUD_MENU, "Server Info", TYPE_BOOL, []() { Menu::Instance().BoolModify("Server Info"); });
 
     // Miscellaneous menu options
-    Insert(MISC_MENU, "FOV",  TYPE_INT, 
-        []() 
-        {
-            dvars.at("cg_fov")->current.value 
-                = static_cast<float>(Menu::Instance().IntModify("FOV", TYPE_INT, 65, 125));
-        });
+    Insert(MISC_MENU, "FOV", dvars.at("cg_fov"));
     Insert(MISC_MENU, "Super Steady Aim", TYPE_BOOL, 
         []() 
         { 
@@ -733,61 +709,53 @@ Menu::Menu() :
                 ? "\x90\x90\x90\x90\x90"
                 : "\x83\xFF\x02\x75\x15", 5);
         });
-    Insert(MISC_MENU, "Enable Cheats", TYPE_BOOL, 
-        []() 
-        { 
-            dvars.at("sv_cheats")->current.enabled 
-                = Menu::Instance().BoolModify("Enable Cheats");
-        });
-    Insert(MISC_MENU, "God Mode", TYPE_VOID, 
-        []() 
-        { 
-            GameData::Cbuf_AddText("god"); 
-        });
-    Insert(MISC_MENU, "No Clip", TYPE_VOID, 
-        []() 
-        { 
-            GameData::Cbuf_AddText("noclip"); 
-        });
-    Insert(MISC_MENU, "Give All Weapons", TYPE_VOID, 
-        []() 
-        { 
-            GameData::Cbuf_AddText("give all"); 
-        });
-    Insert(MISC_MENU, "No Target", TYPE_VOID, 
-        []() 
-        { 
-            GameData::Cbuf_AddText("notarget"); 
-        });
-    Insert(MISC_MENU, "Infinite Ammo", TYPE_BOOL, 
-        []() 
-        {
-            dvars.at("player_sustainAmmo")->current.enabled 
-                = Menu::Instance().BoolModify("Infinite Ammo");
-        });
-    Insert(MISC_MENU, "No Flinch", TYPE_BOOL, 
-        []() 
-        { 
-            Menu::Instance().BoolModify("No Flinch"); 
-        });
-
-    if (InsertDvar("cl_ingame")
-        && InsertDvar("cg_fov")
-        && InsertDvar("perk_weapSpreadMultiplier")
-        && InsertDvar("sv_cheats")
-        && InsertDvar("player_sustainAmmo"))
-        this->GetOptionData(MISC_MENU, "FOV").data.integer = 65;
-    else
-        GameData::Com_Error(0, "Dvars failed to load\n");
+    Insert(MISC_MENU, "Enable Cheats", dvars.at("sv_cheats"));
+    Insert(MISC_MENU, "God Mode", TYPE_VOID, []() { GameData::Cbuf_AddText("god"); });
+    Insert(MISC_MENU, "No Clip", TYPE_VOID, []() { GameData::Cbuf_AddText("noclip"); });
+    Insert(MISC_MENU, "Give All Weapons", TYPE_VOID, []() { GameData::Cbuf_AddText("give all"); });
+    Insert(MISC_MENU, "No Target", TYPE_VOID, []() { GameData::Cbuf_AddText("notarget"); });
+    Insert(MISC_MENU, "Infinite Ammo", dvars.at("player_sustainAmmo"));
+    Insert(MISC_MENU, "No Flinch", TYPE_BOOL, []() { Menu::Instance().BoolModify("No Flinch"); });
+    Insert(MISC_MENU, "Enable cg_debugevents", dvars.at("cg_debugevents"));
 }
 
-void Menu::Insert(int sub, const char *option, OptionType type, 
+void Menu::Insert(int sub, const std::string &option, OptionType type,
     std::function<void()> &&callback)
 {
     this->options.at(sub).insert(
         std::pair<std::string, Option>(
             option, Option(option, type, std::forward<std::function<void()>>(callback))
+        )
+    );
+}
+
+void Menu::Insert(int sub, const std::string &option, GameData::dvar_s *dvar)
+{
+    this->options.at(sub).insert(
+        std::pair<std::string, Option>(
+            option, Option(option, dvar, [option, dvar]()
+                {
+                    int min = static_cast<int>(dvar->domain.floatLim.min),
+                        max = static_cast<int>(dvar->domain.floatLim.max);
+                    switch (dvar->type)
+                    {
+                    case GameData::DVAR_TYPE_BOOL:
+                        dvar->current.enabled = Menu::Instance().BoolModify(option);
+                        break;
+                    case GameData::DVAR_TYPE_INT:
+                        dvar->current.integer = Menu::Instance().IntModify(option, min, max);
+                        break;
+                    case GameData::DVAR_TYPE_FLOAT:
+                        dvar->current.value = Menu::Instance().IntModify(option, min, max);
+                        break;
+                    default:
+                        FATALMENUERROR("Need to implement support for this type! "
+                                       "Name is %s Type is %i", dvar->name, dvar->type);
+                        break;
+                    }
+                }
             )
+        )
     );
 }
 
@@ -818,24 +786,53 @@ void Menu::CloseSub()
 bool Menu::BoolModify(const std::string &varName)
 {
     OptionData &var = this->GetOptionData(this->currentSub, varName);
-    return var.data.boolean = !var.data.boolean;
+    bool old = std::get<bool>(var.data);
+    var.data = !old;
+    return !old;
 }
 
-int Menu::IntModify(const std::string &varName, OptionType type, int min, int max)
+int Menu::IntModify(const std::string &varName, int min, int max)
 {
     OptionData &var = this->GetOptionData(this->currentSub, varName);
+    
+    int result;
+    if (int *intVal = std::get_if<int>(&var.data)) 
+    {
+        if (this->toggled)
+            (*intVal)++;
+        else
+            (*intVal)--;
 
-    if (this->toggled)
-        var.data.integer++;
+        if (*intVal > max)
+            *intVal = min;
+        if (*intVal < min)
+            *intVal = max;
+
+        var.data = *intVal;
+        result = *intVal;
+    } 
+    else if (float *floatVal = std::get_if<float>(&var.data)) 
+    {
+        if (this->toggled)
+            (*floatVal) += 1.0f;
+        else
+            (*floatVal) -= 1.0f;
+
+        float fMin = static_cast<float>(min), fMax = static_cast<float>(max);
+        if (*floatVal > fMax)
+            *floatVal = fMin;
+        if (*floatVal < fMin)
+            *floatVal = fMax;
+
+        var.data = *floatVal;
+        result = static_cast<int>(*floatVal);
+    }
     else
-        var.data.integer--;
+    {
+        FATALMENUERROR("Unhandled data type!");
+    }
 
-    if (var.data.integer > max)
-        var.data.integer = min;
-    if (var.data.integer < min)
-        var.data.integer = max;
-
-    return var.data.integer;
+    return result;
 }
 
 OptionData &Menu::GetOptionData(Submenu sub, const std::string &key)
@@ -861,11 +858,17 @@ void Menu::Execute()
     float menuCenterY = GameData::uiDC->screenDimensions[1] / 2
         / GameData::scrPlace->scaleVirtualToFull[1];
 
-    // Get x position of text aligned with a background and scaled for all resolutions
+    // Get x position of text aligned for having background and scaled for all resolutions
     float textWidth, textHeight;
     GameData::Font_s *fontPointer;
-    float xAligned = AlignText(title, Fonts::normalFont, 0.3f,
-        menuCenterX, ALIGN_CENTER, 1, 1, &fontPointer, &textWidth, &textHeight);
+    float xAligned = AlignText(title,                                  // Text
+                               Fonts::normalFont,                      // Font
+                               0.3f,                                   // Scale
+                               menuCenterX,                            // X pos to relate to
+                               ALIGN_CENTER,                           // Alignmemt
+                               true,                                   // Scaled for all res
+                               true,                                   // Background applied
+                               &fontPointer, &textWidth, &textHeight); // Out params
 
     // Get position and dimensions of all border and options
     float borderW = menuCenterX - 20;
@@ -876,13 +879,25 @@ void Menu::Execute()
     float optionY = menuCenterY - 100;
     float optionH = UI_TextHeight(fontPointer, 0.3f);
 
-    // Draw the title and the menu base
-    optionY += RenderUITextWithBackground(title, xAligned, optionY, textWidth, 
-        textHeight, Colors::blue, Colors::white, fontPointer, 0.3f);
-    GameData::UI_FillRect(GameData::scrPlace, borderX, borderY, borderW, borderH, 0, 0,
-        Colors::transparentBlack);
-    GameData::UI_DrawRect(GameData::scrPlace, borderX, borderY, borderW, borderH,
-        0, 0, 2, Colors::blue);
+    // Draw the menu title 
+    optionY += RenderUITextWithBackground(title,                       // Text
+                                          xAligned, optionY,           // XY pos
+                                          textWidth, textHeight,       // Size
+                                          Colors::blue, Colors::white, // Colors
+                                          fontPointer,                 // Font
+                                          0.3f);                       // Scale
+    // Draw the menu background
+    GameData::UI_FillRect(GameData::scrPlace,        // Screen placement struct
+                          borderX, borderY,          // Background XY
+                          borderW, borderH,          // Background Size
+                          0, 0,                      // No horz, vert align
+                          Colors::transparentBlack); // Background Color
+    GameData::UI_DrawRect(GameData::scrPlace,        // Screen placement struct
+                          borderX, borderY,          // Border XY
+                          borderW, borderH,          // Border size
+                          0, 0,                      // No horz, vert align
+                          2.0f,                      // Border thickness
+                          Colors::blue);             // Border color
 
     // Draw all the options in the current sub menu
     for (auto &i : options[currentSub])
@@ -891,59 +906,75 @@ void Menu::Execute()
         const Option &option = i.second;
 
         // Adjust options in menu based on mouse position and execute any callbacks
-        if (this->MonitorMouse(i.second, borderX, optionY - 2, borderW, optionH + 2))
+        if (MonitorMouse(i.second, borderX, optionY - 2, borderW, optionH + 2))
             color = Colors::blue;
 
-        // Draw the additional visuals for array and boolean options
-        switch (option.var.type)
+        // Draw the additional visuals for array and boolean options based
+        // on the type of the option, since it has already been evaluated even if
+        // it is a dvar or not. Outer check checks for display bit being set.
+        const auto *boolVal = std::get_if<bool>(&option.var.data);
+        const auto *intVal = std::get_if<int>(&option.var.data);
+        const auto *floatVal = std::get_if<float>(&option.var.data);
+        if (option.var.type & 1)
         {
-            case TYPE_BOOL:
-                GameData::UI_FillRect(GameData::scrPlace, borderX + borderW - 12,
-                    optionY - optionH + 2, 8, 8, 0, 0,
-                    option.var.data.boolean ? Colors::blue : Colors::transparentBlack);
-                break;
-            case TYPE_INT:
-                std::string data = std::to_string(option.var.data.integer);
-                RenderUIText(data.data(),
-                    AlignText(data.data(), Fonts::normalFont,
-                        0.3f, borderX + borderW - 3, ALIGN_RIGHT, 1, 0),
-                    optionY, 0.3f, color, fontPointer);
-                break;
+            if (boolVal)
+            {
+                GameData::UI_FillRect(GameData::scrPlace,
+                                      borderX + borderW - 12, optionY - optionH + 2,
+                                      8, 8,
+                                      0, 0,
+                                      *boolVal ? Colors::blue : Colors::transparentBlack);
+            }
+            else if (intVal || floatVal)
+            {
+                int val = floatVal ? static_cast<int>(*floatVal) : *intVal;
+                std::string valStr = std::to_string(val);
+                float xPos = AlignText(valStr.data(),
+                                       Fonts::normalFont,
+                                       0.3f,
+                                       borderX + borderW - 3,
+                                       ALIGN_RIGHT,
+                                       1,
+                                       0);
+                RenderUIText(valStr.data(), xPos, optionY, 0.3f, color, fontPointer);
+            }
+            else
+            {
+                FATALMENUERROR("Failed to display value for menu option %s", i.first);
+            }
         }
 
         // Draw the text of the menu
-        optionY += RenderUIText(i.first, optionX, optionY,
-            0.3f, color, fontPointer);
+        optionY += RenderUIText(i.first, optionX, optionY, 0.3f, color, fontPointer);
     }
 }
 
 bool Menu::MonitorMouse(Option &opt, float optionX, float optionY,
-    float optionW, float optionH)
+                        float optionW, float optionH)
 {
-    if (GameData::uiDC->cursorPos[0] > optionX
-        && GameData::uiDC->cursorPos[0] < optionX + optionW
-        && GameData::uiDC->cursorPos[1] > optionY - optionH
-        && GameData::uiDC->cursorPos[1] < optionY)
+    if (!(GameData::uiDC->cursorPos[0] > optionX &&
+          GameData::uiDC->cursorPos[0] < optionX + optionW &&
+          GameData::uiDC->cursorPos[1] > optionY - optionH &&
+          GameData::uiDC->cursorPos[1] < optionY))
+        return false;
+
+    if (this->Ready())
     {
-        if (this->Ready())
+        if (GetAsyncKeyState(VK_LBUTTON) & 0x10000)
         {
-            int delay = opt.var.type == TYPE_INT ? 100 : 200;
-            if (GetAsyncKeyState(VK_LBUTTON) & 0x10000)
-            {
-                this->toggled = true;
-                opt.callback();
-                this->toggled = false;
-                this->Wait(delay);
-            }
-            else if (GetAsyncKeyState(VK_RBUTTON) & 0x10000)
-            {
-                opt.callback();
-                this->Wait(delay);
-            }
+            this->toggled = true;
+            opt.callback();
+            this->toggled = false;
+            this->Wait(200);
         }
-        return true;
+        else if (GetAsyncKeyState(VK_RBUTTON) & 0x10000)
+        {
+            opt.callback();
+            this->Wait(200);
+        }
     }
-    return false;
+
+    return true;
 }
 
 void Menu::MonitorKeys()
